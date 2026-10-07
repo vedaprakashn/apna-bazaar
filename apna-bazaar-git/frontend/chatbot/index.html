@@ -563,6 +563,7 @@
         setSearching(true);
         community.disabled = true;
         input.value = "";
+        if (mobileLayout.matches) input.blur();
         message(q, "user");
         const pending = message("Finding your local gems… 👀");
         delete pending.chatEntry;
@@ -608,7 +609,6 @@
               type: "bot",
             };
           saveChat();
-          input.focus();
         }
       };
       let promotions = [],
