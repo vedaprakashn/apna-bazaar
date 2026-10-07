@@ -17,8 +17,8 @@ public class HelpDirectoryController {
         var community = communities.getFirst();
         var contacts = jdbc.queryForList("""
             SELECT id,section,category,name,phone,service_area,availability,location,scope,
-                   notes,is_demo,consent_to_listing,verified_at,verification_source
-            FROM help_contact WHERE community_id=? AND is_active=true
+                   notes,is_demo,consent_to_listing,verified_at,verification_source,flat_number,specialty
+            FROM help_contact WHERE community_id=? AND is_active=true AND (scope='community' OR section='urgent')
             ORDER BY section,category,name
             """, community.get("id"));
         return ResponseEntity.ok(Map.of("community", community.get("name"), "contacts", contacts));

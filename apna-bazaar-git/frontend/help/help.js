@@ -12,25 +12,42 @@ function el(tag,cls,text) { const n=document.createElement(tag); n.className=cls
 function render() {
  directory.replaceChildren();
  const q=search.value.normalize('NFKC').toLowerCase().trim();
- const results=contacts.filter(c=>c.section===section && (!category.value||c.category===category.value) && (!q||[c.name,c.category,c.service_area,c.location,c.notes].join(' ').normalize('NFKC').toLowerCase().includes(q)));
+ const results=contacts.filter(c=>c.section===section && (!category.value||c.category===category.value) && (!q||[c.name,c.category,c.service_area,c.location,c.notes,c.specialty,c.flat_number].join(' ').normalize('NFKC').toLowerCase().includes(q)));
  status.textContent=results.length?`${results.length} ${results.length===1?'contact':'contacts'} · ${community.selectedOptions[0].textContent}`:'No contacts match. Try another service or clear your search.';
  for(const c of results) {
-  const card=el('article','contact-card');
-  card.append(el('span','contact-category',c.category),el('h2','',c.name));
   const demo=c.is_demo===true;
-  card.append(el('span',demo?'verification demo':'verification',demo?'Demo · Unverified':c.verified_at&&c.consent_to_listing?'Verified listing':'Unverified listing'));
-  card.append(el('p','contact-area',`${c.scope==='community'?'In your community':'Nearby'} · ${c.service_area}`));
-  card.append(el('p','',c.location),el('p','availability',c.availability),el('p','contact-notes',c.notes));
-  if(!demo&&c.verified_at&&c.consent_to_listing&&/^\+?[0-9 ()-]{7,25}$/.test(c.phone||'')) {
-   const call=el('a','contact-call',`Call ${c.phone} ↗`);call.href=`tel:${c.phone.replace(/[^+0-9]/g,'')}`;card.append(call);
-   card.append(el('small','',`Verified ${new Date(c.verified_at).toLocaleDateString('en-IN')}`));
-  } else card.append(el('div','demo-phone',demo?`${c.phone||'Example number'} · Demo only`:'Contact awaiting verification'));
+  const card=el('article',`contact-card ${c.section==='urgent'?'response-card':'resident-card'}`);
+  const top=el('div','contact-top');
+  const symbols={'Doctors':'🩺','Nurses':'✚','Lawyers':'⚖','Physiotherapists':'↗','First aid':'✚','Police':'🛡','Fire services':'🚒','Snake rescue':'🐍','Ambulance':'🚑'};
+  const icon=el('span','contact-avatar',symbols[c.category]||'✦');icon.setAttribute('aria-hidden','true');
+  const identity=el('div','contact-identity');
+  identity.append(el('span','contact-category',c.category),el('h2','',c.name.replace(/ · Demo$/, '')));
+  top.append(icon,identity);card.append(top);
+  if(c.specialty)card.append(el('strong','contact-specialty',c.specialty));
+  const badges=el('div','contact-badges');
+  if(c.flat_number)badges.append(el('span','flat-badge',`Flat ${c.flat_number}`));
+  badges.append(el('span','scope-badge',c.scope==='community'?'In your community':'Response service · nearby'));
+  card.append(badges);
+  const info=el('div','contact-info');
+  info.append(el('p','contact-area',c.service_area),el('p','availability',`◷ ${c.availability}`));
+  card.append(info);
+  const footer=el('div','contact-bottom');
+  const verified=!demo&&c.verified_at&&c.consent_to_listing;
+  footer.append(el('span',verified?'verification verified':'verification demo',demo?'Demo · Unverified':verified?'Verified listing':'Unverified listing'));
+  if(verified&&/^\+?[0-9 ()-]{7,25}$/.test(c.phone||'')) {
+   const call=el('a','contact-call',`Call ↗`);call.href=`tel:${c.phone.replace(/[^+0-9]/g,'')}`;call.setAttribute('aria-label',`Call ${c.name} at ${c.phone}`);footer.append(call);
+  }else footer.append(el('span','contact-unavailable','Contact not live'));
+  card.append(footer);
+  const details=el('details','contact-details');details.append(el('summary','','Details'),el('p','contact-notes',c.notes));
+  if(c.location)details.append(el('p','',c.location));
+  if(verified)details.append(el('small','',`Verified ${new Date(c.verified_at).toLocaleDateString('en-IN')}`));
+  card.append(details);
   directory.append(card);
  }
 }
 function categories() {category.replaceChildren(new Option('All services',''));for(const c of [...new Set(contacts.filter(c=>c.section===section).map(c=>c.category))].sort())category.append(new Option(c,c));}
 function selectSection(index,focus=false) {
- section=index===0?'urgent':'professional';tabs.forEach((t,i)=>{t.setAttribute('aria-selected',String(i===index));t.tabIndex=i===index?0:-1;});
+ section=index===0?'urgent':'professional';document.body.dataset.section=section;tabs.forEach((t,i)=>{t.setAttribute('aria-selected',String(i===index));t.tabIndex=i===index?0:-1;});
  directory.setAttribute('aria-labelledby',tabs[index].id);
  document.querySelector('#section-note').textContent=index===0?'Local first-aid and response contacts. Demo listings cannot provide emergency assistance.':'People who can help with everyday care, recovery and legal needs. This is a directory, not a booking service.';
  categories();render();if(focus)tabs[index].focus();

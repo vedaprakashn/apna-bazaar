@@ -329,3 +329,13 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 ### Product branding in the mobile header
 
 - User reported the mobile header made the app look named Aapta. Removed the top-left persona block and restored the HeyHood logo in the mobile header. Aapta remains the speaker inside the conversation and animated loading feedback. Desktop branding stays consistent. Compact sizes retain community, Explore, Help and operator controls on small screens; CSS version changed to refresh cached clients.
+
+### Resident professionals and doctor specialties
+
+- User restricted professionals to the selected community, with flat numbers and doctor specialties. Directory and chat queries now exclude outside-community professional entries; nearby urgent response helpers (police, ambulance, fire, snake rescue) remain allowed.
+- V18 enriches fictional resident contacts with flat_number and specialty, converts the existing nearby demo professionals into explicit fictional resident profiles, adds three specialist doctors and an ambulance example. Each community has five demo doctors (general medicine, paediatrics, cardiology, dermatology, orthopaedics). All remain unverified and non-dialable.
+- Doctor specialty requests use the interpreted English specialty and filter the master list, so heart/skin/child-doctor queries can return the relevant resident. Unknown specialties return no matching doctor rather than substituting an unrelated specialist.
+
+- User requested richer directory tiles. Redesigned them as compact profile cards with category avatars, specialty hierarchy, highlighted flat badges, community/response-service scope, availability and collapsed details. Demo/unverified status and non-live contact state stay visible without exposing dialable fake numbers.
+
+- Validation: Maven verify passed all 14 tests. Local migration and API checks confirmed fifteen contacts per community, all professional entries scoped inside the community with flat numbers; nearby ambulance retained. OpenAI-backed searches returned five doctors, one skin specialist, one Hindi-requested cardiologist and zero neurologists. Browser checks passed search/filter/tab behavior, doctor specialty and flat badges, non-dialable demos, chat restoration and responsive layouts.
