@@ -7,7 +7,7 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>Hood Rides · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-rides1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-modules1" />
     <link rel="stylesheet" href="../help/help.css?v=3" />
     <link rel="stylesheet" href="rides.css?v=1" />
   </head>
@@ -15,11 +15,13 @@
     <header class="help-header">
       <a id="back" href="../chatbot/index.html">← Your hood</a
       ><strong>Hood Rides ↗</strong
-      ><select id="community" aria-label="Community">
+      ><select id="community" hidden aria-label="Community">
         <option value="tridasa">MyHome Tridasa</option>
         <option value="sayuk">MyHome Sayuk</option>
       </select>
     </header>
+    <nav class="hood-modules" aria-label="HeyHood modules"></nav>
+    <script src="../modules.js?v=1" defer></script>
     <main class="rides-main">
       <section class="rides-intro">
         <span class="help-kicker">SAME HOOD. SHARED JOURNEYS.</span>

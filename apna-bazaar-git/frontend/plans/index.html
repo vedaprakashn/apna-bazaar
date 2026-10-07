@@ -7,7 +7,7 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>Hood Plans · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261007-plans1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-modules1" />
     <link rel="stylesheet" href="../help/help.css?v=2" />
     <link rel="stylesheet" href="plans.css?v=1" />
   </head>
@@ -15,11 +15,13 @@
     <header class="help-header">
       <a id="back" href="../chatbot/index.html">← Your hood</a
       ><strong>Hood Plans ✦</strong
-      ><select id="community" aria-label="Community">
+      ><select id="community" hidden aria-label="Community">
         <option value="tridasa">MyHome Tridasa</option>
         <option value="sayuk">MyHome Sayuk</option>
       </select>
     </header>
+    <nav class="hood-modules" aria-label="HeyHood modules"></nav>
+    <script src="../modules.js?v=1" defer></script>
     <main class="plans-main">
       <section class="plans-intro">
         <span class="help-kicker">A FEW NEIGHBOURS. A GOOD PLAN.</span>
