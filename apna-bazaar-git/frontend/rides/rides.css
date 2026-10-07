@@ -1,0 +1,283 @@
+.rides-page {
+  background: #faf7ff;
+}
+.rides-main {
+  max-width: 1120px;
+  margin: auto;
+  padding: 24px 16px 40px;
+}
+.rides-intro {
+  padding: 24px;
+  border-radius: 24px;
+  background: linear-gradient(120deg, #eee6ff, #ffeccc);
+}
+.rides-intro h1 {
+  font-size: 32px;
+  margin: 12px 0;
+}
+.rides-intro p {
+  font-size: 14px;
+}
+.ride-new-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+.ride-new-actions button {
+  min-height: 48px;
+  padding: 12px 20px;
+  border-radius: 14px;
+  font-weight: 800;
+  background: #6336f5;
+  color: white;
+}
+.ride-new-actions button:last-child {
+  background: white;
+  color: #6336f5;
+}
+.rides-pilot,
+.rides-note,
+.ride-filter-note,
+#status {
+  font-size: 12px;
+  color: #8a779b;
+}
+.ride-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 22px 0 14px;
+}
+.ride-tabs button {
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: #f0e8fb;
+  color: #755589;
+}
+.ride-tabs button[aria-pressed="true"] {
+  background: #6336f5;
+  color: white;
+}
+.ride-filters {
+  display: flex;
+  gap: 10px;
+}
+.ride-filters label:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.ride-filters input,
+.ride-filters select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd0f6;
+  border-radius: 12px;
+  background: white;
+  min-height: 46px;
+  font: inherit;
+  font-size: 12px;
+}
+.ride-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.ride-card {
+  padding: 22px;
+  background: white;
+  border: 1px solid #e6dcf8;
+  border-radius: 22px;
+}
+.ride-kind {
+  font-size: 10px;
+  color: #794db9;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.ride-card h2 {
+  font-size: 19px;
+  line-height: 1.4;
+  margin: 12px 0;
+}
+.ride-when {
+  font-size: 14px;
+  font-weight: 800;
+  color: #583596;
+}
+.ride-person,
+.ride-notes {
+  font-size: 12px;
+  color: #82718e;
+}
+.ride-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.ride-badges span {
+  font-size: 11px;
+  padding: 6px 10px;
+  background: #fff2c7;
+  border-radius: 8px;
+  color: #7f611f;
+}
+.ride-badges span:last-child {
+  background: #f4eefb;
+  color: #87659f;
+}
+.ride-connect {
+  display: block;
+  text-align: center;
+  background: #6336f5;
+  color: white;
+  border-radius: 12px;
+  padding: 13px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+}
+.ride-close {
+  display: block;
+  background: transparent;
+  color: #a08eac;
+  font-size: 11px;
+  padding: 12px 0;
+}
+.ride-disclaimer {
+  display: block;
+  font-size: 10px;
+  color: #aa9ab5;
+  margin-top: 10px;
+}
+#post-sheet {
+  border: 1px solid #e5d9f7;
+  border-radius: 24px;
+  width: min(92vw, 500px);
+  max-height: 88dvh;
+  padding: 24px;
+  overflow: auto;
+}
+#post-sheet::backdrop {
+  background: #251d3a80;
+}
+#post-form > p {
+  font-size: 12px;
+  color: #927d9f;
+}
+.post-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.post-title h2 {
+  font-size: 23px;
+  margin: 0;
+}
+.post-title button {
+  background: #f5effb;
+  color: #866397;
+  font-size: 22px;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+}
+#post-form label {
+  display: block;
+  font-size: 12px;
+  margin-top: 14px;
+  color: #7d6091;
+}
+#post-form input:not([type="checkbox"]),
+#post-form select,
+#post-form textarea {
+  width: 100%;
+  border: 1px solid #ddd0f4;
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  min-height: 46px;
+  font: inherit;
+  margin-top: 6px;
+}
+#post-form textarea {
+  min-height: 80px;
+}
+.post-row {
+  display: flex;
+  gap: 12px;
+}
+.post-row label {
+  flex: 1;
+  min-width: 0;
+}
+.ride-extra {
+  margin: 18px 0;
+  color: #866499;
+  font-size: 12px;
+}
+.ride-extra summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+#post-form .publish-check {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  line-height: 1.5;
+}
+#post-submit {
+  width: 100%;
+  min-height: 48px;
+  border-radius: 14px;
+  background: #6336f5;
+  color: white;
+  font-weight: 800;
+  margin-top: 12px;
+}
+#post-submit:disabled {
+  opacity: 0.6;
+}
+@media (max-width: 600px) {
+  .ride-grid {
+    grid-template-columns: 1fr;
+  }
+  .ride-filters {
+    flex-wrap: wrap;
+  }
+  .ride-filters label:first-child {
+    flex-basis: 100%;
+  }
+  .ride-filters label:not(:first-child) {
+    flex: 1;
+    min-width: 0;
+  }
+  .rides-intro {
+    padding: 20px;
+  }
+  .rides-intro h1 {
+    font-size: 28px;
+  }
+  .ride-new-actions button {
+    flex: 1;
+    padding: 12px;
+    font-size: 12px;
+  }
+  #post-sheet {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border-radius: 24px 24px 0 0;
+    padding: 22px 20px max(22px, env(safe-area-inset-bottom));
+  }
+}
+
+#seat-filter {
+  font-size: 11px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #eee6ff;
+  color: #80549c;
+  margin-top: 10px;
+}

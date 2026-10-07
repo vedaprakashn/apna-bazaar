@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>Hood Rides · HeyHood</title>
+    <link rel="stylesheet" href="../app.css?v=20261008-rides1" />
+    <link rel="stylesheet" href="../help/help.css?v=3" />
+    <link rel="stylesheet" href="rides.css?v=1" />
+  </head>
+  <body class="rides-page">
+    <header class="help-header">
+      <a id="back" href="../chatbot/index.html">← Your hood</a
+      ><strong>Hood Rides ↗</strong
+      ><select id="community" aria-label="Community">
+        <option value="tridasa">MyHome Tridasa</option>
+        <option value="sayuk">MyHome Sayuk</option>
+      </select>
+    </header>
+    <main class="rides-main">
+      <section class="rides-intro">
+        <span class="help-kicker">SAME HOOD. SHARED JOURNEYS.</span>
+        <h1>Going somewhere?</h1>
+        <p>Find a neighbour heading your way.</p>
+        <div class="ride-new-actions">
+          <button data-new="request">Need a ride</button
+          ><button data-new="offer">Offering a ride</button>
+        </div>
+      </section>
+      <p class="rides-pilot">
+        🧪 Pilot rides · WhatsApp opens the shared test contact. Posts are not
+        confirmed rides.
+      </p>
+      <div class="ride-tabs" role="group" aria-label="Browse rides">
+        <button data-kind="offer" aria-pressed="true">Rides offered</button
+        ><button data-kind="request" aria-pressed="false">Ride requests</button>
+      </div>
+      <div class="ride-filters">
+        <label
+          ><span class="sr-only">Destination</span
+          ><input
+            id="destination"
+            type="search"
+            maxlength="120"
+            placeholder="Airport, HITEC City…" /></label
+        ><label
+          ><span class="sr-only">Travel direction</span
+          ><select id="direction">
+            <option value="outbound">From my hood</option>
+            <option value="inbound">To my hood</option>
+          </select></label
+        ><label
+          ><span class="sr-only">Around departure time in IST</span
+          ><input
+            id="around"
+            type="datetime-local"
+            aria-label="Around departure time in IST"
+        /></label>
+      </div>
+      <button id="seat-filter" hidden></button>
+      <p class="ride-filter-note">
+        Times are in IST. Picking a time finds departures within an hour.
+      </p>
+      <p id="status" role="status">Loading rides…</p>
+      <section
+        id="rides"
+        class="ride-grid"
+        aria-label="Matching ride posts"
+      ></section>
+      <p class="rides-note">
+        Searching does not post or broadcast anything. Confirm timing, seats and
+        arrangements with your neighbour.
+      </p>
+    </main>
+    <dialog id="post-sheet" aria-labelledby="post-title">
+      <form id="post-form">
+        <div class="post-title">
+          <h2 id="post-title">Need a ride?</h2>
+          <button type="button" id="close-sheet" aria-label="Close ride form">
+            ×
+          </button>
+        </div>
+        <p>
+          Visible in your community’s Hood Rides, not pushed into everyone’s
+          chat.
+        </p>
+        <label
+          >Where?<input
+            id="post-destination"
+            required
+            maxlength="120"
+            placeholder="Airport, office, a part of town…"
+        /></label>
+        <div class="post-row">
+          <label
+            >Direction<select id="post-direction">
+              <option value="outbound">From my hood</option>
+              <option value="inbound">To my hood</option>
+            </select></label
+          ><label
+            >Seats<select id="post-seats">
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+              <option>6</option>
+            </select></label
+          >
+        </div>
+        <label
+          >When? (IST)<input id="post-time" type="datetime-local" required
+        /></label>
+        <details class="ride-extra">
+          <summary>Add your name & pickup details</summary>
+          <label
+            >Your name<input
+              id="post-name"
+              maxlength="80"
+              placeholder="Neighbour" /></label
+          ><label
+            >Flat (optional)<input
+              id="post-flat"
+              maxlength="30"
+              placeholder="T2-304" /></label
+          ><label
+            >Meet at<input
+              id="post-pickup"
+              maxlength="120"
+              value="Main gate"
+              required /></label
+          ><label
+            >A little context (optional)<textarea
+              id="post-notes"
+              maxlength="240"
+              placeholder="Small suitcase, flexible by 15 minutes…"
+            ></textarea>
+          </label>
+        </details>
+        <label class="publish-check"
+          ><input id="publish" type="checkbox" required />Show this post in my
+          selected community.</label
+        >
+        <p class="rides-pilot">
+          Pilot · messages reach +91 97408 93534, not your personal number.
+        </p>
+        <p id="post-status" role="status"></p>
+        <button id="post-submit" type="submit">Post request ↗</button>
+      </form>
+    </dialog>
+    <script src="../contact.js?v=20261007-professional1"></script>
+    <script src="contact.js?v=1"></script>
+    <script src="rides.js?v=1"></script>
+  </body>
+</html>
