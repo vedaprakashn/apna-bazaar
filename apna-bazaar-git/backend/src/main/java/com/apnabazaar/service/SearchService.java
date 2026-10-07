@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.api.ResponseFormat;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -106,8 +108,7 @@ public class SearchService {
 
     private QueryIntent interpretQuery(String query) {
         // Interpret the short request before the larger catalog can distract from its meaning.
-        String interpretation = chatModel.call(new Prompt(List.of(
-            new SystemMessage("""
+        String interpretation = callJson("""
                 Translate this community marketplace search into a concise English search intent.
                 Understand all Indian languages, native scripts, phonetic transliteration, informal
                 speech, code-switching and spelling mistakes. Preserve the exact subject, dates,
@@ -119,6 +120,11 @@ public class SearchService {
                 "హిందీ ట్యూషన్ కావాలి" -> "I need Hindi tuition."
                 "இந்தி டியூஷன் வேண்டும்" -> "I need Hindi tuition."
                 "hindi tuition kavali" -> "I need Hindi tuition."
+                "idly ivvu bey" -> "I want ready-to-eat idli." (Telugu, Latin script)
+                "idly unda ra" -> "Is ready-to-eat idli available?" (Telugu, Latin script)
+                Telugu: ivvu=give, unda=is there, kavali=want, ra/bey=casual address.
+                Tamil: venum=want, irukka=is there. Never confuse Telugu with Tamil.
+                Idly and idli mean the same food. Ready-to-eat idli is different from batter.
                 Also identify the language and script used to express the request, not its subject.
                 English "Hindi tuition" -> responseLanguage "English".
                 Tanglish "ennaku hindi tuiton venum da" -> responseLanguage "Tamil transliterated in Latin script (Tanglish)".
@@ -130,7 +136,7 @@ public class SearchService {
                 coaching, classes or workshops; false for buying food, goods or repair services.
                 Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false}.
                 Do not use Markdown fences.
-                """), new UserMessage(query)))).getResult().getOutput().getText();
+                """, query);
         String intent = query, responseLanguage = "the original request language and script", teachingLanguage = null;
         boolean learningRequest = false;
         try {
@@ -142,17 +148,20 @@ public class SearchService {
                 || Pattern.compile("(?i)\\b(tuition|tuitions|tutor|tutors|teacher|teachers|lessons|classes|workshop|workshops|coaching)\\b")
                     .matcher(intent + " " + query).find();
         } catch (Exception e) { log.warn("Could not parse query interpretation; using original request"); }
+        var nativeScript = query.codePoints().mapToObj(Character.UnicodeScript::of)
+            .filter(script -> script != Character.UnicodeScript.LATIN
+                && script != Character.UnicodeScript.COMMON && script != Character.UnicodeScript.INHERITED)
+            .findFirst();
+        if (nativeScript.isPresent()) responseLanguage += "; write in " + nativeScript.get() + " script, never Latin transliteration";
         return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest);
     }
 
     private String callOpenAi(String query, String catalog, QueryIntent interpreted) {
         String intent = interpreted.intent(), responseLanguage = interpreted.responseLanguage();
         if (catalog.isBlank()) {
-            return chatModel.call(new Prompt(List.of(new SystemMessage(
-                "You are Aapta, a friendly community AI guide. No provider in this community catalog offers the requested service. "
+            return callJson("You are Aapta, a friendly community AI guide. No provider in this community catalog offers the requested service. "
                 + "Explain that specific missing offering in one helpful sentence, without inventing alternatives. Reply only in "
-                + responseLanguage + ". Format: <intro>your explanation</intro><sellers>[]</sellers>."),
-                new UserMessage(intent)))).getResult().getOutput().getText();
+                + responseLanguage + ". Return JSON: {\"intro\":\"your explanation\",\"sellers\":[]}.", intent);
         }
         String sys = """
             You are Aapta (आप्त, a trusted friend), the warm community guide for Apna Bazaar.
@@ -185,21 +194,33 @@ public class SearchService {
             Listings marked DEMO are fictional; do not invent contacts, ratings, or stock.
             2. Be warm, peppy, use food emojis naturally
             3. Keep intro to ONE punchy sentence max
-            4. ALWAYS respond in this exact format when sellers found:
-            <intro>Your helpful answer, written in the mandatory response language</intro>
-            <sellers>[{"id":"<uuid>","matchReason":"specific item and why, 1 line"}]</sellers>
-            If nothing matches, explain the missing offering in the query language using an <intro> tag and <sellers>[]</sellers>.
+            4. Return a JSON object with intro and sellers fields:
+               {"intro":"Specific answer in the mandatory response language",
+                "sellers":[{"id":"seller UUID","matchReason":"specific matching offering and schedule"}]}
+               Every matching seller needs a card. If none match, use sellers:[] and explain
+               exactly what is missing. Never give a generic greeting or merely promise help.
+               Idly/idli are equivalent. Ready-to-eat idli must match the idli plate, not batter.
             """.formatted(catalog);
         sys += "\nMANDATORY RESPONSE LANGUAGE: " + responseLanguage
             + ". Both intro and matchReason must use this language and script. Never copy the format placeholder.";
-        var prompt = new Prompt(List.of(new SystemMessage(sys), new UserMessage("Original resident request: " + query
+        return callJson(sys, "Original resident request: " + query
             + "\nEnglish search meaning: " + intent + "\nResponse language: " + responseLanguage
-            + "\nMatch the search meaning. For no matches, explain which offering is missing. Use the required tags.")));
-        return chatModel.call(prompt).getResult().getOutput().getText();
+            + "\nMatch the search meaning. For no matches, explain which offering is missing. Return the required JSON object.");
+    }
+
+    private String callJson(String system, String user) {
+        var options = OpenAiChatOptions.builder().temperature(0.1)
+            .responseFormat(new ResponseFormat(ResponseFormat.Type.JSON_OBJECT, null)).build();
+        return chatModel.call(new Prompt(List.of(new SystemMessage(system), new UserMessage(user)), options))
+            .getResult().getOutput().getText();
     }
 
     private List<MatchedProvider> parseResponse(String raw, List<Provider> providers,
                                                  Map<UUID, List<DailyPost>> posts) {
+        try {
+            var json = objectMapper.readTree(raw);
+            if (json.has("sellers")) raw = "<sellers>" + json.get("sellers") + "</sellers>";
+        } catch (Exception ignored) { /* Accept legacy tagged replies too. */ }
         var m = Pattern.compile("<sellers>([\\s\\S]*?)</sellers>", Pattern.CASE_INSENSITIVE).matcher(raw);
         if (!m.find()) return List.of();
         Map<UUID, Provider> map = providers.stream().collect(Collectors.toMap(Provider::getId, p -> p));
@@ -239,6 +260,11 @@ public class SearchService {
     }
 
     private String extract(String raw, String tag) {
+        try {
+            var value = objectMapper.readTree(raw).path(tag);
+            if (value.isTextual() && !value.asText().isBlank()) return value.asText();
+        } catch (Exception ignored) {}
+
         var m = Pattern.compile("<" + tag + ">([\\s\\S]*?)</" + tag + ">", Pattern.CASE_INSENSITIVE).matcher(raw);
         return m.find() ? m.group(1).trim() : null;
     }

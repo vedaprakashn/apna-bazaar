@@ -24,4 +24,17 @@ class SearchResultTest {
         assertEquals(1, results.size());
         assertEquals(id, results.getFirst().id());
     }
+    @Test
+    void structuredJsonPreservesTeluguIntroAndSellerCard() {
+        var service = new SearchService(null, null, null, null, null, null, new ObjectMapper());
+        UUID id = UUID.randomUUID();
+        var provider = Provider.builder().id(id).name("Idli seller")
+            .rating(java.math.BigDecimal.ZERO).reviewCount(0).build();
+        String raw = "{\"intro\":\"Idli ikkada dorukutundi\",\"sellers\":[{\"id\":\"" + id
+            + "\",\"matchReason\":\"Steamed idli plate\"}]}";
+        List<MatchedProvider> results = ReflectionTestUtils.invokeMethod(service, "parseResponse", raw, List.of(provider), Map.of());
+        assertNotNull(results);
+        assertEquals(id, results.getFirst().id());
+        assertEquals("Idli ikkada dorukutundi", ReflectionTestUtils.invokeMethod(service, "extract", raw, "intro"));
+    }
 }

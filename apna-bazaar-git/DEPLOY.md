@@ -1,5 +1,11 @@
 # Deploy Apna Bazaar on Railway
 
+## Project links
+
+- [Railway application settings](https://railway.com/project/c916bca3-683b-40c2-948c-fccb95b7c92e/service/27ba8812-a8df-416f-845d-4fdbf1b208db/settings?environmentId=ccd4ca5d-cc25-479c-9146-03bf020d53f5)
+- [Live chatbot](https://apna-bazaar-production-b1b8.up.railway.app/chatbot/index.html)
+- [Live analytics](https://apna-bazaar-production-b1b8.up.railway.app/admin/index.html)
+
 The backend serves the chatbot and admin HTML from the same domain. PostgreSQL runs as a separate Railway service. Netlify is not required.
 
 1. Sign in at https://railway.com and create a project from the GitHub repository `vedaprakashn/apna-bazaar`, branch `main`.
@@ -15,7 +21,7 @@ The backend serves the chatbot and admin HTML from the same domain. PostgreSQL r
 | `DB_USERNAME` | `${{Postgres.PGUSER}}` |
 | `DB_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
 | `APNA_OPENAI_API_KEY` | Enter your OpenAI key securely in Railway |
-| `OPENAI_MODEL` | `gpt-4o-mini` |
+| `OPENAI_MODEL` | `gpt-4.1-mini` |
 
 The key configured in Codex is not automatically transferred to Railway. Never commit it. Railway supplies PORT automatically; the application reads it. Flyway initializes the database on first startup.
 

@@ -64,7 +64,7 @@ Community slugs: `tridasa`, `sayuk`
 
 ## AI configuration
 
-Set `APNA_OPENAI_API_KEY` securely in your backend environment. It is mapped to Spring AI’s OpenAI client; `OPENAI_MODEL` defaults to `gpt-4o-mini`. The custom key name works with cloud environment settings, where `OPENAI_API_KEY` is reserved. Never put a key in HTML.
+Set `APNA_OPENAI_API_KEY` securely in your backend environment. It is mapped to Spring AI’s OpenAI client; `OPENAI_MODEL` defaults to `gpt-4.1-mini`. The custom key name works with cloud environment settings, where `OPENAI_API_KEY` is reserved. Never put a key in HTML.
 
 The backend serves the chatbot at `/chatbot/index.html`; deployed search uses the same domain automatically. A standalone frontend on port 8000 uses the local backend on port 8080. The backend searches database providers, so register providers and offerings before expecting results.
 
