@@ -62,7 +62,8 @@
       </section>
       <div class="demo-notice">
         🧪 Pilot catalog: fictional demo providers across all categories. Prices
-        and schedules are examples; demo listings have no real contact numbers.
+        and schedules are examples. Pilot WhatsApp buttons reach one shared test
+        contact.
       </div>
       <section class="layout">
         <div class="panel">
@@ -249,6 +250,7 @@
       }
       function message(text, type = "bot") {
         const n = el("div", "message " + type);
+        if (type === "user") stream.querySelector(".suggestions")?.remove();
         if (type === "bot") n.append(el("small", "message-speaker", "Aapta"));
         n.append(document.createTextNode(text));
         n.chatEntry = { kind: "message", text, type };
@@ -270,13 +272,12 @@
         );
         delete box.chatEntry;
         const chips = el("div", "suggestions");
-        for (const q of [
-          "Fresh idli batter",
-          "Kids karate on weekends",
-          "Muffins on Saturday",
-          "Car wash this Sunday",
+        for (const [label, q] of [
+          ["Breakfast?", "Who’s making breakfast around here?"],
+          ["Classes for kids", "Any classes for kids around here?"],
+          ["Need a repair", "Who can help with home repairs?"],
         ]) {
-          const b = el("button", "chip", q);
+          const b = el("button", "chip", label);
           b.type = "button";
           b.onclick = () => ask(q);
           chips.append(b);
@@ -382,6 +383,19 @@
           );
           if (!r.ok) throw Error();
           catalog = await r.json();
+          const scroll = stream.scrollTop;
+          for (const card of Array.from(stream.children)) {
+            const entry = card.chatEntry;
+            if (entry?.kind !== "result") continue;
+            const contact = catalog.find((x) => x.id === entry.provider.id);
+            if (!contact || !Object.hasOwn(contact, "whatsapp")) continue;
+            entry.provider.whatsappNumber = contact.whatsapp;
+            card.replaceWith(
+              resultCard(entry.provider, entry.eventId, entry.item),
+            );
+          }
+          stream.scrollTop = scroll;
+          saveChat();
           const groups = new Map();
           for (const item of catalog) {
             if (!groups.has(item.category))
@@ -432,20 +446,17 @@
         if (!/^\d{10,15}$/.test(p.whatsappNumber || "")) return;
         button.disabled = true;
         try {
-          const r = await fetch(
-            `${API_BASE}/api/${community.value}/search/click`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                searchEventId: eventId,
-                providerId: p.id,
-                clickType: "whatsapp_tap",
-              }),
-            },
-          );
-          if (!r.ok) throw Error();
-          location.href = `https://wa.me/${p.whatsappNumber}?text=${encodeURIComponent("Hi " + p.name + ", I found your listing on HeyHood. I would like to know more.")}`;
+          fetch(`${API_BASE}/api/${community.value}/search/click`, {
+            method: "POST",
+            keepalive: true,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              searchEventId: eventId,
+              providerId: p.id,
+              clickType: "whatsapp_tap",
+            }),
+          }).catch(() => {});
+          location.href = `https://wa.me/${p.whatsappNumber}?text=${encodeURIComponent(`Hi! I found ${p.shopName || p.name} in ${community.selectedOptions[0].textContent}, flat ${p.flatNumber || "not listed"}, on HeyHood. I’d like to know more about your offerings.`)}`;
         } catch (e) {
           toast("Could not open WhatsApp. Please try again.");
         } finally {
@@ -453,7 +464,12 @@
         }
       }
       function resultCard(p, eventId, snapshot) {
-        const item = snapshot || catalog.find((x) => x.id === p.id);
+        const item =
+          snapshot ||
+          catalog
+            .filter((x) => x.id === p.id && x.price != null)
+            .sort((a, b) => Number(a.price) - Number(b.price))[0] ||
+          catalog.find((x) => x.id === p.id);
         const card = el("article", "seller"),
           top = el("div", "seller-top"),
           info = el("div");
@@ -510,7 +526,7 @@
             "span",
             "price",
             item?.price != null
-              ? `₹${Number(item.price).toLocaleString("en-IN")} / ${item.unit || "item"}`
+              ? `Catalog from ₹${Number(item.price).toLocaleString("en-IN")} / ${item.unit || "item"}`
               : "Ask provider for pricing",
           ),
         );
@@ -525,8 +541,17 @@
           card.append(
             el("p", "contact-note", "Demo · Contact not connected yet."),
           );
+        if (p.whatsappNumber === "919740893534")
+          card.append(
+            el(
+              "p",
+              "contact-note",
+              "Pilot · Messages reach the shared test contact.",
+            ),
+          );
         card.chatEntry = { kind: "result", provider: p, eventId, item };
         stream.append(card);
+        return card;
       }
       async function ask(q) {
         if (busy) return;
@@ -565,7 +590,7 @@
         input.value = "";
         if (mobileLayout.matches) input.blur();
         message(q, "user");
-        const pending = message("Finding your local gems… 👀");
+        const pending = message("Checking your hood… 👀");
         delete pending.chatEntry;
         saveChat();
         try {
@@ -631,8 +656,24 @@
           promotionTimer = setInterval(showPromotion, 180000);
         } catch (_) {}
       }
+      let lastTyping = 0;
+      document.getElementById("query").addEventListener("input", () => {
+        lastTyping = Date.now();
+      });
+      function canShowPromotion() {
+        return (
+          !document.hidden &&
+          !busy &&
+          !exploreSheet.open &&
+          !document.querySelector(".operator-menu").open &&
+          document.activeElement !== document.getElementById("query") &&
+          !document.getElementById("query").value.trim() &&
+          Date.now() - lastTyping > 15000 &&
+          stream.scrollHeight - stream.scrollTop - stream.clientHeight < 80
+        );
+      }
       async function showPromotion() {
-        if (document.hidden || busy) return;
+        if (!canShowPromotion()) return;
         const requestedCommunity = community.value;
         try {
           const res = await fetch(
@@ -641,14 +682,21 @@
           );
           if (!res.ok) return;
           const latest = await res.json();
-          if (community.value !== requestedCommunity || document.hidden || busy)
+          if (community.value !== requestedCommunity || !canShowPromotion())
             return;
           promotions = latest;
         } catch (_) {
           return;
         }
         if (!promotions.length) return;
-        const p = promotions[promotionIndex++ % promotions.length];
+        const dismissed = new Set(
+          Array.from(stream.children)
+            .filter((n) => n.chatEntry?.dismissed)
+            .map((n) => n.chatEntry.provider.id),
+        );
+        const available = promotions.filter((p) => !dismissed.has(p.id));
+        if (!available.length) return;
+        const p = available[promotionIndex++ % available.length];
         renderPromotion(p);
         saveChat();
       }
@@ -657,9 +705,16 @@
           viewerSession = saved?.viewerSession || sessionId;
         const deliveryId = saved?.deliveryId || crypto.randomUUID();
         const card = el("article", "chat-promotion");
-        card.append(
-          el("small", "message-speaker", "Aapta’s neighbourhood note"),
-        );
+        if (saved?.dismissed) {
+          card.chatEntry = saved;
+          card.hidden = true;
+          stream.append(card);
+          return;
+        }
+        const dismiss = el("button", "promotion-dismiss", "✕");
+        dismiss.type = "button";
+        dismiss.setAttribute("aria-label", "Dismiss promotion");
+        card.append(dismiss);
         card.append(
           el(
             "div",
@@ -669,16 +724,6 @@
         );
         card.append(el("h3", "", `${p.emoji || "✦"} ${p.title}`));
         if (p.body) card.append(el("p", "promotion-body", p.body));
-        card.append(
-          el(
-            "p",
-            "",
-            `${p.offering} · ₹${Number(p.price).toLocaleString("en-IN")} / ${p.unit}`,
-          ),
-        );
-        card.append(
-          el("small", "", `${p.shop} · Check the storefront for schedules.`),
-        );
         const link = el(
           "a",
           "promotion-link",
@@ -706,6 +751,7 @@
           viewerSession,
           deliveryId,
           recorded: saved?.recorded || false,
+          dismissed: false,
         };
         let recorded = card.chatEntry.recorded,
           pending;
@@ -741,6 +787,13 @@
           },
           { threshold: 0.5 },
         );
+        dismiss.onclick = () => {
+          card.chatEntry.dismissed = true;
+          observer.disconnect();
+          promotionObservers.delete(observer);
+          card.hidden = true;
+          saveChat();
+        };
         if (!recorded) promotionObservers.add(observer);
         link.onclick = async (event) => {
           event.preventDefault();

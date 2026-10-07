@@ -1650,3 +1650,39 @@ body {
 .discovery-page .send.is-searching .send-stop {
   display: block;
 }
+
+.chat-promotion {
+  position: relative;
+  padding: 14px 52px 14px 16px;
+}
+.chat-promotion[hidden] {
+  display: none;
+}
+.promotion-dismiss {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+}
+.chat-promotion h3 {
+  margin: 6px 0;
+  font-size: 15px;
+}
+.chat-promotion .promotion-body {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 8px 0;
+}
+.chat-promotion .promotion-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 4px;
+  font-size: 12px;
+}

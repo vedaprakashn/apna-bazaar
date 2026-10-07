@@ -1,10 +1,10 @@
-# Deploy Apna Bazaar on Railway
+# Deploy HeyHood on Railway
 
 ## Project links
 
 - [Railway application settings](https://railway.com/project/c916bca3-683b-40c2-948c-fccb95b7c92e/service/27ba8812-a8df-416f-845d-4fdbf1b208db/settings?environmentId=ccd4ca5d-cc25-479c-9146-03bf020d53f5)
-- [Live chatbot](https://apna-bazaar-production-b1b8.up.railway.app/chatbot/index.html)
-- [Live analytics](https://apna-bazaar-production-b1b8.up.railway.app/admin/index.html)
+- [Live chatbot](https://heyhood-production-b1b8.up.railway.app/chatbot/index.html)
+- [Live analytics](https://heyhood-production-b1b8.up.railway.app/admin/index.html)
 
 The backend serves the chatbot and admin HTML from the same domain. PostgreSQL runs as a separate Railway service. Netlify is not required.
 
@@ -33,9 +33,9 @@ The chatbot uses the same domain for API calls, so no backend URL edit is needed
 
 ## Verify
 
-Check health returns `{"status":"UP"}`. Try a chatbot search. A fresh database has communities but no sellers, so zero results are expected until the catalog is populated. General catalog import is not implemented yet; current Excel ingestion handles daily menus only.
+Check health returns `{"status":"UP"}`. Try a chatbot search. Flyway seeds the pilot communities with fictional providers and offerings. General catalog import is not implemented yet; current Excel ingestion handles daily menus only.
 
-This is a pilot deployment: API endpoints currently lack authentication, and searches use paid OpenAI calls. Keep access limited while authentication and request limits are implemented. Static admin content is partly illustrative.
+This is a pilot deployment: Campaign writes require CAMPAIGN_ADMIN_TOKEN; other endpoint access still needs production authentication. Searches use paid OpenAI calls and are limited to 10 messages/minute per IP per instance. Analytics uses recorded events.
 
 ## Local Docker
 
@@ -60,3 +60,7 @@ Current demo URLs after the Railway domain rename:
 - Campaign studio: https://heyhood-production-b1b8.up.railway.app/admin/campaigns.html
 
 The previous apna-bazaar public domain was removed by the Railway rename. Use the HeyHood hostname for bookmarks and shared links.
+
+## Living handoff
+
+See [HEYHOOD_HANDOFF.md](../docs/HEYHOOD_HANDOFF.md) for current functionality, decisions, known limitations and collaborator setup.

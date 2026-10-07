@@ -90,7 +90,7 @@ public class LiveDashboardService {
 
     public List<Map<String, Object>> catalog(String slug) {
         return jdbc.queryForList("""
-            SELECT p.id, p.name, p.shop_name AS shop, o.name AS offering, o.description,
+            SELECT p.id, p.name, p.shop_name AS shop, p.whatsapp_number AS whatsapp, o.name AS offering, o.description,
                    o.base_price AS price, o.unit, c.name AS category, c.icon_emoji AS emoji
             FROM provider p JOIN offering o ON o.provider_id=p.id JOIN category c ON c.id=o.category_id
             WHERE p.community_id=? AND p.status='active' AND o.is_available=true
