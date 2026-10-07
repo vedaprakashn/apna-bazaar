@@ -311,7 +311,7 @@
         community.disabled = true;
         input.value = "";
         message(q, "user");
-        const pending = message("Looking around your neighbourhood…");
+        const pending = message("Finding your local gems… 👀");
         try {
           const r = await fetch(
             `${API_BASE}/api/${community.value}/search?q=${encodeURIComponent(q)}&sessionId=${sessionId}`,
