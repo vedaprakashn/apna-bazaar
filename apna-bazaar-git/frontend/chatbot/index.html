@@ -654,7 +654,8 @@ function getTime() {
 }
 
 // Backend owns AI authentication; no API key is sent to the browser.
-const API_BASE = 'http://localhost:8080';
+const API_BASE = (window.location.protocol === 'file:' || window.location.port === '8000')
+  ? 'http://localhost:8080' : '';
 const COMMUNITY_SLUG = 'tridasa';
 async function searchMarketplace(query) {
   const res = await fetch(`${API_BASE}/api/${COMMUNITY_SLUG}/search?q=${encodeURIComponent(query)}`);

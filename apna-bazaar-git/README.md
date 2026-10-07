@@ -66,4 +66,4 @@ Community slugs: `tridasa`, `sayuk`
 
 Set `APNA_OPENAI_API_KEY` securely in your backend environment. It is mapped to Spring AI’s OpenAI client; `OPENAI_MODEL` defaults to `gpt-4o-mini`. The custom key name works with cloud environment settings, where `OPENAI_API_KEY` is reserved. Never put a key in HTML.
 
-The chatbot calls the backend search API. For deployments, set `API_BASE` in `frontend/chatbot/index.html` to the backend URL; local development defaults to port 8080. The backend searches database providers, so register providers and offerings before expecting results.
+The backend serves the chatbot at `/chatbot/index.html`; deployed search uses the same domain automatically. A standalone frontend on port 8000 uses the local backend on port 8080. The backend searches database providers, so register providers and offerings before expecting results.

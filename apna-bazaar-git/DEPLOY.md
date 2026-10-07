@@ -1,78 +1,36 @@
-# Deploying Apna Bazaar
+# Deploy Apna Bazaar on Railway
 
-## Option A — Railway CLI (Fastest, ~10 minutes)
+The backend serves the chatbot and admin HTML from the same domain. PostgreSQL runs as a separate Railway service. Netlify is not required.
 
-```bash
-npm install -g @railway/cli
-railway login
+1. Sign in at https://railway.com and create a project from the GitHub repository `vedaprakashn/apna-bazaar`, branch `main`.
+2. In the application service settings, set Root Directory to `/apna-bazaar-git`. The Dockerfile and railway.toml are in this directory, not the repository root. If setting the config file path explicitly, use `/apna-bazaar-git/railway.toml`.
+3. Add PostgreSQL to the same project. The following variable references assume the database service is named `Postgres`; select references in Railway's variable editor if the name differs.
+4. Add these variables to the application service:
 
-cd backend
-railway init
-railway up
+| Variable | Value |
+| --- | --- |
+| `DB_HOST` | `${{Postgres.PGHOST}}` |
+| `DB_PORT` | `${{Postgres.PGPORT}}` |
+| `DB_NAME` | `${{Postgres.PGDATABASE}}` |
+| `DB_USERNAME` | `${{Postgres.PGUSER}}` |
+| `DB_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
+| `APNA_OPENAI_API_KEY` | Enter your OpenAI key securely in Railway |
+| `OPENAI_MODEL` | `gpt-4o-mini` |
 
-# Add environment variables
-railway variables set APNA_OPENAI_API_KEY=your-openai-api-key
-railway variables set DB_HOST=...   # from Railway PostgreSQL plugin
-railway variables set DB_PORT=5432
-railway variables set DB_NAME=railway
-railway variables set DB_USERNAME=postgres
-railway variables set DB_PASSWORD=...
-```
+The key configured in Codex is not automatically transferred to Railway. Never commit it. Railway supplies PORT automatically; the application reads it. Flyway initializes the database on first startup.
 
-Add PostgreSQL in Railway dashboard: New → Database → PostgreSQL
+5. Deploy the application and wait for a successful health check. Inspect build/deploy logs if it fails.
+6. Under application Settings → Networking, generate a public domain.
+7. Open `https://YOUR-DOMAIN/chatbot/index.html`. Admin pages are `/admin/index.html` and `/admin/broadcast.html`. Health is `/actuator/health`.
 
-## Option B — Railway via GitHub
+The chatbot uses the same domain for API calls, so no backend URL edit is needed. Local standalone frontend serving on port 8000 still uses backend port 8080.
 
-1. Push this repo to GitHub
-2. railway.app → New Project → Deploy from GitHub repo
-3. Select repo → Railway detects Dockerfile automatically
-4. Add PostgreSQL plugin: New → Database → PostgreSQL
-5. Add variables in Railway dashboard:
-   ```
-   APNA_OPENAI_API_KEY = your-openai-api-key
-   DB_HOST     = ${{Postgres.PGHOST}}
-   DB_PORT     = ${{Postgres.PGPORT}}
-   DB_NAME     = ${{Postgres.PGDATABASE}}
-   DB_USERNAME = ${{Postgres.PGUSER}}
-   DB_PASSWORD = ${{Postgres.PGPASSWORD}}
-   ```
-6. Get your public URL: Settings → Networking → Generate Domain
+## Verify
 
-## Option C — Docker Compose (Local, no installs)
+Check health returns `{"status":"UP"}`. Try a chatbot search. A fresh database has communities but no sellers, so zero results are expected until the catalog is populated. General catalog import is not implemented yet; current Excel ingestion handles daily menus only.
 
-```bash
-cp .env.template .env
-# Add APNA_OPENAI_API_KEY to .env
-docker-compose up --build
-# API at http://localhost:8080
-# Open frontend/chatbot/index.html in browser
-```
+This is a pilot deployment: API endpoints currently lack authentication, and searches use paid OpenAI calls. Keep access limited while authentication and request limits are implemented. Static admin content is partly illustrative.
 
-## Hosting the Frontend
+## Local Docker
 
-The HTML files are static — no server needed.
-
-**Share directly:** WhatsApp the chatbot/index.html file to residents.
-
-**GitHub Pages:** Enable in repo Settings → Pages → serve from /frontend.
-
-**Netlify Drop:** Drag the frontend/ folder to app.netlify.com/drop — instant URL.
-
-After deploying backend, update the API_BASE in frontend/chatbot/index.html:
-```javascript
-const API_BASE = 'https://your-app.up.railway.app';
-```
-
-## Verify Deployment
-
-```bash
-# Health check
-curl https://your-app.up.railway.app/actuator/health
-
-# Test search
-curl "https://your-app.up.railway.app/api/tridasa/search?q=idli+batter"
-
-# Upload daily menu
-curl -X POST https://your-app.up.railway.app/api/tridasa/ingest/daily-menu \
-  -F "file=@excel/apna_bazaar_daily_menu_template.xlsx"
-```
+From `apna-bazaar-git`, copy `.env.template` to `.env`, fill the key securely, and run `docker compose up --build`. Open the backend's `/chatbot/index.html` path on port 8080.
