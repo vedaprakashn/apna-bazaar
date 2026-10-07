@@ -213,6 +213,10 @@ Browser scripts/screenshots in `/workspace/setup` are diagnostic workspace artif
 
 Direct pushes to `main` returned remote Internal Server Error despite valid permission, no protection/rules, and a fresh source-only history. Pushing a feature branch and merging a PR worked. The APK was not the cause. Use that workflow while the direct-push issue persists. A user's `temp` README commit also succeeded; do not overwrite their unrelated branch.
 
+### Production verification for this handoff release
+
+Verified live after merge on 7 October 2026: both communities expose 30 providers / 120 offerings with the authorized shared WhatsApp contact; the new hood loading line and promotion pause code are served. Browser checks against the deployed app confirmed restored-card activation and both chat/storefront contact destinations, including context in the message and continued handoff if click analytics fail. These tests intercepted WhatsApp navigation and did not send a message.
+
 ## Next iteration — proposed, not implemented
 
 1. Real seller onboarding and Excel catalog preview/import, then activate one genuine supplier end to end.
