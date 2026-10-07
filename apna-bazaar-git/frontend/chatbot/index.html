@@ -18,6 +18,7 @@
       <nav class="nav">
         <a class="active" href="index.html">Discover</a
         ><a href="../admin/index.html">Analytics ↗</a
+        ><a href="../admin/campaigns.html">Campaigns ↗</a
         ><label
           ><span class="sr-only">Community</span
           ><select id="community">
@@ -47,7 +48,7 @@
               <span class="aapta-avatar" aria-hidden="true"><i></i></span>
               <div>
                 <h2>Aapta</h2>
-                <small>Your community guide</small>
+                <small>Your hood, decoded 👀</small>
               </div>
             </div>
             <span class="live">Here to help</span>
@@ -106,6 +107,46 @@
       let catalog = [],
         busy = false,
         sessionId = crypto.randomUUID();
+      let activeCommunity = community.value;
+      const chatKey = (slug) => `heyhood-chat-v1:${slug}`;
+      function saveChat() {
+        try {
+          sessionStorage.setItem("heyhood-community", activeCommunity);
+          sessionStorage.setItem(
+            chatKey(activeCommunity),
+            JSON.stringify({
+              sessionId,
+              draft: document.getElementById("query").value,
+              scroll: stream.scrollTop,
+              entries: Array.from(stream.children).flatMap((n) =>
+                n.chatEntry ? [n.chatEntry] : [],
+              ),
+            }),
+          );
+        } catch (_) {}
+      }
+      function restoreChat() {
+        let saved;
+        try {
+          saved = JSON.parse(sessionStorage.getItem(chatKey(community.value)));
+        } catch (_) {}
+        activeCommunity = community.value;
+        sessionId = saved?.sessionId || crypto.randomUUID();
+        welcome();
+        document.getElementById("query").value = saved?.draft || "";
+        for (const entry of saved?.entries || []) {
+          if (entry.kind === "message") message(entry.text, entry.type);
+          else if (entry.kind === "result")
+            resultCard(entry.provider, entry.eventId, entry.item);
+          else if (entry.kind === "promotion")
+            renderPromotion(entry.provider, entry);
+        }
+        requestAnimationFrame(() => {
+          stream.scrollTop = saved?.scroll || 0;
+        });
+      }
+      window.addEventListener("pagehide", saveChat);
+      document.getElementById("query").addEventListener("input", saveChat);
       function el(tag, cls, text) {
         const n = document.createElement(tag);
         if (cls) n.className = cls;
@@ -116,6 +157,7 @@
         const n = el("div", "message " + type);
         if (type === "bot") n.append(el("small", "message-speaker", "Aapta"));
         n.append(document.createTextNode(text));
+        n.chatEntry = { kind: "message", text, type };
         stream.append(n);
         stream.scrollTop = stream.scrollHeight;
         return n;
@@ -132,6 +174,7 @@
         const box = message(
           `Hey neighbour 👋 I’m Aapta. What are we finding in ${community.selectedOptions[0].textContent} today? 👀`,
         );
+        delete box.chatEntry;
         const chips = el("div", "suggestions");
         for (const q of [
           "Fresh idli batter",
@@ -251,8 +294,8 @@
           button.disabled = false;
         }
       }
-      function resultCard(p, eventId) {
-        const item = catalog.find((x) => x.id === p.id);
+      function resultCard(p, eventId, snapshot) {
+        const item = snapshot || catalog.find((x) => x.id === p.id);
         const card = el("article", "seller"),
           top = el("div", "seller-top"),
           info = el("div");
@@ -324,6 +367,7 @@
               "Demo listing · WhatsApp is available once a real contact number is added.",
             ),
           );
+        card.chatEntry = { kind: "result", provider: p, eventId, item };
         stream.append(card);
       }
       async function ask(q) {
@@ -343,6 +387,8 @@
         input.value = "";
         message(q, "user");
         const pending = message("Finding your local gems… 👀");
+        delete pending.chatEntry;
+        saveChat();
         try {
           const r = await fetch(
             `${API_BASE}/api/${community.value}/search?q=${encodeURIComponent(q)}&sessionId=${sessionId}`,
@@ -370,6 +416,13 @@
           document.getElementById("send").disabled = false;
           community.disabled = false;
           stream.scrollTop = stream.scrollHeight;
+          if (pending.isConnected)
+            pending.chatEntry = {
+              kind: "message",
+              text: pending.textContent,
+              type: "bot",
+            };
+          saveChat();
           input.focus();
         }
       };
@@ -411,9 +464,13 @@
         }
         if (!promotions.length) return;
         const p = promotions[promotionIndex++ % promotions.length];
+        renderPromotion(p);
+        saveChat();
+      }
+      function renderPromotion(p, saved) {
         const slug = community.value,
-          viewerSession = sessionId;
-        const deliveryId = crypto.randomUUID();
+          viewerSession = saved?.viewerSession || sessionId;
+        const deliveryId = saved?.deliveryId || crypto.randomUUID();
         const card = el("article", "chat-promotion");
         card.append(
           el("small", "message-speaker", "Aapta’s neighbourhood note"),
@@ -458,7 +515,14 @@
           });
           if (!res.ok) throw Error("Promotion event unavailable");
         };
-        let recorded = false,
+        card.chatEntry = {
+          kind: "promotion",
+          provider: p,
+          viewerSession,
+          deliveryId,
+          recorded: saved?.recorded || false,
+        };
+        let recorded = card.chatEntry.recorded,
           pending;
         const recordView = () => {
           if (recorded) return Promise.resolve();
@@ -466,6 +530,8 @@
             pending = sendEvent("impression")
               .then(() => {
                 recorded = true;
+                card.chatEntry.recorded = true;
+                saveChat();
               })
               .finally(() => {
                 pending = null;
@@ -490,7 +556,7 @@
           },
           { threshold: 0.5 },
         );
-        promotionObservers.add(observer);
+        if (!recorded) promotionObservers.add(observer);
         link.onclick = async (event) => {
           event.preventDefault();
           try {
@@ -503,7 +569,7 @@
           stream.scrollHeight - stream.scrollTop - stream.clientHeight < 60;
         stream.append(card);
         observer.card = card;
-        observer.observe(card);
+        if (!recorded) observer.observe(card);
         if (atBottom) stream.scrollTop = stream.scrollHeight;
       }
       document.addEventListener("visibilitychange", () => {
@@ -514,14 +580,19 @@
           }
       });
       community.onchange = () => {
-        sessionId = crypto.randomUUID();
-        welcome();
-        loadCatalog();
+        saveChat();
         loadPromotions();
+        restoreChat();
+        loadCatalog();
       };
-      welcome();
-      loadCatalog();
+      try {
+        const selected = sessionStorage.getItem("heyhood-community");
+        if (Array.from(community.options).some((o) => o.value === selected))
+          community.value = selected;
+      } catch (_) {}
       loadPromotions();
+      restoreChat();
+      loadCatalog();
     </script>
   </body>
 </html>

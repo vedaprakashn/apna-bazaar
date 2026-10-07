@@ -1,4 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;600;700;800&display=swap");
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("assets/plus-jakarta-sans-latin.woff2") format("woff2");
+}
 :root {
   --ink: #251d3a;
   --muted: #716b83;
@@ -18,7 +24,7 @@ body {
   background: var(--paper);
   color: var(--ink);
   font:
-    15px "DM Sans",
+    15px "Plus Jakarta Sans",
     system-ui,
     sans-serif;
 }
@@ -43,7 +49,7 @@ a {
 h1,
 h2,
 h3 {
-  font-family: Manrope, system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   letter-spacing: -0.04em;
 }
 h1,
@@ -478,7 +484,7 @@ select {
 }
 .metric .number {
   font:
-    800 34px Manrope,
+    800 34px "Plus Jakarta Sans",
     system-ui;
   letter-spacing: -0.04em;
   margin: 12px 0 6px;
@@ -874,7 +880,7 @@ td:first-child {
   margin-bottom: 0;
 }
 .store-cover-note {
-  font-family: Manrope, system-ui;
+  font-family: "Plus Jakarta Sans", system-ui;
   font-size: 26px;
   line-height: 1.4;
   color: #ffd75e;
