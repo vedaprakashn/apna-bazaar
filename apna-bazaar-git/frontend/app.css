@@ -1697,13 +1697,13 @@ body {
     transform: translate(0, 0);
   }
   20% {
-    transform: translate(-2px, -2px);
+    transform: translate(-3px, -3px);
   }
   45% {
-    transform: translate(2px, -2px);
+    transform: translate(3px, -3px);
   }
   65% {
-    transform: translate(1px, 2px);
+    transform: translate(1px, 3px);
   }
   78% {
     transform: translate(0, 0) scaleY(0.25);
@@ -1742,3 +1742,13 @@ body {
   padding: 10px 0;
   min-height: 44px;
 }
+
+/* Visible search feedback in the conversation, including small mobile screens. */
+.search-pending .aapta-avatar { display: inline-block; vertical-align: middle; margin-right: 12px; width: 36px; height: 36px; }
+.search-pending .aapta-avatar::before { left: 9px; top: 10px; }
+.search-pending .aapta-avatar::after { right: 9px; top: 10px; }
+.search-pending .aapta-avatar i { left: 9px; top: 23px; width: 14px; }
+.aapta-avatar.is-searching::before, .aapta-avatar.is-searching::after { width: 6px; height: 8px; }
+.enquiry-dialog { border: 2px solid #6336f5; border-radius: 20px; padding: 20px; width: min(90vw, 440px); color: var(--text); }
+.enquiry-dialog::backdrop { background: #251d3a80; }
+.enquiry-dialog textarea { width: 100%; min-height: 150px; padding: 12px; border-radius: 12px; font: inherit; margin: 12px 0; }

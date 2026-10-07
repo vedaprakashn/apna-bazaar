@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Provider storefront · HeyHood</title>
-    <link rel="stylesheet" href="../app.css" />
+    <link rel="stylesheet" href="../app.css?v=20261007-eyes2" />
   </head>
   <body>
     <header class="topbar">
@@ -87,7 +87,7 @@
       </footer>
     </main>
     <div id="toast" class="toast" role="status" hidden></div>
-    <script src="../contact.js"></script>
+    <script src="../contact.js?v=20261007-copy2"></script>
     <script>
       const API_BASE =
         location.protocol === "file:" || location.port === "8000"
@@ -273,7 +273,7 @@
             copy.type = "button";
             copy.onclick = async () => {
               try {
-                await heyhoodCopyEnquiry(
+                const copied = await heyhoodCopyEnquiry(
                   heyhoodEnquiry(
                     p.shop || p.name,
                     p.community,
@@ -281,7 +281,7 @@
                     data.searchIntent,
                   ),
                 );
-                copy.textContent = "Copied ✓";
+                if (copied) copy.textContent = "Copied ✓";
               } catch (_) {
                 document.getElementById("contactNote").textContent =
                   "Couldn’t copy. Please try from your browser.";
