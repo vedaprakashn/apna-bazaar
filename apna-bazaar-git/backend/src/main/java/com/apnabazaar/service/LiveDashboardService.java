@@ -87,4 +87,37 @@ public class LiveDashboardService {
             ORDER BY c.sort_order, p.name
             """, community(slug));
     }
+    @Transactional(readOnly = true)
+    public Map<String, Object> storefront(String slug, UUID providerId) {
+        UUID communityId = community(slug);
+        var providers = jdbc.queryForList("""
+            SELECT p.id,p.name,p.shop_name AS shop,p.flat_number AS flat,p.whatsapp_number AS whatsapp,
+                   p.is_verified AS verified,c.name AS community,p.provider_type::text AS type
+            FROM provider p JOIN community c ON c.id=p.community_id
+            WHERE p.id=? AND p.community_id=? AND p.status='active'
+            """, providerId, communityId);
+        if (providers.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found in this community");
+        var offerings = jdbc.queryForList("""
+            SELECT o.id,o.name,o.description,o.base_price AS price,o.unit,o.is_available AS available,
+                   c.name AS category,c.icon_emoji AS emoji
+            FROM offering o LEFT JOIN category c ON c.id=o.category_id
+            WHERE o.provider_id=? ORDER BY o.sort_order,o.name
+            """, providerId);
+        for (var offering : offerings) {
+            offering.put("schedules", jdbc.queryForList("""
+                SELECT day_scope::text AS days,days_of_week,serves_from AS starts,serves_to AS ends,
+                       accepts_preorder,preorder_day_offset::text AS preorder_day,preorder_closes_at AS preorder_cutoff
+                FROM offering_schedule WHERE offering_id=? AND is_active=true ORDER BY serves_from
+                """, offering.get("id")));
+        }
+        var today = LocalDate.now(IST);
+        var menu = jdbc.queryForList("""
+            SELECT li.item_name AS name,li.price,li.pickup_time,li.pickup_location,li.quantity_available,
+                   li.delivery_type::text AS delivery,li.notes
+            FROM daily_line_item li JOIN daily_post dp ON dp.id=li.daily_post_id
+            WHERE dp.provider_id=? AND dp.post_date=? AND dp.is_active=true ORDER BY li.item_name
+            """, providerId, today);
+        return Map.of("provider", providers.getFirst(), "offerings", offerings, "todayMenu", menu, "date", today);
+    }
+
 }

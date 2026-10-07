@@ -13,6 +13,13 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class ProviderController {
     private final ProviderRepository providerRepo;
+    private final com.apnabazaar.service.LiveDashboardService storefront;
+
+    @GetMapping("/{providerId}/storefront")
+    public ResponseEntity<?> storefront(@PathVariable String communitySlug,
+                                        @PathVariable java.util.UUID providerId) {
+        return ResponseEntity.ok(storefront.storefront(communitySlug, providerId));
+    }
     private final CommunityRepository communityRepo;
 
     @GetMapping

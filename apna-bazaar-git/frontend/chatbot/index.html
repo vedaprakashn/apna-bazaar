@@ -26,26 +26,10 @@
       </nav>
     </header>
     <main class="container">
-      <section class="hero">
+      <section class="hero compact-hero">
         <div>
-          <div class="eyebrow">Good neighbours. Great discoveries.</div>
-          <h1>
-            Your community’s<br />best-kept secrets,<br /><em
-              >one question away.</em
-            >
-          </h1>
-          <p class="lead">
-            Fresh food, new hobbies, a helping hand. Discover the people who
-            make your neighbourhood feel like home.
-          </p>
-        </div>
-        <div class="hero-art">
-          <span class="tag">Made for your community</span>
-          <h2>A whole bazaar.<br />Right next door.</h2>
-          <div class="floating-list">
-            <span>🍱 Home kitchens</span><span>🎨 Weekend classes</span
-            ><span>🛠 Home services</span><span>🌿 Daily essentials</span>
-          </div>
+          <h1>Find it in your community.</h1>
+          <p class="lead">Food, classes and home services — just ask.</p>
         </div>
       </section>
       <div class="demo-notice">
@@ -204,15 +188,25 @@
         if (!/^\d{10,15}$/.test(p.whatsappNumber || "")) return;
         button.disabled = true;
         try {
-          const r = await fetch(`${API_BASE}/api/${community.value}/search/click`, {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({searchEventId: eventId, providerId: p.id, clickType: "whatsapp_tap"})
-          });
+          const r = await fetch(
+            `${API_BASE}/api/${community.value}/search/click`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                searchEventId: eventId,
+                providerId: p.id,
+                clickType: "whatsapp_tap",
+              }),
+            },
+          );
           if (!r.ok) throw Error();
           location.href = `https://wa.me/${p.whatsappNumber}?text=${encodeURIComponent("Hi " + p.name + ", I found your listing on Apna Bazaar. I would like to know more.")}`;
         } catch (e) {
           toast("Could not open WhatsApp. Please try again.");
-        } finally { button.disabled = false; }
+        } finally {
+          button.disabled = false;
+        }
       }
       function resultCard(p, eventId) {
         const item = catalog.find((x) => x.id === p.id);
@@ -228,8 +222,28 @@
             item?.category || p.flatNumber || "Community provider",
           ),
         );
-        info.append(el("div", "seller-person", p.name || "Community seller"));
-        info.append(el("div", "seller-flat", "Flat: " + (p.flatNumber || "Not provided")));
+        const profile = el(
+          "a",
+          "seller-person provider-link",
+          p.name || "Community seller",
+        );
+        profile.href = `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(p.id)}&searchEventId=${encodeURIComponent(eventId)}`;
+        profile.onclick = () => {
+          fetch(`${API_BASE}/api/${community.value}/search/click`, {
+            method: "POST",
+            keepalive: true,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              searchEventId: eventId,
+              providerId: p.id,
+              clickType: "profile_view",
+            }),
+          }).catch(() => {});
+        };
+        info.append(profile);
+        info.append(
+          el("div", "seller-flat", "Flat: " + (p.flatNumber || "Not provided")),
+        );
         top.append(info);
         card.append(
           top,
@@ -257,7 +271,14 @@
         b.onclick = () => recordInterest(eventId, p, b);
         footer.append(b);
         card.append(footer);
-        if (!real) card.append(el("p", "contact-note", "Demo listing · WhatsApp is available once a real contact number is added."));
+        if (!real)
+          card.append(
+            el(
+              "p",
+              "contact-note",
+              "Demo listing · WhatsApp is available once a real contact number is added.",
+            ),
+          );
         stream.append(card);
       }
       async function ask(q) {

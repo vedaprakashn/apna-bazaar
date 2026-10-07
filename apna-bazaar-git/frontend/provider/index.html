@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Provider storefront · Apna Bazaar</title>
+    <link rel="stylesheet" href="../app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../chatbot/index.html"
+        ><span class="brand-icon">✳</span>apna bazaar<span class="tag"
+          >local storefront</span
+        ></a
+      >
+      <nav class="nav">
+        <a href="../chatbot/index.html">← Back to discovery</a>
+      </nav>
+    </header>
+    <main class="container">
+      <div id="error" class="error" role="alert" hidden></div>
+      <div id="loading" class="empty">Opening your neighbour’s storefront…</div>
+      <div id="store" hidden>
+        <section class="store-cover">
+          <div class="eyebrow">A little shop. A lot of heart.</div>
+          <div class="cover-bottom">
+            <div>
+              <span class="store-avatar" id="avatar">🛍</span>
+              <h1 id="shop"></h1>
+              <div class="store-owner" id="owner"></div>
+              <p id="location"></p>
+            </div>
+            <div class="store-cover-note">
+              Discover something<br />made close to home.
+            </div>
+          </div>
+        </section>
+        <div class="demo-notice" id="demo" hidden>
+          🧪 This is a fictional demo provider. The name, flat, catalog and
+          prices are examples; no real WhatsApp contact is configured.
+        </div>
+        <section class="store-layout">
+          <div>
+            <div class="section-title">
+              <h2>Explore the catalog</h2>
+              <span class="tag" id="itemCount"></span>
+            </div>
+            <div
+              class="store-filters"
+              id="filters"
+              aria-label="Filter offerings"
+            ></div>
+            <div id="products" class="product-grid"></div>
+            <div class="section-title">
+              <h2>Today’s menu</h2>
+              <span class="tag" id="date"></span>
+            </div>
+            <div id="today" class="product-grid"></div>
+          </div>
+          <aside class="panel store-contact">
+            <div class="panel-head"><h2>Your neighbour, directly.</h2></div>
+            <div class="store-contact-body">
+              <div class="eyebrow">Meet the provider</div>
+              <h3 id="contactName"></h3>
+              <p id="contactFlat"></p>
+              <p id="contactCommunity"></p>
+              <button id="contact" class="store-whatsapp">
+                Whatsapp Message
+              </button>
+              <p class="contact-note" id="contactNote"></p>
+              <hr />
+              <p class="contact-note">
+                Prices and availability are set by the provider. Confirm your
+                order or booking directly on WhatsApp. Apna Bazaar helps you
+                discover; payments and fulfilment happen with the provider.
+              </p>
+            </div>
+          </aside>
+        </section>
+      </div>
+      <footer class="footer">
+        <span>Apna Bazaar · Support a neighbour</span
+        ><a href="../chatbot/index.html">Explore your community →</a>
+      </footer>
+    </main>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script>
+      const API_BASE =
+        location.protocol === "file:" || location.port === "8000"
+          ? "http://localhost:8080"
+          : "";
+      const params = new URLSearchParams(location.search),
+        slug = params.get("community") || "tridasa",
+        id = params.get("id"),
+        eventId = params.get("searchEventId");
+      let data;
+      function el(tag, cls, text) {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text !== undefined) n.textContent = text;
+        return n;
+      }
+      function price(v, unit) {
+        return v == null
+          ? "Price on request"
+          : `₹${Number(v).toLocaleString("en-IN")}${unit ? " / " + unit : ""}`;
+      }
+      function schedule(s) {
+        const names = {
+          daily: "Every day",
+          weekdays: "Monday–Friday",
+          weekends: "Saturday & Sunday",
+          sunday_only: "Sunday",
+          saturday_only: "Saturday",
+          specific_days: s.days_of_week || "Selected days",
+        };
+        return `${names[s.days] || s.days} · ${s.starts.slice(0, 5)}–${s.ends.slice(0, 5)} IST`;
+      }
+      function renderProducts(category = "All") {
+        const grid = document.getElementById("products");
+        grid.replaceChildren();
+        const items = data.offerings.filter(
+          (x) => category === "All" || x.category === category,
+        );
+        for (const item of items) {
+          const card = el("article", "product-card");
+          const visual = el("div", "product-visual", item.emoji || "🛍");
+          card.append(visual);
+          const body = el("div", "product-body");
+          body.append(
+            el("span", "tag", item.category || "Community offering"),
+            el("h3", "", item.name),
+            el(
+              "p",
+              "product-description",
+              (item.description || "Ask the provider for details.").replace(
+                /^FICTIONAL DEMO LISTING: /,
+                "",
+              ),
+            ),
+            el("div", "product-price", price(item.price, item.unit)),
+            el(
+              "span",
+              item.available ? "badge" : "badge miss",
+              item.available ? "In the catalog" : "Currently unavailable",
+            ),
+          );
+          for (const s of item.schedules || []) {
+            body.append(el("p", "product-schedule", schedule(s)));
+            if (s.accepts_preorder && s.preorder_cutoff)
+              body.append(
+                el(
+                  "p",
+                  "contact-note",
+                  `Preorder closes ${s.preorder_cutoff.slice(0, 5)} · ${s.preorder_day.replaceAll("_", " ")}`,
+                ),
+              );
+          }
+          card.append(body);
+          grid.append(card);
+        }
+        if (!items.length)
+          grid.append(el("p", "empty", "No catalog items listed yet."));
+        for (const b of document.querySelectorAll(".store-filters button")) {
+          b.classList.toggle("selected", b.textContent === category);
+          b.setAttribute("aria-pressed", String(b.textContent === category));
+        }
+      }
+      async function load() {
+        try {
+          if (!id)
+            throw Error(
+              "No provider selected. Open a provider’s name from chatbot search results.",
+            );
+          const r = await fetch(
+            `${API_BASE}/api/${encodeURIComponent(slug)}/providers/${encodeURIComponent(id)}/storefront`,
+          );
+          if (r.status === 404)
+            throw Error("This provider is not available in this community.");
+          if (!r.ok)
+            throw Error("Could not load this storefront. Please try again.");
+          data = await r.json();
+          const p = data.provider;
+          document.title = `${p.shop || p.name} · Apna Bazaar`;
+          document.getElementById("shop").textContent = p.shop || p.name;
+          document.getElementById("owner").textContent = "By " + p.name;
+          document.getElementById("location").textContent =
+            `Flat ${p.flat || "not provided"} · ${p.community}`;
+          document.getElementById("avatar").textContent =
+            data.offerings[0]?.emoji || "🛍";
+          document.getElementById("contactName").textContent = p.name;
+          document.getElementById("contactFlat").textContent =
+            "Flat: " + (p.flat || "Not provided");
+          document.getElementById("contactCommunity").textContent = p.community;
+          document.getElementById("demo").hidden = !p.name.endsWith(" · Demo");
+          document.getElementById("itemCount").textContent =
+            `${data.offerings.length} offering${data.offerings.length === 1 ? "" : "s"}`;
+          document.getElementById("date").textContent = data.date;
+          const categories = [
+            "All",
+            ...new Set(data.offerings.map((x) => x.category).filter(Boolean)),
+          ];
+          for (const c of categories) {
+            const b = el("button", "chip", c);
+            b.onclick = () => renderProducts(c);
+            document.getElementById("filters").append(b);
+          }
+          renderProducts();
+          for (const m of data.todayMenu) {
+            const card = el("article", "product-card"),
+              body = el("div", "product-body");
+            body.append(
+              el("span", "tag", "Today’s menu"),
+              el("h3", "", m.name),
+              el("div", "product-price", price(m.price)),
+              el("p", "product-description", m.notes || ""),
+            );
+            if (m.pickup_time)
+              body.append(
+                el("p", "product-schedule", "Pickup: " + m.pickup_time),
+              );
+            if (m.pickup_location)
+              body.append(el("p", "product-schedule", m.pickup_location));
+            if (m.quantity_available != null)
+              body.append(
+                el(
+                  "p",
+                  "contact-note",
+                  `Listed quantity: ${m.quantity_available} · confirm with provider`,
+                ),
+              );
+            card.append(body);
+            document.getElementById("today").append(card);
+          }
+          if (!data.todayMenu.length)
+            document
+              .getElementById("today")
+              .append(
+                el(
+                  "div",
+                  "empty panel",
+                  "No daily menu posted today. Explore the regular catalog above for products, classes and services.",
+                ),
+              );
+          const button = document.getElementById("contact"),
+            real = /^\d{10,15}$/.test(p.whatsapp || "");
+          button.disabled = !real;
+          document.getElementById("contactNote").textContent = real
+            ? "Message the provider to confirm availability or book."
+            : "No WhatsApp contact number has been added for this listing.";
+          button.onclick = () => {
+            if (!real) return;
+            if (eventId)
+              fetch(`${API_BASE}/api/${slug}/search/click`, {
+                method: "POST",
+                keepalive: true,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  searchEventId: eventId,
+                  providerId: id,
+                  clickType: "whatsapp_tap",
+                }),
+              }).catch(() => {});
+            location.href = `https://wa.me/${p.whatsapp}?text=${encodeURIComponent("Hi " + p.name + ", I found your storefront on Apna Bazaar and would like to enquire about your catalog.")}`;
+          };
+          document.getElementById("store").hidden = false;
+        } catch (e) {
+          const error = document.getElementById("error");
+          error.textContent = e.message;
+          error.hidden = false;
+        } finally {
+          document.getElementById("loading").hidden = true;
+        }
+      }
+      load();
+    </script>
+  </body>
+</html>
