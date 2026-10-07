@@ -1613,3 +1613,23 @@ body {
     padding: 6px;
   }
 }
+
+.send-arrow {
+  display: none;
+}
+@media (max-width: 760px) {
+  .discovery-page .send-label {
+    display: none;
+  }
+  .discovery-page .send {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0;
+  }
+  .discovery-page .send-arrow {
+    display: block;
+  }
+}
