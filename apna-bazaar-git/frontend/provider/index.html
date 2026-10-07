@@ -39,7 +39,8 @@
         </section>
         <div class="demo-notice" id="demo" hidden>
           🧪 This is a fictional demo provider. The name, flat, catalog and
-          prices are examples; no real WhatsApp contact is configured.
+          prices are examples. Pilot WhatsApp messages reach one shared test
+          contact.
         </div>
         <section class="store-layout">
           <div>
@@ -248,7 +249,9 @@
             real = /^\d{10,15}$/.test(p.whatsapp || "");
           button.disabled = !real;
           document.getElementById("contactNote").textContent = real
-            ? "Message the provider to confirm availability or book."
+            ? p.whatsapp === "919740893534"
+              ? "Pilot · Messages reach the shared test contact."
+              : "Message the provider to confirm availability or book."
             : "No WhatsApp contact number has been added for this listing.";
           button.onclick = () => {
             if (!real) return;
@@ -263,7 +266,7 @@
                   clickType: "whatsapp_tap",
                 }),
               }).catch(() => {});
-            location.href = `https://wa.me/${p.whatsapp}?text=${encodeURIComponent("Hi " + p.name + ", I found your storefront on HeyHood and would like to enquire about your catalog.")}`;
+            location.href = `https://wa.me/${p.whatsapp}?text=${encodeURIComponent(`Hi! I found ${p.shop || p.name} in ${p.community}, flat ${p.flat || "not listed"}, on HeyHood. I’d like to know more about your offerings.`)}`;
           };
           document.getElementById("store").hidden = false;
         } catch (e) {
