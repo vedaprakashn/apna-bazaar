@@ -31,6 +31,7 @@ public class SearchService {
     private final ObjectMapper objectMapper;
     private final HelpDirectoryService helpDirectory;
     private final HoodRideService hoodRides;
+    private final CommunityModuleService communityModules;
 
     @Transactional
     public SearchResponse search(String communitySlug, String query, UUID sessionId) {
@@ -43,6 +44,21 @@ public class SearchService {
             .collect(Collectors.groupingBy(dp -> dp.getProvider().getId()));
 
         QueryIntent interpreted = interpretQuery(query);
+        if (!interpreted.discoveryModule().isBlank()) {
+            String module = interpreted.discoveryModule();
+            var catalog = communityModules.catalog(community.getId(), module);
+            String result = callJson(AAPTA_VOICE + " Reply in " + interpreted.responseLanguage()
+                + ". Search only these community " + module + " entries. Current India datetime: " + LocalDateTime.now(ZoneId.of("Asia/Kolkata"))
+                + ". Match the requested subject and date/time; do not invent or use expired entries. For a broad question return all relevant entries."
+                + " Return JSON {intro: string, ids: [exact catalog UUIDs]}. If no match say so warmly. Plans require interest and organiser confirmation, not booked events. Promotions are pilot catalog messages, not guaranteed discounts. Catalog: " + catalog, query);
+            Set<String> ids = new HashSet<>();
+            try { objectMapper.readTree(result).path("ids").forEach(n -> ids.add(n.asText())); } catch (Exception ignored) {}
+            var matches = catalog.stream().filter(i -> ids.contains(i.get("id").toString())).toList();
+            var event = analyticsService.recordSearchEvent(community,query,QueryNormalizer.normalize(query),matches.size(),sessionId,interpreted.intent());
+            if(matches.isEmpty()) analyticsService.recordZeroResult(community,query,QueryNormalizer.normalize(query));
+            return SearchResponse.builder().intro(Optional.ofNullable(extract(result,"intro")).orElse("No matching entries in your hood yet."))
+                .providers(List.of()).moduleItems(matches).discoveryModule(module).sessionId(event.getId()).totalResults(matches.size()).searchIntent(interpreted.intent()).build();
+        }
         if (interpreted.rideRequest()) {
             Instant at = null;
             boolean badTime = false;
@@ -147,7 +163,7 @@ public class SearchService {
         return sb.toString();
     }
 
-    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest, boolean contactRequest, List<String> contactCategories, String doctorSpecialty, boolean rideRequest, String rideKind, String rideDirection, String rideDestination, String rideAt, int rideSeats) {}
+    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest, boolean contactRequest, List<String> contactCategories, String doctorSpecialty, boolean rideRequest, String rideKind, String rideDirection, String rideDestination, String rideAt, int rideSeats, String discoveryModule) {}
 
     private QueryIntent interpretQuery(String query) {
         // Interpret the short request before the larger catalog can distract from its meaning.
@@ -206,6 +222,10 @@ public class SearchService {
                 Understand this across all supported languages and romanized speech.
                 Do not route food, classes (including first-aid classes), or a blood-test booking into contacts.
                 Do not invent nearest distances or appointment slots.
+                Set discoveryModule="plans" for community events, workshops, collective activities or Hood Plans interest/signups (e.g. bicycle service workshop, pottery session, weekend community plans).
+                Regular tuition/classes or individual provider services are NOT Hood Plans. Generic "what's happening in my hood" means plans.
+                Set discoveryModule="promotions" for campaigns, promotions or promoted messages (e.g. what promotions are running).
+                Otherwise discoveryModule="". All existing resident modules are discoverable through this chat.
                 Set rideRequest=true for carpool/ride-sharing requests or offers, e.g. "anyone going to airport tonight at 11pm".
                 rideKind is the type of OTHER PEOPLE'S posts to search, not the user's own type.
                 Set rideKind="offer" for passengers looking for a driver: "anyone going to airport tonight at 11pm", "need a ride", "can I join someone", "airport lift chahiye" all search offers.
@@ -217,12 +237,12 @@ public class SearchService {
                 Set rideSeats to the number of seats requested, default 1 (maximum 6).
                 If no time requested set rideAt=null. Preserve past times rather than silently changing tonight to tomorrow.
                 Never classify blood-test booking, bicycle repair or general service requests as carpooling.
-                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false,"contactRequest":false,"contactCategories":[],"doctorSpecialty":null,"rideRequest":false,"rideKind":"offer","rideDirection":"outbound","rideDestination":"","rideAt":null,"rideSeats":1}.
+                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false,"contactRequest":false,"contactCategories":[],"doctorSpecialty":null,"rideRequest":false,"rideKind":"offer","rideDirection":"outbound","rideDestination":"","rideAt":null,"rideSeats":1,"discoveryModule":""}.
                 Do not use Markdown fences.
                 """ + "\nCurrent India datetime (Asia/Kolkata): " + LocalDateTime.now(ZoneId.of("Asia/Kolkata")), query);
         String intent = query, responseLanguage = "the original request language and script", teachingLanguage = null, doctorSpecialty = null;
         boolean learningRequest = false, contactRequest = false, rideRequest = false;
-        String rideKind="offer", rideDirection="outbound", rideDestination="", rideAt=null;
+        String rideKind="offer", rideDirection="outbound", rideDestination="", rideAt=null, discoveryModule="";
         int rideSeats=1;
         List<String> contactCategories = new ArrayList<>();
         try {
@@ -230,6 +250,8 @@ public class SearchService {
             intent = interpreted.path("intent").asText(query);
             contactRequest = interpreted.path("contactRequest").asBoolean(false);
             rideRequest=interpreted.path("rideRequest").asBoolean(false);
+            String module = interpreted.path("discoveryModule").asText("");
+            discoveryModule = Set.of("plans","promotions").contains(module) ? module : "";
             rideKind="request".equals(interpreted.path("rideKind").asText())?"request":"offer";
             rideDirection="inbound".equals(interpreted.path("rideDirection").asText())?"inbound":"outbound";
             rideDestination=interpreted.path("rideDestination").asText("");
@@ -256,7 +278,7 @@ public class SearchService {
             responseLanguage += "; preserve the original alphabet: " + alphabet + "; never Latin transliteration";
         }
         if (nativeScript.isEmpty()) responseLanguage += "; write in Latin script only, matching the romanized input";
-        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest, contactRequest, contactCategories, doctorSpecialty, rideRequest, rideKind, rideDirection, rideDestination, rideAt, rideSeats);
+        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest, contactRequest, contactCategories, doctorSpecialty, rideRequest, rideKind, rideDirection, rideDestination, rideAt, rideSeats, discoveryModule);
     }
 
     private static final String AAPTA_VOICE = """

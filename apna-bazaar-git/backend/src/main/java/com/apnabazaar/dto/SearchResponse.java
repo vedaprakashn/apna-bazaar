@@ -3,4 +3,4 @@ import lombok.Builder;
 import java.util.List;
 import java.util.UUID;
 @Builder
-public record SearchResponse(String intro, List<MatchedProvider> providers, UUID sessionId, int totalResults, String searchIntent, List<java.util.Map<String,Object>> contacts, boolean urgentHelp, List<java.util.Map<String,Object>> rides, java.util.Map<String,Object> rideQuery) {}
+public record SearchResponse(String intro, List<MatchedProvider> providers, UUID sessionId, int totalResults, String searchIntent, List<java.util.Map<String,Object>> contacts, boolean urgentHelp, List<java.util.Map<String,Object>> rides, java.util.Map<String,Object> rideQuery, List<java.util.Map<String,Object>> moduleItems, String discoveryModule) {}

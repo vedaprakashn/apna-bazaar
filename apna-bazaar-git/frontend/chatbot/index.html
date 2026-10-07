@@ -7,7 +7,7 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-rides1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-unified1" />
   </head>
   <body class="discovery-page">
     <header class="topbar">
@@ -62,29 +62,12 @@
           >Analytics ↗</a
         ><a class="desktop-navigation" href="../admin/campaigns.html"
           >Campaigns ↗</a
-        ><label
-          ><span class="sr-only">Community</span
-          ><select id="community">
-            <option value="tridasa">MyHome Tridasa</option>
-            <option value="sayuk">MyHome Sayuk</option>
-          </select></label
-        >
-        <button
-          type="button"
-          class="mobile-explore"
-          aria-haspopup="dialog"
-          aria-controls="explore-sheet"
-        >
-          Explore ✦
-        </button>
-        <a
-          class="help-shortcut"
-          href="../help/index.html"
-          aria-label="Help and emergency contacts"
-          title="Help and emergency contacts"
-          >＋<span>Help</span></a
         >
       </nav>
+      <select id="community" hidden aria-label="Community">
+        <option value="tridasa">MyHome Tridasa</option>
+        <option value="sayuk">MyHome Sayuk</option>
+      </select>
     </header>
     <main class="container">
       <section class="hero compact-hero">
@@ -116,6 +99,19 @@
             aria-live="polite"
             aria-label="Chat messages"
           ></div>
+          <div class="chat-tools" aria-label="Chat tools">
+            <button
+              type="button"
+              class="mobile-explore"
+              aria-haspopup="dialog"
+              aria-controls="explore-sheet"
+            >
+              Explore shops ✦
+            </button>
+            <a class="help-shortcut" href="../help/index.html"
+              >Help & contacts</a
+            >
+          </div>
           <form id="form" class="composer">
             <label class="sr-only" for="query">What are you looking for?</label
             ><input
@@ -171,7 +167,7 @@
         <aside class="discovery-categories">
           <div class="panel">
             <div class="panel-head">
-              <h2>Explore your hood</h2>
+              <h2>Explore shops & services</h2>
               <span class="tag" id="count">Loading</span>
             </div>
             <div id="categories" class="browse"></div>
@@ -195,7 +191,7 @@
       <div class="sheet-handle" aria-hidden="true"></div>
       <div class="sheet-heading">
         <div>
-          <h2 id="explore-title">Explore your hood ✦</h2>
+          <h2 id="explore-title">Explore shops & services ✦</h2>
           <p>Pick a vibe. Aapta finds the people.</p>
         </div>
         <button type="button" class="sheet-close" aria-label="Close Explore">
@@ -289,6 +285,8 @@
           else if (entry.kind === "result")
             resultCard(entry.provider, entry.eventId, entry.item);
           else if (entry.kind === "contact") contactCard(entry.contact);
+          else if (entry.kind === "module")
+            moduleCard(entry.item, entry.module);
           else if (entry.kind === "ride") rideCard(entry.ride);
           else if (entry.kind === "ride-help") rideHelp(entry.query);
           else if (entry.kind === "urgent-help") urgentHelpCard();
@@ -352,14 +350,7 @@
         categoriesPanel = categoriesAside.querySelector(".panel"),
         mobileLayout = matchMedia("(max-width: 760px)");
       function placeCategories() {
-        if (mobileLayout.matches)
-          document.getElementById("sheet-categories").append(categoriesPanel);
-        else {
-          if (exploreSheet.open) exploreSheet.close();
-          categoriesAside.prepend(categoriesPanel);
-          document.getElementById("category-search").value = "";
-          filterCategories();
-        }
+        document.getElementById("sheet-categories").append(categoriesPanel);
       }
       function filterCategories() {
         const query = document
@@ -571,6 +562,52 @@
         card.chatEntry = { kind: "urgent-help" };
         stream.append(card);
         return card;
+      }
+      function moduleCard(item, module) {
+        const card = el("div", "result-card module-card");
+        card.append(
+          el(
+            "span",
+            "tag",
+            module === "plans" ? "Hood Plans · demo" : "From your hood · demo",
+          ),
+        );
+        card.append(el("h3", "", item.title));
+        card.append(el("p", "", item.description || item.body));
+        if (module === "plans") {
+          card.append(
+            el(
+              "p",
+              "",
+              new Date(item.starts_at).toLocaleString("en-IN", {
+                timeZone: "Asia/Kolkata",
+              }) +
+                " IST · " +
+                item.location,
+            ),
+          );
+          card.append(
+            el(
+              "p",
+              "",
+              `${item.interested} interested · needs ${item.minimum_interested}. ${item.status === "confirmed" ? "Organiser confirmed" : "Awaiting organiser confirmation"}`,
+            ),
+          );
+        }
+        const link = el(
+          "a",
+          "contact",
+          module === "plans"
+            ? "Check the plan ↗"
+            : item.cta_text || "See the shop ↗",
+        );
+        link.href =
+          module === "plans"
+            ? `../plans/index.html?community=${encodeURIComponent(community.value)}&plan=${encodeURIComponent(item.id)}`
+            : `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(item.provider_id)}`;
+        card.append(link);
+        card.chatEntry = { kind: "module", item, module };
+        stream.append(card);
       }
       function rideHelp(query = {}) {
         const card = el("div", "ride-chat-help");
@@ -898,6 +935,8 @@
             for (const ride of data.rides) rideCard(ride);
             rideHelp(data.rideQuery || {});
           }
+          for (const item of data.moduleItems || [])
+            moduleCard(item, data.discoveryModule);
           for (const contact of data.contacts || []) {
             contact.searchIntent = data.searchIntent || "";
             contactCard(contact);
