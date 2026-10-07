@@ -94,6 +94,9 @@ public class SearchService {
     private String callOpenAi(String query, String catalog) {
         String sys = """
             You are the Apna Bazaar assistant for a gated community. Help residents find sellers.
+            Choose the response language from the wording of the user message, not the product
+            or subject requested. "Hindi tuition" and "French tuition" are English requests.
+            Return each seller ID once, combining matching offerings in one reason.
             SELLER DATABASE:
             %s
             Rules:
@@ -132,11 +135,12 @@ public class SearchService {
         try {
             List<Map<String, String>> parsed = objectMapper.readValue(m.group(1).trim(),
                 objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+            Set<UUID> seen = new HashSet<>();
             return parsed.stream().map(r -> {
                 try {
                     UUID id = UUID.fromString(r.get("id"));
                     Provider p = map.get(id);
-                    if (p == null) return null;
+                    if (p == null || !seen.add(id)) return null;
                     List<TodayItemDto> items = buildItems(posts.get(id));
                     return MatchedProvider.builder()
                         .id(p.getId()).name(p.getName())
