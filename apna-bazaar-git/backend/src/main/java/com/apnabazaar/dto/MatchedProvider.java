@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.UUID;
 @Builder
 public record MatchedProvider(
-    UUID id, String name, String shopName, String flatNumber, String whatsappNumber,
+    UUID id, String name, String shopName, String flatNumber, String whatsappNumber, String whatsappGroupUrl,
     String matchReason, BigDecimal rating, int reviewCount,
     List<TodayItemDto> todayItems, String orderingStatus
 ) {
@@ -14,7 +14,7 @@ public record MatchedProvider(
         return MatchedProvider.builder()
             .id(p.getId()).name(p.getName())
             .shopName(p.getShopName() != null ? p.getShopName() : p.getName())
-            .flatNumber(p.getFlatNumber()).whatsappNumber(p.getWhatsappNumber())
+            .flatNumber(p.getFlatNumber()).whatsappNumber(p.getWhatsappNumber()).whatsappGroupUrl(p.getWhatsappGroupUrl())
             .matchReason(matchReason).rating(p.getRating()).reviewCount(p.getReviewCount())
             .build();
     }

@@ -3,6 +3,7 @@ import com.apnabazaar.dto.ClickRequest;
 import com.apnabazaar.service.SearchService;
 import org.springframework.beans.factory.annotation.Value;
 import com.apnabazaar.service.ChatRateLimiter;
+import com.apnabazaar.service.MessageModerationService;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
@@ -16,11 +17,13 @@ public class SearchController {
     private final SearchService searchService;
     private final ChatRateLimiter limiter;
     private final boolean railwayProxy;
+    private final MessageModerationService moderation;
 
-    public SearchController(SearchService searchService, ChatRateLimiter limiter,
+    public SearchController(SearchService searchService, ChatRateLimiter limiter, MessageModerationService moderation,
                             @Value("${RAILWAY_PROJECT_ID:}") String railwayProjectId) {
         this.searchService=searchService;
         this.limiter=limiter;
+        this.moderation=moderation;
         this.railwayProxy=!railwayProjectId.isBlank();
     }
 
@@ -46,6 +49,12 @@ public class SearchController {
             .header("Retry-After",Long.toString(decision.retryAfterSeconds()))
             .body(Map.of("error","You're sending messages too quickly. Please wait before trying again.",
                 "retryAfterSeconds",decision.retryAfterSeconds()));
+        if (q.isBlank() || q.length()>500) return ResponseEntity.badRequest().body(Map.of("error", "Please send a question between 1 and 500 characters."));
+        var screened=moderation.check(q);
+        if(screened==MessageModerationService.Decision.BLOCK) return ResponseEntity.unprocessableEntity()
+            .body(Map.of("error",MessageModerationService.BLOCK_REPLY,"blocked",true));
+        if(screened!=MessageModerationService.Decision.ALLOW) return ResponseEntity.status(503)
+            .body(Map.of("error","I can’t check that message right now. Please try again in a moment."));
         return ResponseEntity.ok(searchService.search(communitySlug, q, sessionId));
     }
 

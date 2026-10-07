@@ -16,7 +16,7 @@ public class ChatPromotionController {
     @GetMapping
     public List<Map<String, Object>> list(@PathVariable String slug) {
         return jdbc.queryForList("""
-            SELECT m.id,m.title,m.body,m.cta_text,m.kind,p.id AS provider_id,p.shop_name AS shop,
+            SELECT m.id,m.title,m.body,m.cta_text,m.kind,m.daypart,p.id AS provider_id,p.shop_name AS shop,
                    p.name LIKE '% · Demo' AS demo,
                    o.name AS offering,o.base_price AS price,o.unit,c.icon_emoji AS emoji
             FROM chat_promotion m JOIN community co ON co.id=m.community_id

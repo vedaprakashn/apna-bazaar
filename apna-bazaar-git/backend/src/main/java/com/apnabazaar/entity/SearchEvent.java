@@ -12,6 +12,7 @@ public class SearchEvent {
     private UUID sessionId;
     @Column(name = "raw_query", nullable = false) private String rawQuery;
     private String normalisedQuery;
+    @Column(columnDefinition = "text") private String englishIntent;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "matched_category_id") private Category matchedCategory;
     private Integer resultCount = 0;
     private Boolean hadResults = false;

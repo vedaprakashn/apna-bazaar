@@ -63,7 +63,7 @@ public class SearchService {
         List<MatchedProvider> matched = parseResponse(aiResponse, providers, postsByProvider);
 
         SearchEvent event = analyticsService.recordSearchEvent(
-            community, query, QueryNormalizer.normalize(query), matched.size(), sessionId);
+            community, query, QueryNormalizer.normalize(query), matched.size(), sessionId, interpreted.intent());
         if (matched.isEmpty()) analyticsService.recordZeroResult(community, query, QueryNormalizer.normalize(query));
         else analyticsService.recordImpressions(event, matched);
 
@@ -72,6 +72,7 @@ public class SearchService {
             .providers(matched)
             .sessionId(event.getId())
             .totalResults(matched.size())
+            .searchIntent(interpreted.intent())
             .build();
     }
 
@@ -118,6 +119,8 @@ public class SearchService {
         // Interpret the short request before the larger catalog can distract from its meaning.
         String interpretation = callJson("""
                 Translate this community marketplace search into a concise English search intent.
+                Use a noun phrase suitable after "I was looking for", such as "weekend karate classes for kids".
+                Do not include first-person requests like "I need", or trailing sentence punctuation.
                 Supported languages: English, Hindi, Telugu, Tamil, Kannada, Malayalam,
                 Marathi, Punjabi, Bengali and Assamese. Distinguish Bengali from Assamese
                 even though they share a script. Preserve the user's language and script.
@@ -289,7 +292,7 @@ public class SearchService {
                     return MatchedProvider.builder()
                         .id(p.getId()).name(p.getName())
                         .shopName(p.getShopName() != null ? p.getShopName() : p.getName())
-                        .flatNumber(p.getFlatNumber()).whatsappNumber(p.getWhatsappNumber())
+                        .flatNumber(p.getFlatNumber()).whatsappNumber(p.getWhatsappNumber()).whatsappGroupUrl(p.getWhatsappGroupUrl())
                         .matchReason(r.get("matchReason"))
                         .rating(p.getRating()).reviewCount(p.getReviewCount())
                         .todayItems(items)

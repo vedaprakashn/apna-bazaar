@@ -16,6 +16,7 @@ public class Provider {
     @Column(nullable = false) private String name;
     private String flatNumber;
     private String whatsappNumber;
+    @Column(length = 400) private String whatsappGroupUrl;
     private String shopName;
     @Enumerated(EnumType.STRING) @Column(name = "provider_type") private ProviderType providerType = ProviderType.food_seller;
     @Enumerated(EnumType.STRING) private ProviderStatus status = ProviderStatus.pending;

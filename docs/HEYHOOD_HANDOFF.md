@@ -144,7 +144,7 @@ Chat and storefront messages include shop, community and flat so the shared test
 
 Click analytics are best effort and must not block the contact action. Existing session cards refresh phone data from the catalog. Future production contacts should be per-provider.
 
-Group support is planned, not implemented. A group invite URL is a different destination from a personal `wa.me` number; model an explicit contact type and validated destination. Group links cannot use the same prefilled personal-message flow, and a link click does not prove a group join.
+Group support is implemented through provider.whatsappGroupUrl / database whatsapp_group_url. V13 assigns the user-authorized shared group link to all existing providers. A configured group takes precedence over the retained individual number. frontend/contact.js validates HTTPS, the exact chat.whatsapp.com host and invite path; otherwise it builds a personal wa.me link. Invalid configured group URLs disable contact rather than silently sending users elsewhere. Group links do not accept the personal prefilled-message flow; a click does not prove a group join. The user supplies the destination; future per-provider group editing and backend registration validation still need an operator UI/API.
 
 ## Promotions and campaigns
 
@@ -223,7 +223,7 @@ Verified live after merge on 7 October 2026: both communities expose 30 provider
 2. Offering-level search results with exact matched item, price and freshness/availability cues.
 3. Saved providers/offerings and an intentional clear/new-chat action, with an agreed local persistence policy.
 4. Contextual follow-up questions such as “anything cheaper?” or “weekends only?” backed by scoped server conversation state.
-5. Contact types for individual WhatsApp and group invite links; per-provider configuration.
+5. Per-provider contact configuration UI/API for the supported individual/group destinations.
 6. Storefront search/category filters and a sticky contact action where needed.
 7. Error/offline UX and physical-device keyboard/Back/deep-link tests.
 8. Operator authentication/roles, endpoint protection, shared rate limiter before scaling replicas.
@@ -289,3 +289,16 @@ The following reconstructs the available context chronologically. It is a decisi
 - User reported formal no-result copy for Bharatanatyam lessons and requested a warmer, moderately informal voice. Updated the shared AI voice instructions for both populated and empty-catalog paths and softened the frontend no-result fallback; preserve language, truthful matching and no invented alternatives.
 
 - Voice-change validation: Maven verify passed. Local OpenAI-backed checks returned warm, specific no-match replies for Bharatanatyam in English, Hindi and Romanized Tamil; Hindi tuition remained one matching provider, and German tuition exercised the empty-catalog path without inventing a match.
+
+- User authorized WhatsApp group https://chat.whatsapp.com/B88QvxEoABCLa2wPEpy9SY. V13 assigns it to existing providers; group-labeled buttons in chat/storefront and restored cards open the invite, retain individual-number fallback when no group is configured, and preserve click analytics without claiming a join.
+
+### Enquiries, campaigns and safety release — 7 October 2026
+
+- User authorized deploying all completed changes except notifications. No Firebase configuration or APK is part of this release.
+- V15 persists the interpreted English search intent in search_event. Search responses expose searchIntent; storefront accepts optional searchEventId and returns context only when that event belongs to the community and matched provider. Both chat cards and storefront use a shared contact helper. Individual chats prefill “Hey! I was looking for [English search] on HeyHood and found [shop]…”; group invitations cannot prefill, so Copy enquiry copies the same text. Direct storefront visits without a search event use the generic enquiry.
+- V14 replaces the previous demo campaign seeds with ten rotating campaigns per community, preserving operator-created campaigns, and adds a bajji offering. Campaign eligibility uses India time (morning/lunch/afternoon/evening/anytime). After every third successful question a campaign becomes due; the three-minute timer remains. Busy, typing, hidden-page and reading pauses still apply. Seen campaign IDs, counters and dismissal persist per community.
+- Incoming messages are screened before discovery by OpenAI omni-moderation-latest plus an explicit profanity check. Blocked messages receive a respectful default response, do not enter discovery analytics, and have their user bubble replaced with Message not sent. Moderation outages fail closed with retry feedback. Length is capped at 500 characters; the existing 10/minute IP limit remains. Classification can have false positives/negatives.
+- Aapta’s eyes animate during search and stop on completion/cancellation; reduced-motion preferences disable animation.
+- User requested returning from storefront scroll to latest conversation. Restore and browser pageshow now scroll to the end without focusing the composer; conversation and draft remain retained. This supersedes restoring the previous scroll offset on return.
+- Firebase project supplied: japamala-8284d (HeyHood). Native push notifications remain deferred at the user’s request; do not claim foreground promotions are background notifications. Uploaded Firebase files remain outside the repository.
+- Validation: Maven verify passed 14 tests, including moderation, rate limiting, matching and campaign checks. OpenAI-backed local Tamil-transliterated Hindi tuition search returned English intent “Hindi tuition”; the storefront retrieved the same persisted intent. Local migration checks found ten active campaigns per community and the configured pilot group. Browser checks verified mobile keyboard behavior, stop/abort, responsive layout and promotion dismissal. Deployment status must be confirmed against production after merge.

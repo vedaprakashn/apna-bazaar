@@ -17,8 +17,9 @@ public class ProviderController {
 
     @GetMapping("/{providerId}/storefront")
     public ResponseEntity<?> storefront(@PathVariable String communitySlug,
-                                        @PathVariable java.util.UUID providerId) {
-        return ResponseEntity.ok(storefront.storefront(communitySlug, providerId));
+                                        @PathVariable java.util.UUID providerId,
+                                        @RequestParam(required=false) java.util.UUID searchEventId) {
+        return ResponseEntity.ok(storefront.storefront(communitySlug, providerId, searchEventId));
     }
     private final CommunityRepository communityRepo;
 
