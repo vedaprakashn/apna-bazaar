@@ -26,6 +26,13 @@ window.heyhoodWhatsAppContact = function (number, groupUrl, message = "") {
 };
 
 window.heyhoodEnquiry = function (shop, community, flat, intent) {
-  const context = (intent || "").trim().replace(/\s+/g, " ").replace(/^I\s+(?:am looking for|was looking for|need|want|would like)\s+/i, "").replace(/[.!?]+$/, "");
-  return `Hey! ${context ? `I was looking for ${context} on HeyHood and found` : "I found"} ${shop} in ${community}${flat ? `, flat ${flat}` : ""}. I’d like to know more about your offerings.`;
+  const context = (intent || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(
+      /^I\s+(?:am looking for|was looking for|need|want|would like)\s+/i,
+      "",
+    )
+    .replace(/[.!?]+$/, "");
+  return `Hey! ${context ? `I was looking for ${context} on HeyHood and found` : "I found"} ${shop}${context ? "" : " on HeyHood"} in ${community}${flat ? `, flat ${flat}` : ""}. I’d like to know more about your offerings.`;
 };
