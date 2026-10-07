@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class SearchResultTest {
     @Test
     void multipleMatchingOfferingsProduceOneSellerCard() {
-        var service = new SearchService(null, null, null, null, null, null, new ObjectMapper());
+        var service = new SearchService(null, null, null, null, null, null, new ObjectMapper(), null);
         UUID id = UUID.randomUUID();
         var provider = Provider.builder().id(id).name("Hindi tutor").rating(java.math.BigDecimal.ZERO).reviewCount(0).build();
         String entry = "{\"id\":\"" + id + "\",\"matchReason\":\"Hindi lessons\"}";
@@ -26,7 +26,7 @@ class SearchResultTest {
     }
     @Test
     void structuredJsonPreservesTeluguIntroAndSellerCard() {
-        var service = new SearchService(null, null, null, null, null, null, new ObjectMapper());
+        var service = new SearchService(null, null, null, null, null, null, new ObjectMapper(), null);
         UUID id = UUID.randomUUID();
         var provider = Provider.builder().id(id).name("Idli seller")
             .rating(java.math.BigDecimal.ZERO).reviewCount(0).build();

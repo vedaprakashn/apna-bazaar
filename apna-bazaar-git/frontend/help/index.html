@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Help in your hood · HeyHood</title><link rel="stylesheet" href="../app.css?v=20261007-help1"><link rel="stylesheet" href="help.css?v=1"></head>
+<body class="help-page">
+<header class="help-header"><a href="../chatbot/index.html" class="help-back">← Your hood</a><strong>Help in your hood</strong><select id="community" aria-label="Community"><option value="tridasa">MyHome Tridasa</option><option value="sayuk">MyHome Sayuk</option></select></header>
+<main class="help-main">
+<section class="urgent-call" aria-labelledby="urgent-title"><div><span class="help-kicker">FOR A REAL EMERGENCY · INDIA</span><h1 id="urgent-title">Need urgent help?</h1><p>Call 112 for emergency assistance. Don’t wait for a chat reply.</p></div><a href="tel:112" class="call-112">Call 112 ↗</a></section>
+<p class="directory-demo">🧪 Demo directory: all local contacts below are fictional and unverified. Their example numbers cannot be called.</p>
+<div class="help-tabs" role="tablist" aria-label="Contact directory"><button id="urgent-tab" role="tab" aria-selected="true" aria-controls="directory">Urgent help</button><button id="professional-tab" role="tab" aria-selected="false" aria-controls="directory" tabindex="-1">People & professionals</button></div>
+<div class="help-filters"><label class="help-search"><span class="sr-only">Search names, services or areas</span><input id="search" type="search" placeholder="Search names, services or areas…"></label><select id="category" aria-label="Contact category"><option value="">All services</option></select></div>
+<p id="section-note">Local first-aid and response contacts. Demo listings cannot provide emergency assistance.</p>
+<p id="status" role="status">Loading contacts…</p>
+<section id="directory" role="tabpanel" aria-labelledby="urgent-tab" class="contact-grid"></section>
+<p class="help-footer">Availability is listed information, not a live status. Real local contacts will need verification and permission before being published.</p>
+</main>
+<script src="help.js?v=1"></script>
+</body></html>

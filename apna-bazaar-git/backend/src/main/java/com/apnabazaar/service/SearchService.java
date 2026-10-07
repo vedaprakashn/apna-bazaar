@@ -29,6 +29,7 @@ public class SearchService {
     private final AnalyticsService analyticsService;
     private final OrderingWindowService orderingWindowService;
     private final ObjectMapper objectMapper;
+    private final HelpDirectoryService helpDirectory;
 
     @Transactional
     public SearchResponse search(String communitySlug, String query, UUID sessionId) {
@@ -41,6 +42,20 @@ public class SearchService {
             .collect(Collectors.groupingBy(dp -> dp.getProvider().getId()));
 
         QueryIntent interpreted = interpretQuery(query);
+        if (interpreted.contactRequest()) {
+            var contacts = helpDirectory.contacts(community.getId(), interpreted.contactCategories());
+            boolean urgent = contacts.stream().anyMatch(c -> "urgent".equals(c.get("section")))
+                || interpreted.contactCategories().stream().anyMatch(c -> Set.of("First aid","Police","Fire services","Snake rescue").contains(c));
+            String fallback = urgent ? "For a real emergency in India, call 112 now. These local contacts are demo listings only." : "Here are demo contacts in and around your hood. Their details aren’t verified yet.";
+            String introJson = callJson(AAPTA_VOICE + "\nReply in " + interpreted.responseLanguage()
+                + ". Return only JSON with intro. Explain these exact facts: " + fallback
+                + " There are " + contacts.size() + " matching contacts. Do not invent phone numbers, medical advice, availability, distance or bookings.", query);
+            var event = analyticsService.recordSearchEvent(community,query,QueryNormalizer.normalize(query),contacts.size(),sessionId,interpreted.intent());
+            if (contacts.isEmpty()) analyticsService.recordZeroResult(community,query,QueryNormalizer.normalize(query));
+            return SearchResponse.builder().intro(Optional.ofNullable(extract(introJson,"intro")).orElse(fallback))
+                .providers(List.of()).contacts(contacts).urgentHelp(urgent).sessionId(event.getId())
+                .totalResults(contacts.size()).searchIntent(interpreted.intent()).build();
+        }
         if (interpreted.learningRequest()) {
             providers = providers.stream().filter(p -> p.getOfferings().stream()
                 .anyMatch(o -> Boolean.TRUE.equals(o.getIsAvailable()) && o.getOfferingType()==Offering.OfferingType.class_)).toList();
@@ -113,7 +128,7 @@ public class SearchService {
         return sb.toString();
     }
 
-    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest) {}
+    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest, boolean contactRequest, List<String> contactCategories) {}
 
     private QueryIntent interpretQuery(String query) {
         // Interpret the short request before the larger catalog can distract from its meaning.
@@ -159,14 +174,27 @@ public class SearchService {
                 This is the language to be taught, never simply the language of the request.
                 Set learningRequest=true for requests to learn, tuition, lessons, teachers,
                 coaching, classes or workshops; false for buying food, goods or repair services.
-                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false}.
+                Set contactRequest=true for requests to find/contact doctors, nurses, lawyers, physiotherapists,
+                first aid, local police, fire services, snake rescue, or the community help directory.
+                Set contactCategories to an array of relevant exact names from:
+                Doctors, Nurses, Lawyers, Physiotherapists, First aid, Police, Fire services, Snake rescue.
+                For all help contacts use an empty array and contactRequest=true.
+                Understand this across all supported languages and romanized speech.
+                Do not route food, classes (including first-aid classes), or a blood-test booking into contacts.
+                Do not invent nearest distances or appointment slots.
+                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false,"contactRequest":false,"contactCategories":[]}.
                 Do not use Markdown fences.
                 """, query);
         String intent = query, responseLanguage = "the original request language and script", teachingLanguage = null;
-        boolean learningRequest = false;
+        boolean learningRequest = false, contactRequest = false;
+        List<String> contactCategories = new ArrayList<>();
         try {
             var interpreted = objectMapper.readTree(interpretation);
             intent = interpreted.path("intent").asText(query);
+            contactRequest = interpreted.path("contactRequest").asBoolean(false);
+            for (var category : interpreted.path("contactCategories")) {
+                if (HelpDirectoryService.CATEGORIES.contains(category.asText())) contactCategories.add(category.asText());
+            }
             responseLanguage = interpreted.path("responseLanguage").asText(responseLanguage);
             teachingLanguage = interpreted.path("teachingLanguage").asText(null);
             learningRequest = interpreted.path("learningRequest").asBoolean(false)
@@ -184,7 +212,7 @@ public class SearchService {
             responseLanguage += "; preserve the original alphabet: " + alphabet + "; never Latin transliteration";
         }
         if (nativeScript.isEmpty()) responseLanguage += "; write in Latin script only, matching the romanized input";
-        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest);
+        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest, contactRequest, contactCategories);
     }
 
     private static final String AAPTA_VOICE = """

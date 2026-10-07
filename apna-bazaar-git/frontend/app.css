@@ -1752,3 +1752,9 @@ body {
 .enquiry-dialog { border: 2px solid #6336f5; border-radius: 20px; padding: 20px; width: min(90vw, 440px); color: var(--text); }
 .enquiry-dialog::backdrop { background: #251d3a80; }
 .enquiry-dialog textarea { width: 100%; min-height: 150px; padding: 12px; border-radius: 12px; font: inherit; margin: 12px 0; }
+
+.help-shortcut { display:inline-flex; align-items:center; gap:4px; text-decoration:none; padding:8px; border-radius:10px; background:#fff0e8; color:#75361f; font-weight:800; }
+.urgent-chat-help { padding:16px; margin:12px 0; border:1px solid #ffc7ac; border-radius:16px; background:#fff0e8; }
+.urgent-chat-help a { display:inline-block; padding:10px 16px; background:#b82d22; color:white; border-radius:10px; }
+.help-contact-card a { display:inline-block; padding:10px 0; margin-right:12px; }
+@media(max-width:760px){.help-shortcut { padding:8px; min-width:32px; justify-content:center; }.help-shortcut span{ display:none; }.discovery-page .nav {gap:4px;} }

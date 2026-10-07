@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Provider storefront · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261007-eyes2" />
+    <link rel="stylesheet" href="../app.css?v=20261007-help1" />
   </head>
   <body>
     <header class="topbar">
@@ -87,7 +87,7 @@
       </footer>
     </main>
     <div id="toast" class="toast" role="status" hidden></div>
-    <script src="../contact.js?v=20261007-copy2"></script>
+    <script src="../contact.js?v=20261007-direct1"></script>
     <script>
       const API_BASE =
         location.protocol === "file:" || location.port === "8000"
@@ -249,7 +249,7 @@
           const button = document.getElementById("contact"),
             contact = heyhoodWhatsAppContact(
               p.whatsapp,
-              p.whatsapp_group_url,
+              null,
               heyhoodEnquiry(
                 p.shop || p.name,
                 p.community,
@@ -268,27 +268,6 @@
                   ? "Pilot · Messages reach the shared test contact."
                   : "Message the provider to confirm availability or book."
                 : "No WhatsApp contact has been added for this listing.";
-          if (contact?.type === "group") {
-            const copy = el("button", "copy-enquiry", "Copy enquiry");
-            copy.type = "button";
-            copy.onclick = async () => {
-              try {
-                const copied = await heyhoodCopyEnquiry(
-                  heyhoodEnquiry(
-                    p.shop || p.name,
-                    p.community,
-                    p.flat,
-                    data.searchIntent,
-                  ),
-                );
-                if (copied) copy.textContent = "Copied ✓";
-              } catch (_) {
-                document.getElementById("contactNote").textContent =
-                  "Couldn’t copy. Please try from your browser.";
-              }
-            };
-            button.after(copy);
-          }
           button.onclick = () => {
             if (!real) return;
             if (eventId)
