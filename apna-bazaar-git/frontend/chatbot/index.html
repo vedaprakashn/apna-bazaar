@@ -114,6 +114,23 @@
                   stroke-linejoin="round"
                 />
               </svg>
+              <svg
+                class="send-stop"
+                viewBox="0 0 24 24"
+                width="22"
+                height="22"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <rect
+                  x="5"
+                  y="5"
+                  width="14"
+                  height="14"
+                  rx="2"
+                  fill="currentColor"
+                />
+              </svg>
             </button>
           </form>
         </div>
@@ -517,6 +534,24 @@
         document.getElementById("query").value = q;
         document.getElementById("form").requestSubmit();
       }
+      const sendButton = document.getElementById("send");
+      let activeSearch;
+      function setSearching(searching) {
+        sendButton.classList.toggle("is-searching", searching);
+        sendButton.type = searching ? "button" : "submit";
+        sendButton.setAttribute(
+          "aria-label",
+          searching ? "Stop search" : "Send question",
+        );
+        sendButton.title = searching ? "Stop search" : "Send question";
+        stream.setAttribute("aria-busy", String(searching));
+      }
+      sendButton.onclick = (event) => {
+        if (busy) {
+          event.preventDefault();
+          activeSearch?.abort();
+        }
+      };
       document.getElementById("form").onsubmit = async (e) => {
         e.preventDefault();
         if (busy) return;
@@ -524,7 +559,8 @@
           q = input.value.trim();
         if (!q) return;
         busy = true;
-        document.getElementById("send").disabled = true;
+        activeSearch = new AbortController();
+        setSearching(true);
         community.disabled = true;
         input.value = "";
         message(q, "user");
@@ -534,6 +570,7 @@
         try {
           const r = await fetch(
             `${API_BASE}/api/${community.value}/search?q=${encodeURIComponent(q)}&sessionId=${sessionId}`,
+            { signal: activeSearch.signal },
           );
           if (r.status === 429) {
             const seconds = Number(r.headers.get("Retry-After")) || 60;
@@ -543,6 +580,8 @@
           }
           if (!r.ok) throw Error(`Search unavailable (${r.status})`);
           const data = await r.json();
+          if (activeSearch.signal.aborted)
+            throw new DOMException("Search stopped", "AbortError");
           pending.remove();
           message(data.intro || "Here’s what I found in your community.");
           for (const p of data.providers || []) resultCard(p, data.sessionId);
@@ -552,10 +591,14 @@
             );
         } catch (err) {
           pending.textContent =
-            "We couldn’t complete that search. Please try again shortly.";
+            err.name === "AbortError"
+              ? "Search stopped. What are we finding next?"
+              : "We couldn’t complete that search. Please try again shortly.";
+          if (err.name === "AbortError" && !input.value) input.value = q;
         } finally {
           busy = false;
-          document.getElementById("send").disabled = false;
+          activeSearch = null;
+          setSearching(false);
           community.disabled = false;
           stream.scrollTop = stream.scrollHeight;
           if (pending.isConnected)
