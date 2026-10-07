@@ -77,3 +77,5 @@ The operator dashboard at `/admin/index.html` loads `/api/{community}/admin/acti
 The resident chatbot and dashboard share responsive styling. Backend JSON APIs remain independent of the web presentation, allowing Android/iOS clients after functional completion. Native screens, authentication, notification delivery and app-store packaging remain future work.
 
 AI search accepts Indian-language scripts, transliterated queries and mixed-language requests. Unicode query normalization preserves native scripts in analytics. Flyway V6 adds a fictional Hindi tutor in each pilot community (25 demo providers per community). Both shop and resident names on search cards open the provider storefront.
+
+Flyway V7 expands each of the 25 demo providers to four offerings, with sample prices and recurring schedules. These catalogs are visible on provider storefronts and available to AI discovery.
