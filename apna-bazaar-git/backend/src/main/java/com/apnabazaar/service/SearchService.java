@@ -58,7 +58,7 @@ public class SearchService {
         else analyticsService.recordImpressions(event, matched);
 
         return SearchResponse.builder()
-            .intro(Optional.ofNullable(extract(aiResponse, "intro")).orElse(matched.isEmpty() ? aiResponse : "Here are your community matches."))
+            .intro(Optional.ofNullable(extract(aiResponse, "intro")).orElse(matched.isEmpty() ? aiResponse : matched.getFirst().matchReason()))
             .providers(matched)
             .sessionId(event.getId())
             .totalResults(matched.size())
@@ -200,7 +200,7 @@ public class SearchService {
 
     private List<MatchedProvider> parseResponse(String raw, List<Provider> providers,
                                                  Map<UUID, List<DailyPost>> posts) {
-        var m = Pattern.compile("<sellers>([\\s\\S]*?)</sellers>").matcher(raw);
+        var m = Pattern.compile("<sellers>([\\s\\S]*?)</sellers>", Pattern.CASE_INSENSITIVE).matcher(raw);
         if (!m.find()) return List.of();
         Map<UUID, Provider> map = providers.stream().collect(Collectors.toMap(Provider::getId, p -> p));
         try {
@@ -239,7 +239,7 @@ public class SearchService {
     }
 
     private String extract(String raw, String tag) {
-        var m = Pattern.compile("<" + tag + ">([\\s\\S]*?)</" + tag + ">").matcher(raw);
+        var m = Pattern.compile("<" + tag + ">([\\s\\S]*?)</" + tag + ">", Pattern.CASE_INSENSITIVE).matcher(raw);
         return m.find() ? m.group(1).trim() : null;
     }
 
