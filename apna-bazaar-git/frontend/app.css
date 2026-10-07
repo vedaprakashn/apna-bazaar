@@ -1959,3 +1959,47 @@ body {
   font-size: 10px;
   margin-top: 6px;
 }
+
+/* Discovery is one conversation across community modules. */
+.discovery-page .layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+.discovery-page .discovery-categories {
+  display: none;
+}
+.discovery-page .chat-tools {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.discovery-page .chat-tools .mobile-explore,
+.discovery-page .chat-tools .help-shortcut {
+  display: inline-flex;
+  width: auto;
+  height: auto;
+  align-items: center;
+  margin: 0;
+  padding: 7px 11px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: #f1ebff;
+  color: #6336f5;
+  border: 0;
+  text-decoration: none;
+}
+.discovery-page .chat-tools .help-shortcut {
+  background: transparent;
+}
+.discovery-page .nav:empty {
+  display: none;
+}
+.module-card h3 {
+  margin: 10px 0;
+}
+.module-card p {
+  font-size: 13px;
+  line-height: 1.5;
+}
