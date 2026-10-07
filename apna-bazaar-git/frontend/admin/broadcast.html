@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apna Bazaar — Broadcast Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --orange: #E8612A; --orange2: #FC8019; --amber: #F5A623;
+  --red: #E23744; --green: #00B894; --blue: #0984E3;
+  --purple: #6C5CE7; --teal: #00CEC9; --pink: #FD79A8;
+  --ink: #1A1A2E; --sub: #636E72; --border: #EEE8DE;
+  --bg: #F7F2EA; --card: #FFFFFF; --sidebar: #1C1008;
+  --font: 'Nunito', sans-serif; --display: 'Baloo 2', cursive;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: var(--font); background: var(--bg); color: var(--ink); }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: white; border-bottom: 1px solid var(--border);
+  padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 30;
+}
+.topbar-left { display: flex; align-items: center; gap: 12px; }
+.back-btn {
+  font-size: 13px; font-weight: 700; color: var(--sub);
+  background: var(--bg); border: 1.5px solid var(--border);
+  padding: 7px 14px; border-radius: 20px; cursor: pointer; font-family: var(--font);
+}
+.topbar h2 { font-family: var(--display); font-size: 20px; font-weight: 700; }
+.tab-row { display: flex; gap: 4px; }
+.tab-btn {
+  padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 700;
+  border: none; cursor: pointer; font-family: var(--font);
+  background: var(--bg); color: var(--sub); transition: all 0.15s;
+}
+.tab-btn.active { background: var(--orange); color: white; }
+
+/* ── LAYOUT ── */
+.content { padding: 24px 28px; max-width: 1200px; }
+.two-col { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; }
+.three-col { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+.panel { background: var(--card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; margin-bottom: 20px; }
+.panel-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.panel-title { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+.panel-sub { font-size: 11px; color: var(--sub); margin-top: 2px; font-weight: 600; }
+.panel-body { padding: 20px; }
+
+/* ── KPI ── */
+.kpi-card {
+  background: white; border-radius: 14px; padding: 16px 18px;
+  border: 1px solid var(--border); position: relative; overflow: hidden;
+}
+.kpi-card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background: var(--accent, var(--orange)); }
+.kpi-icon { position:absolute; right:14px; top:14px; font-size:26px; opacity:0.12; }
+.kpi-label { font-size:11px; font-weight:700; color:var(--sub); text-transform:uppercase; letter-spacing:0.5px; }
+.kpi-value { font-family:var(--display); font-size:28px; font-weight:800; margin:5px 0 3px; line-height:1; }
+.kpi-delta { font-size:12px; font-weight:700; color: var(--green); }
+
+/* ── BROADCAST COMPOSER ── */
+.composer { background: white; border-radius: 16px; border: 1px solid var(--border); padding: 20px; }
+.composer-title { font-size: 15px; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+.type-selector { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 18px; }
+.type-card {
+  border: 2px solid var(--border); border-radius: 12px; padding: 12px;
+  cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.type-card:hover { border-color: var(--orange); }
+.type-card.selected { border-color: var(--orange); background: #FFF5EE; }
+.type-card .tc-icon { font-size: 22px; margin-bottom: 4px; }
+.type-card .tc-name { font-size: 12px; font-weight: 800; color: var(--ink); }
+.type-card .tc-sub { font-size: 10px; color: var(--sub); margin-top: 2px; }
+
+.form-group { margin-bottom: 14px; }
+.form-group label { font-size: 12px; font-weight: 800; color: var(--sub); display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border);
+  border-radius: 10px; font-family: var(--font); font-size: 14px;
+  color: var(--ink); outline: none; transition: border 0.15s; background: white;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--orange); }
+.form-group textarea { min-height: 80px; resize: vertical; }
+.char-count { font-size: 11px; color: var(--sub); text-align: right; margin-top: 3px; font-weight: 600; }
+
+.tone-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 14px; }
+.tone-pill {
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  border: 1.5px solid var(--border); background: white; cursor: pointer;
+  transition: all 0.15s; font-family: var(--font);
+}
+.tone-pill.selected { border-color: var(--orange); background: var(--orange); color: white; }
+
+.schedule-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.preview-box {
+  background: linear-gradient(135deg, #FF6B35 0%, #E23744 100%);
+  border-radius: 14px; padding: 16px; color: white; margin: 14px 0;
+  position: relative; overflow: hidden;
+}
+.preview-box::before {
+  content: ''; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M20 20.5V18H0v5h5v5H0v5h20v-9.5zm-2 4.5H4v-1h14v1zm0-3H4v-1h14v1zM4 7v1h16V7H4z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.preview-label { font-size: 10px; font-weight: 800; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.preview-text { font-size: 14px; font-weight: 700; line-height: 1.5; }
+.preview-cta { margin-top: 10px; background: rgba(255,255,255,0.25); border: 1px solid rgba(255,255,255,0.4); border-radius: 8px; padding: 6px 14px; font-size: 12px; font-weight: 800; display: inline-block; }
+
+.action-row { display: flex; gap: 10px; }
+.btn-draft {
+  flex: 1; padding: 11px; border-radius: 10px; border: 1.5px solid var(--border);
+  background: white; font-family: var(--font); font-size: 13px; font-weight: 700;
+  cursor: pointer; color: var(--sub); transition: all 0.15s;
+}
+.btn-draft:hover { border-color: var(--orange); color: var(--orange); }
+.btn-send {
+  flex: 2; padding: 11px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, var(--orange), var(--orange2));
+  color: white; font-family: var(--font); font-size: 13px; font-weight: 800;
+  cursor: pointer; box-shadow: 0 3px 12px rgba(232,97,42,0.35);
+  transition: all 0.15s;
+}
+.btn-send:hover { transform: translateY(-1px); box-shadow: 0 5px 16px rgba(232,97,42,0.45); }
+.btn-ai {
+  width: 100%; padding: 10px; border-radius: 10px; border: 1.5px dashed var(--purple);
+  background: #F8F0FF; color: var(--purple); font-family: var(--font);
+  font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: all 0.15s;
+}
+.btn-ai:hover { background: #EEE0FF; }
+
+/* ── TEMPLATE LIBRARY ── */
+.template-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.template-card {
+  border: 1.5px solid var(--border); border-radius: 12px; padding: 12px;
+  cursor: pointer; transition: all 0.15s; position: relative;
+}
+.template-card:hover { border-color: var(--orange); box-shadow: 0 2px 12px rgba(232,97,42,0.1); }
+.template-card.featured { border-color: var(--amber); background: #FFFBF0; }
+.tc-season { font-size: 18px; margin-bottom: 5px; }
+.tc-title { font-size: 12px; font-weight: 800; color: var(--ink); }
+.tc-text { font-size: 11px; color: var(--sub); margin-top: 3px; line-height: 1.4; }
+.tc-badge {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 10px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.tc-badge.seasonal { background: #FFF0E0; color: var(--orange); }
+.tc-badge.food { background: #E0F8EF; color: var(--green); }
+.tc-badge.promo { background: #F0E0FF; color: var(--purple); }
+.tc-badge.festive { background: #FFF0E0; color: var(--amber); }
+
+/* ── HISTORY TABLE ── */
+.hist-item {
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.hist-item:last-child { border-bottom: none; }
+.hist-emoji { font-size: 22px; flex-shrink: 0; width: 36px; text-align: center; }
+.hist-info { flex: 1; }
+.hist-msg { font-size: 13px; font-weight: 700; line-height: 1.4; }
+.hist-meta { font-size: 11px; color: var(--sub); margin-top: 3px; }
+.hist-stats { display: flex; gap: 12px; margin-top: 5px; }
+.hist-stat { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 3px; }
+.hist-stat.views { color: var(--blue); }
+.hist-stat.taps { color: var(--green); }
+.hist-stat.paid { color: var(--purple); }
+.hist-type-badge {
+  font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 20px;
+  flex-shrink: 0; align-self: flex-start; margin-top: 2px;
+}
+.hist-type-badge.organic { background: #E0F8EF; color: var(--green); }
+.hist-type-badge.paid { background: #F0E0FF; color: var(--purple); }
+.hist-type-badge.ai { background: #E8F0FF; color: var(--blue); }
+
+/* ── SCHEDULED ── */
+.sched-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  border-radius: 10px; background: var(--bg); margin-bottom: 8px; border: 1px solid var(--border);
+}
+.sched-time { font-size: 12px; font-weight: 800; color: var(--orange); min-width: 60px; }
+.sched-msg { font-size: 13px; font-weight: 700; flex: 1; }
+.sched-actions { display: flex; gap: 6px; }
+.sched-edit { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; border: 1.5px solid var(--border); background: white; cursor: pointer; font-family: var(--font); }
+.sched-del { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 8px; border: 1.5px solid #FFB8B0; background: #FFF0EE; color: var(--red); cursor: pointer; font-family: var(--font); }
+
+/* ── PAID PROMO ── */
+.promo-card {
+  border: 1.5px solid var(--border); border-radius: 12px; padding: 14px;
+  display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px;
+  cursor: pointer; transition: all 0.15s;
+}
+.promo-card:hover { border-color: var(--purple); }
+.promo-avatar { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+.promo-info { flex: 1; }
+.promo-name { font-size: 13px; font-weight: 800; }
+.promo-msg { font-size: 12px; color: var(--sub); margin-top: 2px; line-height: 1.4; }
+.promo-meta { display: flex; gap: 8px; margin-top: 6px; align-items: center; }
+.promo-price { font-size: 13px; font-weight: 800; color: var(--purple); }
+.promo-reach { font-size: 11px; color: var(--sub); font-weight: 600; }
+.promo-btn {
+  padding: 7px 14px; border-radius: 20px; font-size: 12px; font-weight: 800;
+  border: none; cursor: pointer; font-family: var(--font);
+  background: var(--purple); color: white;
+}
+
+/* ── AI SUGGESTIONS ── */
+.ai-suggestion {
+  border: 1.5px solid #E0D0FF; border-radius: 12px; padding: 12px 14px;
+  margin-bottom: 8px; background: #FAFAFF; cursor: pointer; transition: all 0.15s;
+}
+.ai-suggestion:hover { border-color: var(--purple); background: #F5EEFF; }
+.ai-reason { font-size: 10px; font-weight: 800; color: var(--purple); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.ai-msg { font-size: 13px; font-weight: 700; color: var(--ink); line-height: 1.45; }
+.ai-use-btn {
+  margin-top: 7px; font-size: 11px; font-weight: 800; color: var(--purple);
+  background: none; border: none; cursor: pointer; font-family: var(--font); padding: 0;
+}
+
+/* ── TABS ── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--ink); color: white; padding: 14px 20px;
+  border-radius: 12px; font-size: 13px; font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2); z-index: 200;
+  transform: translateY(80px); opacity: 0; transition: all 0.3s;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="back-btn">← Admin Home</button>
+    <h2>📢 Broadcast Manager</h2>
+  </div>
+  <div class="tab-row">
+    <button class="tab-btn active" onclick="switchTab('compose', this)">✍️ Compose</button>
+    <button class="tab-btn" onclick="switchTab('scheduled', this)">🕐 Scheduled</button>
+    <button class="tab-btn" onclick="switchTab('history', this)">📋 History</button>
+    <button class="tab-btn" onclick="switchTab('paid', this)">💜 Paid Promos</button>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- KPI ROW -->
+  <div class="three-col">
+    <div class="kpi-card" style="--accent:var(--orange)">
+      <div class="kpi-icon">📢</div>
+      <div class="kpi-label">Broadcasts Sent</div>
+      <div class="kpi-value">34</div>
+      <div class="kpi-delta">↑ 8 this week</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--green)">
+      <div class="kpi-icon">🔍</div>
+      <div class="kpi-label">Searches Triggered</div>
+      <div class="kpi-value">1,847</div>
+      <div class="kpi-delta">Avg 54/broadcast</div>
+    </div>
+    <div class="kpi-card" style="--accent:var(--purple)">
+      <div class="kpi-icon">💰</div>
+      <div class="kpi-label">Paid Promo Revenue</div>
+      <div class="kpi-value">₹2,400</div>
+      <div class="kpi-delta">8 sponsored nudges</div>
+    </div>
+  </div>
+
+  <!-- ── COMPOSE TAB ── -->
+  <div class="tab-content active" id="tab-compose">
+    <div class="two-col">
+
+      <!-- LEFT: Composer -->
+      <div>
+        <div class="composer">
+          <div class="composer-title">✍️ New Broadcast</div>
+
+          <!-- Type selector -->
+          <div style="font-size:12px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px">Broadcast Type</div>
+          <div class="type-selector">
+            <div class="type-card selected" onclick="selectType(this, 'organic')">
+              <div class="tc-icon">🌱</div>
+              <div class="tc-name">Organic Nudge</div>
+              <div class="tc-sub">You write it · Free</div>
+            </div>
+            <div class="type-card" onclick="selectType(this, 'sponsored')">
+              <div class="tc-icon">💜</div>
+              <div class="tc-name">Seller Promo</div>
+              <div class="tc-sub">Seller pays · ₹99–299</div>
+            </div>
+            <div class="type-card" onclick="selectType(this, 'ai')">
+              <div class="tc-icon">🤖</div>
+              <div class="tc-name">AI Generated</div>
+              <div class="tc-sub">From search trends</div>
+            </div>
+          </div>
+
+          <!-- AI generate button -->
+          <button class="btn-ai" onclick="generateAINudge()">
+            🤖 Generate from today's search trends
+          </button>
+
+          <!-- Message -->
+          <div class="form-group">
+            <label>Message</label>
+            <textarea id="msgText" placeholder="☀️ It's peak summer! Someone in Tridasa makes cold-pressed sugarcane juice. Refreshing, no sugar added — ask me who! 🥤" oninput="updatePreview()" maxlength="280"></textarea>
+            <div class="char-count"><span id="charCount">0</span>/280</div>
+          </div>
+
+          <!-- Tone -->
+          <div style="font-size:12px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px">Tone</div>
+          <div class="tone-row">
+            <div class="tone-pill selected" onclick="selectTone(this)">😄 Friendly</div>
+            <div class="tone-pill" onclick="selectTone(this)">🔥 Urgent</div>
+            <div class="tone-pill" onclick="selectTone(this)">🎉 Festive</div>
+            <div class="tone-pill" onclick="selectTone(this)">❤️ Warm</div>
+            <div class="tone-pill" onclick="selectTone(this)">💡 Informative</div>
+          </div>
+
+          <!-- Schedule -->
+          <div class="schedule-row">
+            <div class="form-group">
+              <label>Send When</label>
+              <select id="sendWhen" onchange="toggleSchedule()">
+                <option value="now">Send Now</option>
+                <option value="scheduled">Schedule</option>
+                <option value="recurring">Recurring</option>
+              </select>
+            </div>
+            <div class="form-group" id="timeField" style="display:none">
+              <label>Date & Time</label>
+              <input type="datetime-local" id="schedTime">
+            </div>
+          </div>
+
+          <div class="form-group" id="recurField" style="display:none">
+            <label>Recurring Pattern</label>
+            <select>
+              <option>Every day at this time</option>
+              <option>Every weekday</option>
+              <option>Every weekend</option>
+              <option>Every Monday (weekly digest)</option>
+            </select>
+          </div>
+
+          <!-- Channel -->
+          <div class="form-group">
+            <label>Channel</label>
+            <select>
+              <option>🤖 Chatbot Digest (morning message)</option>
+              <option>📱 WhatsApp Broadcast (when integrated)</option>
+              <option>🔔 Both</option>
+            </select>
+          </div>
+
+          <!-- Seller tag (for sponsored) -->
+          <div class="form-group" id="sellerField" style="display:none">
+            <label>Tag Seller (optional)</label>
+            <select>
+              <option value="">No specific seller</option>
+              <option>Lakshmi Reddy — Batter</option>
+              <option>Sunita Mishra — Healthy Rasoi</option>
+              <option>Meena Iyer — Juice Bar</option>
+              <option>Farida Begum — Dry Fruits</option>
+              <option>Sravanthi B — Cloud Kitchen</option>
+            </select>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-box">
+            <div class="preview-label">📱 Preview — How it appears in chatbot</div>
+            <div class="preview-text" id="previewText">☀️ It's peak summer! Someone in Tridasa makes cold-pressed sugarcane juice. Refreshing, no sugar added — ask me who! 🥤</div>
+            <div class="preview-cta">🔍 Search now →</div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn-draft" onclick="saveDraft()">💾 Save Draft</button>
+            <button class="btn-send" onclick="sendBroadcast()">📢 Send Broadcast</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Templates + AI Suggestions -->
+      <div>
+        <!-- AI Suggestions from search trends -->
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <div class="panel-title">🤖 AI Suggested Right Now</div>
+              <div class="panel-sub">Based on today's search patterns · Auto-refreshes hourly</div>
+            </div>
+          </div>
+          <div class="panel-body" id="aiSuggestions"></div>
+        </div>
+
+        <!-- Template Library -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">📚 Template Library</div>
+          </div>
+          <div class="panel-body">
+            <div class="template-grid" id="templateGrid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SCHEDULED TAB ── -->
+  <div class="tab-content" id="tab-scheduled">
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🕐 Upcoming Broadcasts</div>
+        </div>
+        <div class="panel-body" id="scheduledList"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🔁 Recurring Nudges</div>
+        </div>
+        <div class="panel-body" id="recurringList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HISTORY TAB ── -->
+  <div class="tab-content" id="tab-history">
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">📋 Broadcast History</div>
+          <div class="panel-sub">Views = chatbot opens after broadcast · Taps = WhatsApp taps within 30 mins</div>
+        </div>
+      </div>
+      <div class="panel-body" id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- ── PAID PROMOS TAB ── -->
+  <div class="tab-content" id="tab-paid">
+    <div class="three-col" style="margin-bottom:20px">
+      <div class="kpi-card" style="--accent:var(--purple)">
+        <div class="kpi-icon">💜</div>
+        <div class="kpi-label">Paid Promos This Month</div>
+        <div class="kpi-value">8</div>
+        <div class="kpi-delta">↑ 3 vs last month</div>
+      </div>
+      <div class="kpi-card" style="--accent:var(--green)">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-label">Revenue This Month</div>
+        <div class="kpi-value">₹2,400</div>
+        <div class="kpi-delta">Avg ₹300/promo</div>
+      </div>
+      <div class="kpi-card" style="--accent:var(--orange)">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-label">Best Performing CTR</div>
+        <div class="kpi-value">84%</div>
+        <div class="kpi-delta">Meena's mango shake</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title">💜 Create Paid Promo for Seller</div>
+            <div class="panel-sub">Seller pays ₹99–299 · You set the message · Goes to entire community</div>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label>Select Seller</label>
+            <select onchange="updatePromoPreview(this)">
+              <option>Lakshmi Reddy — Batter</option>
+              <option>Sunita Mishra — Healthy Rasoi</option>
+              <option>Meena Iyer — Juice Bar</option>
+              <option>Farida Begum — Dry Fruits</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Promo Message</label>
+            <textarea placeholder="🥭 Fresh Alfonso mango shakes just launched at Meena's Juice Bar (T2-803)! Made with real mangoes, no added sugar. Only 15 glasses today — grab yours! 🥤" id="promoMsg" oninput="updatePromoPreview()"></textarea>
+          </div>
+          <div class="schedule-row">
+            <div class="form-group">
+              <label>Package</label>
+              <select id="promoPackage" onchange="updatePromoPreview()">
+                <option value="99">Basic · ₹99 · 1 broadcast</option>
+                <option value="199">Standard · ₹199 · 3 broadcasts over a week</option>
+                <option value="299">Premium · ₹299 · Daily for 7 days + featured listing</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Payment Status</label>
+              <select>
+                <option>✅ Paid · UPI confirmed</option>
+                <option>⏳ Pending payment</option>
+                <option>🆓 Complimentary</option>
+              </select>
+            </div>
+          </div>
+          <div class="preview-box" style="background: linear-gradient(135deg, #6C5CE7, #a29bfe)">
+            <div class="preview-label">💜 Sponsored · Paid Promo Preview</div>
+            <div class="preview-text" id="promoPreviewText">🥭 Fresh Alfonso mango shakes just launched at Meena's Juice Bar! Only 15 glasses today 🥤</div>
+            <div class="preview-cta">🔍 Ask me for Meena's number →</div>
+          </div>
+          <button class="btn-send" style="width:100%" onclick="createPaidPromo()">💜 Create & Schedule Promo</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">📊 Past Paid Promos</div>
+        </div>
+        <div class="panel-body" id="paidPromoHistory"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ Broadcast sent to 2,700 residents!</div>
+
+<script>
+// ── DATA ─────────────────────────────────────────────────────────
+
+const aiSuggestions = [
+  {
+    reason: "🔥 64 searches for 'painter' this week — 0 results",
+    msg: "🎨 Planning to repaint before summer ends? Someone in Tridasa might just do that for you. Ask Apna Bazaar 'painter in Tridasa'!"
+  },
+  {
+    reason: "☀️ Temperature today 41°C · Peak hour 12-2 PM",
+    msg: "🌡️ 41 degrees outside right now! Cold sugarcane juice wali didi T2 mein hai — ice cold, freshly pressed. Ask me who! 🥤"
+  },
+  {
+    reason: "📈 'dinner tonight' searches up 40% this evening",
+    msg: "🌙 Kya banaye aaj raat? Three home kitchens in Tridasa have dinner ready for pickup tonight — from bagara rice to paneer pulao. Ask me! 🍱"
+  },
+  {
+    reason: "📅 Sunday tomorrow · Historically 3x search volume",
+    msg: "🛌 Sunday lazy morning ahead! Order your idli-dosa batter tonight — fresh stone-ground, ready by 7 AM. Ask Apna Bazaar 'batter for tomorrow' 🫓"
+  },
+];
+
+const templates = [
+  { icon:"☀️", title:"Summer Heat", text:"42°C outside! Goli soda ki yaad aa gayi? 🥤 Someone in Tridasa makes it fresh. Ask me who!", badge:"seasonal" },
+  { icon:"🌧️", title:"Rainy Evening", text:"Baarish mein garam khichdi aur kadhi! Koi banata hai yahan. Ask Apna Bazaar 🍲", badge:"seasonal" },
+  { icon:"🪔", title:"Diwali Sweets", text:"Diwali gift boxes ready! Homemade mithai, no preservatives — ladoo, barfi, chakli. Ask who makes them 🎉", badge:"festive" },
+  { icon:"🌅", title:"Morning Batter", text:"Good morning Tridasa! Stone-ground idli-dosa batter available fresh. Order before 9 AM 🫓", badge:"food" },
+  { icon:"🎂", title:"Birthday Cakes", text:"Planning a birthday? Custom cakes baked right here in Tridasa. Ask me 'custom cake order' 🎂", badge:"food" },
+  { icon:"🥗", title:"Healthy Lunch", text:"Light lunch today? Fresh home-cooked South Indian meals from ₹129. Ask who's cooking! 🍱", badge:"food" },
+  { icon:"🧹", title:"Deep Cleaning", text:"Pre-festival cleaning time! Does anyone in Tridasa offer deep cleaning? Ask me 🧹", badge:"seasonal" },
+  { icon:"❄️", title:"Frozen Stock Up", text:"Weekend grocery run se bachna hai? Frozen hara bhara kabab & kachori available for stock-up ❄️", badge:"food" },
+];
+
+const history = [
+  { emoji:"☀️", msg:"42°C outside! Goli soda ki yaad aa gayi? Someone in Tridasa makes it fresh. Ask me who!", time:"Today 12:05 PM", views:312, taps:187, type:"organic" },
+  { emoji:"💜", msg:"🥭 Fresh Alfonso mango shakes at Meena's Juice Bar! Only 15 glasses today 🥤 — ask me Meena's number!", time:"Yesterday 11:30 AM", views:284, taps:239, type:"paid" },
+  { emoji:"🌅", msg:"Good morning Tridasa! Fresh stone-ground batter available. Order before 9 AM 🫓", time:"Yesterday 7:00 AM", views:198, taps:112, type:"organic" },
+  { emoji:"🤖", msg:"Sunday special! 3 home kitchens have brunch menus today. Ask me 'what's cooking Sunday' 🍱", time:"Apr 6, 9:00 AM", views:421, taps:268, type:"ai" },
+  { emoji:"🎂", msg:"Planning a birthday? Custom cakes baked right here in Tridasa. Ask me 'custom cake' 🎂", time:"Apr 5, 3:00 PM", views:156, taps:87, type:"organic" },
+  { emoji:"💜", msg:"❄️ MP Wala Taste: Hara Bhara Kabab frozen packs now available. Home delivery ₹20 extra!", time:"Apr 4, 6:00 PM", views:198, taps:134, type:"paid" },
+];
+
+const scheduled = [
+  { time:"Tomorrow 7:00 AM", msg:"Good morning! Fresh batter available for order. Ask 'idli batter' 🫓", type:"recurring" },
+  { time:"Today 6:30 PM", msg:"Dinner time! What's cooking in Tridasa tonight? Ask me 🌙", type:"scheduled" },
+  { time:"Sat 12:00 PM", msg:"Weekend special! Ice creams and shakes available today. Ask Apna Bazaar 🍦", type:"scheduled" },
+];
+
+const recurring = [
+  { pattern:"Every morning 7:00 AM · Mon–Fri", msg:"Good morning Tridasa! Fresh home food available. Ask me what's cooking today ☀️", active: true },
+  { pattern:"Every Sunday 9:00 AM", msg:"Sunday lazy morning! Ask me what's fresh for brunch today 🛌", active: true },
+  { pattern:"Every Friday 5:00 PM", msg:"Weekend aane wala hai! Stock up on dry fruits and frozen snacks 🫙", active: false },
+];
+
+const paidPromos = [
+  { emoji:"🥭", seller:"Meena Iyer", shop:"Meena's Juice Bar", msg:"Fresh mango shakes, only 15 today!", revenue:"₹299", views:284, taps:239, ctr:"84%", package:"Premium" },
+  { emoji:"❄️", seller:"Rahul Sharma", shop:"MP Wala Taste", msg:"Hara Bhara Kabab frozen packs, home delivery", revenue:"₹199", views:198, taps:134, ctr:"67%", package:"Standard" },
+  { emoji:"🪷", seller:"Gruha Ruchulu", shop:"Shree Vaibhavam", msg:"Sunday biryani special, limited boxes!", revenue:"₹99", views:156, taps:98, ctr:"62%", package:"Basic" },
+];
+
+// ── RENDER ────────────────────────────────────────────────────────
+
+function renderAll() {
+  renderAISuggestions();
+  renderTemplates();
+  renderScheduled();
+  renderRecurring();
+  renderHistory();
+  renderPaidPromos();
+}
+
+function renderAISuggestions() {
+  document.getElementById('aiSuggestions').innerHTML = aiSuggestions.map(s => `
+    <div class="ai-suggestion" onclick="useAISuggestion('${s.msg.replace(/'/g,"\\'")}')">
+      <div class="ai-reason">${s.reason}</div>
+      <div class="ai-msg">${s.msg}</div>
+      <button class="ai-use-btn">Use this →</button>
+    </div>`).join('');
+}
+
+function renderTemplates() {
+  document.getElementById('templateGrid').innerHTML = templates.map(t => `
+    <div class="template-card" onclick="useTemplate('${t.text.replace(/'/g,"\\'")}')">
+      <span class="tc-badge ${t.badge}">${t.badge}</span>
+      <div class="tc-season">${t.icon}</div>
+      <div class="tc-title">${t.title}</div>
+      <div class="tc-text">${t.text}</div>
+    </div>`).join('');
+}
+
+function renderScheduled() {
+  document.getElementById('scheduledList').innerHTML = scheduled.map(s => `
+    <div class="sched-item">
+      <div class="sched-time">${s.time}</div>
+      <div class="sched-msg">${s.msg}</div>
+      <div class="sched-actions">
+        <button class="sched-edit">Edit</button>
+        <button class="sched-del">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderRecurring() {
+  document.getElementById('recurringList').innerHTML = recurring.map(r => `
+    <div class="sched-item" style="${!r.active?'opacity:0.5':''}">
+      <div style="flex:1">
+        <div style="font-size:11px;font-weight:800;color:var(--purple);margin-bottom:3px">🔁 ${r.pattern}</div>
+        <div class="sched-msg">${r.msg}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;background:${r.active?'#EAF5EF':'#F5F0E8'};color:${r.active?'var(--green)':'var(--sub)'}">${r.active?'Active':'Paused'}</div>
+        <button class="sched-edit">Edit</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderHistory() {
+  document.getElementById('historyList').innerHTML = history.map(h => `
+    <div class="hist-item">
+      <div class="hist-emoji">${h.emoji}</div>
+      <div class="hist-info">
+        <div class="hist-msg">${h.msg}</div>
+        <div class="hist-meta">${h.time}</div>
+        <div class="hist-stats">
+          <div class="hist-stat views">👁️ ${h.views} views</div>
+          <div class="hist-stat taps">💬 ${h.taps} WA taps</div>
+          <div class="hist-stat" style="color:var(--orange)">📊 ${Math.round((h.taps/h.views)*100)}% CTR</div>
+        </div>
+      </div>
+      <div class="hist-type-badge ${h.type}">${h.type}</div>
+    </div>`).join('');
+}
+
+function renderPaidPromos() {
+  document.getElementById('paidPromoHistory').innerHTML = paidPromos.map(p => `
+    <div class="promo-card">
+      <div class="promo-avatar" style="background:#F3E8FF">${p.emoji}</div>
+      <div class="promo-info">
+        <div class="promo-name">${p.seller} — ${p.shop}</div>
+        <div class="promo-msg">${p.msg}</div>
+        <div class="promo-meta">
+          <div class="promo-price">${p.revenue}</div>
+          <div class="promo-reach">👁️ ${p.views} · 💬 ${p.taps} taps · ${p.ctr} CTR</div>
+        </div>
+      </div>
+      <span style="font-size:10px;font-weight:800;padding:3px 8px;border-radius:10px;background:#F0E0FF;color:var(--purple);align-self:flex-start">${p.package}</span>
+    </div>`).join('');
+}
+
+// ── INTERACTIONS ─────────────────────────────────────────────────
+
+function selectType(el, type) {
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('sellerField').style.display = type === 'sponsored' ? 'block' : 'none';
+  if (type === 'ai') generateAINudge();
+}
+
+function selectTone(el) {
+  document.querySelectorAll('.tone-pill').forEach(p => p.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function toggleSchedule() {
+  const v = document.getElementById('sendWhen').value;
+  document.getElementById('timeField').style.display = v === 'scheduled' ? 'block' : 'none';
+  document.getElementById('recurField').style.display = v === 'recurring' ? 'block' : 'none';
+}
+
+function updatePreview() {
+  const text = document.getElementById('msgText').value;
+  document.getElementById('previewText').textContent = text || '(your message will appear here)';
+  document.getElementById('charCount').textContent = text.length;
+}
+
+function useTemplate(text) {
+  document.getElementById('msgText').value = text;
+  updatePreview();
+  document.getElementById('msgText').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function useAISuggestion(text) {
+  document.getElementById('msgText').value = text;
+  updatePreview();
+  switchTab('compose', document.querySelector('.tab-btn'));
+  document.getElementById('msgText').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function generateAINudge() {
+  const suggestions = [
+    "🌡️ Aaj 41°C hai Tridasa mein! Cold pressed sugarcane juice wali didi T2 mein hai — ice cold, freshly pressed. Ask me who! 🥤",
+    "🌙 It's dinner time and 3 home kitchens are ready! Bagara rice, paneer pulao, or South Indian thali — ask me what's available tonight 🍱",
+    "☀️ Sunday morning! Order your batter tonight for tomorrow's soft idlis. Ask Apna Bazaar 'batter for Sunday' 🫓",
+  ];
+  const random = suggestions[Math.floor(Math.random() * suggestions.length)];
+  document.getElementById('msgText').value = random;
+  updatePreview();
+  showToast('🤖 AI nudge generated from today\'s trends!');
+}
+
+function sendBroadcast() {
+  const msg = document.getElementById('msgText').value;
+  if (!msg.trim()) { showToast('⚠️ Please write a message first!'); return; }
+  const when = document.getElementById('sendWhen').value;
+  if (when === 'now') {
+    showToast('✅ Broadcast sent to 2,700 residents!');
+    history.unshift({ emoji:'📢', msg, time:'Just now', views:0, taps:0, type:'organic' });
+    renderHistory();
+    document.getElementById('msgText').value = '';
+    updatePreview();
+  } else {
+    showToast('🕐 Broadcast scheduled successfully!');
+  }
+}
+
+function saveDraft() { showToast('💾 Draft saved!'); }
+
+function createPaidPromo() { showToast('💜 Paid promo created and scheduled!'); }
+
+function updatePromoPreview() {
+  const msg = document.getElementById('promoMsg').value;
+  if (msg) document.getElementById('promoPreviewText').textContent = msg.substring(0, 120);
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+renderAll();
+</script>
+</body>
+</html>

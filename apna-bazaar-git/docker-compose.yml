@@ -1,0 +1,44 @@
+version: '3.9'
+# Run everything with one command: docker-compose up --build
+# Requires only Docker Desktop — no Java, no PostgreSQL, no Maven needed.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: apna-postgres
+    environment:
+      POSTGRES_USER: apna
+      POSTGRES_PASSWORD: apna123
+      POSTGRES_DB: apna_bazaar
+    ports:
+      - "5432:5432"
+    volumes:
+      - apna_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apna -d apna_bazaar"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: apna-backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: apna_bazaar
+      DB_USERNAME: apna
+      DB_PASSWORD: apna123
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      SERVER_PORT: 8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  apna_pgdata:
