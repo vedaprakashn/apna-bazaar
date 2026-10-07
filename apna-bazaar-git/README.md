@@ -85,3 +85,7 @@ Demo chat broadcasts/promotions rotate every three minutes while the page is vis
 Search interprets the original short request into English intent before catalog matching, so informal transliteration and typos (for example, Tanglish “ennaku hindi tuiton venum da”) do not depend on English keywords. Replies use the original request. This uses two AI calls per search.
 
 The community AI guide is Aapta (आप्त, trusted friend), with a friendly character badge and consistent voice in chat and neighbourhood notes.
+
+Supported chat languages: English, Hindi, Telugu, Tamil, Kannada, Malayalam, Marathi, Punjabi, Bengali and Assamese; native scripts, romanized requests and mixed-language queries are supported. Search uses structured JSON with low randomness and preserves the native script in replies.
+
+Mixed-language chat includes Hinglish, Tenglish, Tanglish/Tamglish and English mixed with each supported language, including informal spelling. Bengali and Assamese share an alphabet but retain distinct language preferences.

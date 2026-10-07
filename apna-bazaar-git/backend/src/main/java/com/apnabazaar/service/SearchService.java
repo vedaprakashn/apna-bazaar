@@ -51,6 +51,14 @@ public class SearchService {
                 .filter(o -> Boolean.TRUE.equals(o.getIsAvailable()))
                 .anyMatch(o -> subject.matcher(o.getName() + " " + o.getDescription()).find())).toList();
         }
+        // A cooked-idli request must not return a seller who only sells the ingredient batter.
+        String foodIntent = interpreted.intent().toLowerCase(Locale.ROOT);
+        if (Pattern.compile("\\b(idli|idly)\\b").matcher(foodIntent).find() && !foodIntent.contains("batter")) {
+            providers = providers.stream().filter(p -> p.getOfferings().stream()
+                .filter(o -> Boolean.TRUE.equals(o.getIsAvailable()))
+                .anyMatch(o -> Pattern.compile("(?i)\\b(idli|idly)\\b").matcher(o.getName()).find()
+                    && !o.getName().toLowerCase(Locale.ROOT).contains("batter"))).toList();
+        }
         String aiResponse = callOpenAi(query, buildCatalog(providers, postsByProvider), interpreted);
         List<MatchedProvider> matched = parseResponse(aiResponse, providers, postsByProvider);
 
@@ -110,7 +118,21 @@ public class SearchService {
         // Interpret the short request before the larger catalog can distract from its meaning.
         String interpretation = callJson("""
                 Translate this community marketplace search into a concise English search intent.
-                Understand all Indian languages, native scripts, phonetic transliteration, informal
+                Supported languages: English, Hindi, Telugu, Tamil, Kannada, Malayalam,
+                Marathi, Punjabi, Bengali and Assamese. Distinguish Bengali from Assamese
+                even though they share a script. Preserve the user's language and script.
+                Support Hinglish (Hindi-English), Tenglish (Telugu-English), Tanglish/Tamglish
+                (Tamil-English), and English mixed with Kannada, Malayalam, Marathi, Punjabi,
+                Bengali or Assamese. Detect meaning, not fixed keywords or spelling.
+                "ইডলি পোৱা যাব নে?" is Assamese, not Bengali; reply using Assamese vocabulary.
+                "idli dya please" is Marathi-English; "idli kittumo please" is Malayalam-English.
+                "idli sigutta please" is Kannada-English (sigutta means is it available), not Telugu.
+                "idli mil jayegi kya" is Hinglish; "idli mil sakdi aa" is Punjabi-English.
+                "idli pawa jabe?" is Bengali-English, not Assamese (pawa jabe means can I get it).
+                "idli pua jabo ne" is Assamese-English, not Bengali.
+                For any Latin-script input, responseLanguage must specify Latin-script replies;
+                never switch to native script unless the request itself uses native script.
+                Understand native scripts, phonetic transliteration, informal
                 speech, code-switching and spelling mistakes. Preserve the exact subject, dates,
                 age and constraints. The language spoken by the requester is not necessarily the
                 language they want lessons in. Do not answer the question or invent catalog facts.
@@ -152,7 +174,13 @@ public class SearchService {
             .filter(script -> script != Character.UnicodeScript.LATIN
                 && script != Character.UnicodeScript.COMMON && script != Character.UnicodeScript.INHERITED)
             .findFirst();
-        if (nativeScript.isPresent()) responseLanguage += "; write in " + nativeScript.get() + " script, never Latin transliteration";
+        if (nativeScript.isPresent()) {
+            String alphabet = nativeScript.get() == Character.UnicodeScript.BENGALI
+                ? "the shared Bengali-Assamese alphabet; keep the detected language (Assamese is not Bengali)"
+                : nativeScript.get().toString();
+            responseLanguage += "; preserve the original alphabet: " + alphabet + "; never Latin transliteration";
+        }
+        if (nativeScript.isEmpty()) responseLanguage += "; write in Latin script only, matching the romanized input";
         return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest);
     }
 
@@ -176,7 +204,8 @@ public class SearchService {
             SELLER DATABASE:
             %s
             Rules:
-            1. Interpret queries in any Indian language, including native scripts, transliteration,
+            1. Support English, Hindi, Telugu, Tamil, Kannada, Malayalam, Marathi, Punjabi,
+               Bengali and Assamese, including native scripts, transliteration,
                and code-switching (Hinglish, Tanglish, Telugu mixed with English, etc.).
                Translate the meaning internally before matching the English catalog.
                Understand synonyms: tuition, tutor, coaching, lessons and classes can express
@@ -193,10 +222,14 @@ public class SearchService {
             Only use sellers from this database. Explain when availability is on a different day.
             Listings marked DEMO are fictional; do not invent contacts, ratings, or stock.
             2. Be warm, peppy, use food emojis naturally
-            3. Keep intro to ONE punchy sentence max
+            3. Keep intro to ONE useful sentence identifying the matching offering or seller.
+               Do not quote serving hours or prices in the intro. Never invent times or stock.
+               A permanent catalog entry does not prove an item is available right now.
+               Use the storefront for schedules; only mention today's availability if supported
+               by TODAY'S MENU. A missing daily post must not be described as live stock.
             4. Return a JSON object with intro and sellers fields:
                {"intro":"Specific answer in the mandatory response language",
-                "sellers":[{"id":"seller UUID","matchReason":"specific matching offering and schedule"}]}
+                "sellers":[{"id":"seller UUID","matchReason":"specific matching offering and why it fits the request"}]}
                Every matching seller needs a card. If none match, use sellers:[] and explain
                exactly what is missing. Never give a generic greeting or merely promise help.
                Idly/idli are equivalent. Ready-to-eat idli must match the idli plate, not batter.
