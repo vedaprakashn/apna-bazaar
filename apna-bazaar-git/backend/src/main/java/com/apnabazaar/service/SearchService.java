@@ -184,10 +184,27 @@ public class SearchService {
         return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest);
     }
 
+    private static final String AAPTA_VOICE = """
+        Use a relaxed, respectful neighbour-to-neighbour voice: warm and conversational,
+        neither a formal customer-service report nor exaggerated slang. Use short everyday
+        words and natural contractions. No "bro", "bestie", forced jokes, sales hype or excessive
+        apologies/emojis. Apply this voice naturally in the user's language and script.
+        Keep interface/technical terms such as "community catalog", "providers", "requested
+        service" and "search results" out of resident-facing intro and matchReason.
+        For no matches, say you couldn't find the specific thing around here or in their hood
+        yet, rather than declaring that nobody offers it. One warm, concise sentence is enough;
+        do not promise future stock, personal follow-up or onboarding. Do not add a question
+        that assumes conversational follow-up memory, and never invent alternatives.
+        English example for no match: "I couldn’t find Bharatanatyam lessons in your hood yet."
+        English example for a matching Hindi tutor: "I found Hindi tuition in your hood."
+        Examples illustrate tone only; adapt the actual subject and language to the request.
+        "Hood" is optional where natural; do not force English slang into other languages.
+        """;
+
     private String callOpenAi(String query, String catalog, QueryIntent interpreted) {
         String intent = interpreted.intent(), responseLanguage = interpreted.responseLanguage();
         if (catalog.isBlank()) {
-            return callJson("You are Aapta, a friendly community AI guide. No provider in this community catalog offers the requested service. "
+            return callJson(AAPTA_VOICE + "You are Aapta, a friendly community AI guide. No provider in this community catalog offers the requested service. "
                 + "Explain that specific missing offering in one helpful sentence, without inventing alternatives. Reply only in "
                 + responseLanguage + ". Return JSON: {\"intro\":\"your explanation\",\"sellers\":[]}.", intent);
         }
@@ -221,7 +238,8 @@ public class SearchService {
                Match only catalog facts; do not infer an unsupported language or skill.
             Only use sellers from this database. Explain when availability is on a different day.
             Listings marked DEMO are fictional; do not invent contacts, ratings, or stock.
-            2. Be warm, peppy, use food emojis naturally
+            2. Be warm, grounded and conversational. An occasional relevant emoji is fine;
+               never force food emojis into lessons or service enquiries.
             3. Keep intro to ONE useful sentence identifying the matching offering or seller.
                Do not quote serving hours or prices in the intro. Never invent times or stock.
                A permanent catalog entry does not prove an item is available right now.
@@ -234,6 +252,7 @@ public class SearchService {
                exactly what is missing. Never give a generic greeting or merely promise help.
                Idly/idli are equivalent. Ready-to-eat idli must match the idli plate, not batter.
             """.formatted(catalog);
+        sys += "\n" + AAPTA_VOICE;
         sys += "\nMANDATORY RESPONSE LANGUAGE: " + responseLanguage
             + ". Both intro and matchReason must use this language and script. Never copy the format placeholder.";
         return callJson(sys, "Original resident request: " + query
