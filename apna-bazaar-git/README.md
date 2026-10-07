@@ -75,3 +75,5 @@ Flyway V4 inserts 24 fictional providers in each pilot community, covering all 1
 The operator dashboard at `/admin/index.html` loads `/api/{community}/admin/activity` and shows actual search activity, missed queries, category coverage and provider interest. Demo taps record `profile_view`; real WhatsApp buttons record `whatsapp_tap`. Date ranges and daily charts use India Standard Time.
 
 The resident chatbot and dashboard share responsive styling. Backend JSON APIs remain independent of the web presentation, allowing Android/iOS clients after functional completion. Native screens, authentication, notification delivery and app-store packaging remain future work.
+
+AI search accepts Indian-language scripts, transliterated queries and mixed-language requests. Unicode query normalization preserves native scripts in analytics. Flyway V6 adds a fictional Hindi tutor in each pilot community (25 demo providers per community). Both shop and resident names on search cards open the provider storefront.

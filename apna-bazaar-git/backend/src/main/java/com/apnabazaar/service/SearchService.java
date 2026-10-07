@@ -42,8 +42,8 @@ public class SearchService {
         List<MatchedProvider> matched = parseResponse(aiResponse, providers, postsByProvider);
 
         SearchEvent event = analyticsService.recordSearchEvent(
-            community, query, normalise(query), matched.size(), sessionId);
-        if (matched.isEmpty()) analyticsService.recordZeroResult(community, query, normalise(query));
+            community, query, QueryNormalizer.normalize(query), matched.size(), sessionId);
+        if (matched.isEmpty()) analyticsService.recordZeroResult(community, query, QueryNormalizer.normalize(query));
         else analyticsService.recordImpressions(event, matched);
 
         return SearchResponse.builder()
@@ -97,7 +97,20 @@ public class SearchService {
             SELLER DATABASE:
             %s
             Rules:
-            1. Match semantically — understand intent, not keywords. Respect stated days and schedules.
+            1. Interpret queries in any Indian language, including native scripts, transliteration,
+               and code-switching (Hinglish, Tanglish, Telugu mixed with English, etc.).
+               Translate the meaning internally before matching the English catalog.
+               Understand synonyms: tuition, tutor, coaching, lessons and classes can express
+               the same need; "Hindi tuition", "हिंदी की ट्यूशन", and "Hindi sikhane wale"
+               all ask for Hindi teaching. Preserve the requested subject, age and constraints.
+               Broad category requests can match several providers. A specific subject must
+               be explicitly supported by the listing; never substitute karate or handwriting
+               for Hindi tuition. Respect stated days and schedules.
+               Reply in the query's language and script, including intro and matchReason.
+               The subject being taught does not determine the reply language: an English
+               request for Hindi tuition needs an English reply; a Tamil request needs Tamil.
+               Keep seller IDs and XML/JSON structural keys unchanged.
+               Match only catalog facts; do not infer an unsupported language or skill.
             Only use sellers from this database. Explain when availability is on a different day.
             Listings marked DEMO are fictional; do not invent contacts, ratings, or stock.
             2. Be warm, peppy, use food emojis naturally
@@ -105,7 +118,7 @@ public class SearchService {
             4. ALWAYS respond in this exact format when sellers found:
             <intro>One punchy sentence!</intro>
             <sellers>[{"id":"<uuid>","matchReason":"specific item and why, 1 line"}]</sellers>
-            If nothing matches, reply conversationally with no JSON.
+            If nothing matches, explain the missing offering in the query language using an <intro> tag and <sellers>[]</sellers>.
             """.formatted(catalog);
         var prompt = new Prompt(List.of(new SystemMessage(sys), new UserMessage(query)));
         return chatModel.call(prompt).getResult().getOutput().getText();
@@ -155,7 +168,5 @@ public class SearchService {
         return m.find() ? m.group(1).trim() : null;
     }
 
-    private String normalise(String q) {
-        return q.toLowerCase().trim().replaceAll("[^a-z0-9 ]","").replaceAll("\\s+"," ");
-    }
+
 }

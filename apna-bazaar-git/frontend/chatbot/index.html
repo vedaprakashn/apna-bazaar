@@ -29,7 +29,7 @@
       <section class="hero compact-hero">
         <div>
           <h1>Find it in your community.</h1>
-          <p class="lead">Food, classes and home services — just ask.</p>
+          <p class="lead">Food, classes and home services — ask in your language.</p>
         </div>
       </section>
       <div class="demo-notice">
@@ -215,7 +215,7 @@
           info = el("div");
         top.append(el("div", "seller-icon", item?.emoji || "🛍"));
         info.append(
-          el("h3", "", p.shopName || p.name),
+          el("h3", "seller-shop"),
           el(
             "small",
             "",
@@ -240,6 +240,10 @@
             }),
           }).catch(() => {});
         };
+        const shopLink = el("a", "provider-link", p.shopName || p.name);
+        shopLink.href = profile.href;
+        shopLink.onclick = profile.onclick;
+        info.querySelector(".seller-shop").append(shopLink);
         info.append(profile);
         info.append(
           el("div", "seller-flat", "Flat: " + (p.flatNumber || "Not provided")),
@@ -307,7 +311,7 @@
           pending.remove();
           message(data.intro || "Here’s what I found in your community.");
           for (const p of data.providers || []) resultCard(p, data.sessionId);
-          if (!(data.providers || []).length)
+          if (!(data.providers || []).length && !data.intro)
             message(
               "No matches this time. Your question has been logged as unmet demand, helping us find the next provider to onboard.",
             );
