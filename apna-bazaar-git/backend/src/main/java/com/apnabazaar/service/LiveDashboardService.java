@@ -39,6 +39,16 @@ public class LiveDashboardService {
             FROM provider_click_event pc JOIN search_event s ON s.id=pc.search_event_id
             WHERE s.community_id=? AND (pc.clicked_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN ? AND ?
             """, id, from, today));
+        result.put("promotions", jdbc.queryForList("""
+            SELECT m.title,m.kind,p.shop_name AS shop,count(d.id) AS views,
+                   count(DISTINCT d.session_id) AS viewers,
+                   count(d.clicked_at) AS clicks
+            FROM chat_promotion m JOIN offering o ON o.id=m.offering_id
+            JOIN provider p ON p.id=o.provider_id
+            LEFT JOIN chat_promotion_delivery d ON d.promotion_id=m.id
+              AND (d.viewed_at AT TIME ZONE 'Asia/Kolkata')::date BETWEEN ? AND ?
+            WHERE m.community_id=? GROUP BY m.id,p.shop_name ORDER BY views DESC,m.title
+            """, from,today,id));
         result.put("topQueries", jdbc.queryForList("""
             SELECT normalised_query AS query, count(*) AS searches,
                    count(*) FILTER (WHERE NOT had_results) AS misses

@@ -38,7 +38,18 @@ public class SearchService {
         Map<UUID, List<DailyPost>> postsByProvider = posts.stream()
             .collect(Collectors.groupingBy(dp -> dp.getProvider().getId()));
 
-        String aiResponse = callOpenAi(query, buildCatalog(providers, postsByProvider));
+        QueryIntent interpreted = interpretQuery(query);
+        if (interpreted.learningRequest()) {
+            providers = providers.stream().filter(p -> p.getOfferings().stream()
+                .anyMatch(o -> Boolean.TRUE.equals(o.getIsAvailable()) && o.getOfferingType()==Offering.OfferingType.class_)).toList();
+        }
+        if (interpreted.teachingLanguage() != null && !interpreted.teachingLanguage().isBlank()) {
+            var subject = Pattern.compile("(?iu)(?<![\\p{L}])" + Pattern.quote(interpreted.teachingLanguage()) + "(?![\\p{L}])");
+            providers = providers.stream().filter(p -> p.getOfferings().stream()
+                .filter(o -> Boolean.TRUE.equals(o.getIsAvailable()))
+                .anyMatch(o -> subject.matcher(o.getName() + " " + o.getDescription()).find())).toList();
+        }
+        String aiResponse = callOpenAi(query, buildCatalog(providers, postsByProvider), interpreted);
         List<MatchedProvider> matched = parseResponse(aiResponse, providers, postsByProvider);
 
         SearchEvent event = analyticsService.recordSearchEvent(
@@ -91,9 +102,65 @@ public class SearchService {
         return sb.toString();
     }
 
-    private String callOpenAi(String query, String catalog) {
+    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest) {}
+
+    private QueryIntent interpretQuery(String query) {
+        // Interpret the short request before the larger catalog can distract from its meaning.
+        String interpretation = chatModel.call(new Prompt(List.of(
+            new SystemMessage("""
+                Translate this community marketplace search into a concise English search intent.
+                Understand all Indian languages, native scripts, phonetic transliteration, informal
+                speech, code-switching and spelling mistakes. Preserve the exact subject, dates,
+                age and constraints. The language spoken by the requester is not necessarily the
+                language they want lessons in. Do not answer the question or invent catalog facts.
+                Examples:
+                "ennaku hindi tuiton venum da" -> "I need Hindi tuition."
+                "enakku hindi tuition venum" -> "I need Hindi tuition."
+                "హిందీ ట్యూషన్ కావాలి" -> "I need Hindi tuition."
+                "இந்தி டியூஷன் வேண்டும்" -> "I need Hindi tuition."
+                "hindi tuition kavali" -> "I need Hindi tuition."
+                Also identify the language and script used to express the request, not its subject.
+                English "Hindi tuition" -> responseLanguage "English".
+                Tanglish "ennaku hindi tuiton venum da" -> responseLanguage "Tamil transliterated in Latin script (Tanglish)".
+                Telugu "hindi tuition kavali" -> responseLanguage "Telugu transliterated in Latin script".
+                If the resident asks to learn a specific language, set teachingLanguage to that
+                language's English name (e.g. Hindi, French, Tamil). Otherwise use null.
+                This is the language to be taught, never simply the language of the request.
+                Set learningRequest=true for requests to learn, tuition, lessons, teachers,
+                coaching, classes or workshops; false for buying food, goods or repair services.
+                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false}.
+                Do not use Markdown fences.
+                """), new UserMessage(query)))).getResult().getOutput().getText();
+        String intent = query, responseLanguage = "the original request language and script", teachingLanguage = null;
+        boolean learningRequest = false;
+        try {
+            var interpreted = objectMapper.readTree(interpretation);
+            intent = interpreted.path("intent").asText(query);
+            responseLanguage = interpreted.path("responseLanguage").asText(responseLanguage);
+            teachingLanguage = interpreted.path("teachingLanguage").asText(null);
+            learningRequest = interpreted.path("learningRequest").asBoolean(false)
+                || Pattern.compile("(?i)\\b(tuition|tuitions|tutor|tutors|teacher|teachers|lessons|classes|workshop|workshops|coaching)\\b")
+                    .matcher(intent + " " + query).find();
+        } catch (Exception e) { log.warn("Could not parse query interpretation; using original request"); }
+        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest);
+    }
+
+    private String callOpenAi(String query, String catalog, QueryIntent interpreted) {
+        String intent = interpreted.intent(), responseLanguage = interpreted.responseLanguage();
+        if (catalog.isBlank()) {
+            return chatModel.call(new Prompt(List.of(new SystemMessage(
+                "You are Aapta, a friendly community AI guide. No provider in this community catalog offers the requested service. "
+                + "Explain that specific missing offering in one helpful sentence, without inventing alternatives. Reply only in "
+                + responseLanguage + ". Format: <intro>your explanation</intro><sellers>[]</sellers>."),
+                new UserMessage(intent)))).getResult().getOutput().getText();
+        }
         String sys = """
-            You are the Apna Bazaar assistant for a gated community. Help residents find sellers.
+            You are Aapta (आप्त, a trusted friend), the warm community guide for Apna Bazaar.
+            Speak like a helpful neighbour: friendly, clear, and practical, without sales hype.
+            Help residents discover neighbours' shops, food, classes and services. You are an AI
+            guide, never pretend to be a resident or claim personal experience with a seller.
+            Give useful answers rather than merely repeating the request. Keep your name Aapta
+            in every language if introducing yourself; you need not introduce yourself each turn.
             Choose the response language from the wording of the user message, not the product
             or subject requested. "Hindi tuition" and "French tuition" are English requests.
             Return each seller ID once, combining matching offerings in one reason.
@@ -119,11 +186,15 @@ public class SearchService {
             2. Be warm, peppy, use food emojis naturally
             3. Keep intro to ONE punchy sentence max
             4. ALWAYS respond in this exact format when sellers found:
-            <intro>One punchy sentence!</intro>
+            <intro>Your helpful answer, written in the mandatory response language</intro>
             <sellers>[{"id":"<uuid>","matchReason":"specific item and why, 1 line"}]</sellers>
             If nothing matches, explain the missing offering in the query language using an <intro> tag and <sellers>[]</sellers>.
             """.formatted(catalog);
-        var prompt = new Prompt(List.of(new SystemMessage(sys), new UserMessage(query)));
+        sys += "\nMANDATORY RESPONSE LANGUAGE: " + responseLanguage
+            + ". Both intro and matchReason must use this language and script. Never copy the format placeholder.";
+        var prompt = new Prompt(List.of(new SystemMessage(sys), new UserMessage("Original resident request: " + query
+            + "\nEnglish search meaning: " + intent + "\nResponse language: " + responseLanguage
+            + "\nMatch the search meaning. For no matches, explain which offering is missing. Use the required tags.")));
         return chatModel.call(prompt).getResult().getOutput().getText();
     }
 

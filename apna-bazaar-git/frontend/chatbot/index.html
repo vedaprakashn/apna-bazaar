@@ -29,7 +29,9 @@
       <section class="hero compact-hero">
         <div>
           <h1>Find it in your community.</h1>
-          <p class="lead">Food, classes and home services — ask in your language.</p>
+          <p class="lead">
+            Food, classes and home services — ask in your language.
+          </p>
         </div>
       </section>
       <div class="demo-notice">
@@ -39,8 +41,14 @@
       <section class="layout">
         <div class="panel">
           <div class="panel-head">
-            <h2>Ask your neighbourhood</h2>
-            <span class="live">AI discovery</span>
+            <div class="aapta-heading">
+              <span class="aapta-avatar" aria-hidden="true"><i></i></span>
+              <div>
+                <h2>Aapta</h2>
+                <small>Your community guide</small>
+              </div>
+            </div>
+            <span class="live">Here to help</span>
           </div>
           <div
             id="stream"
@@ -103,7 +111,9 @@
         return n;
       }
       function message(text, type = "bot") {
-        const n = el("div", "message " + type, text);
+        const n = el("div", "message " + type);
+        if (type === "bot") n.append(el("small", "message-speaker", "Aapta"));
+        n.append(document.createTextNode(text));
         stream.append(n);
         stream.scrollTop = stream.scrollHeight;
         return n;
@@ -118,7 +128,7 @@
       function welcome() {
         stream.replaceChildren();
         const box = message(
-          "Hey neighbour 👋 What can I help you discover today?",
+          "Hi, I’m Aapta 👋 Your trusted guide to the people and little shops around you. What can I help you find?",
         );
         const chips = el("div", "suggestions");
         for (const q of [
@@ -326,13 +336,137 @@
           input.focus();
         }
       };
+      let promotions = [],
+        promotionIndex = 0,
+        promotionTimer;
+      const promotionObservers = new Set();
+      async function loadPromotions() {
+        clearInterval(promotionTimer);
+        for (const observer of promotionObservers) observer.disconnect();
+        promotionObservers.clear();
+        promotions = [];
+        promotionIndex = 0;
+        const slug = community.value;
+        try {
+          const res = await fetch(`${API_BASE}/api/${slug}/promotions`);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (community.value !== slug) return;
+          promotions = data;
+          promotionTimer = setInterval(showPromotion, 180000);
+        } catch (_) {}
+      }
+      function showPromotion() {
+        if (document.hidden || busy || !promotions.length) return;
+        const p = promotions[promotionIndex++ % promotions.length];
+        const slug = community.value,
+          viewerSession = sessionId;
+        const deliveryId = crypto.randomUUID();
+        const card = el("article", "chat-promotion");
+        card.append(
+          el("small", "message-speaker", "Aapta’s neighbourhood note"),
+        );
+        card.append(
+          el(
+            "div",
+            "eyebrow",
+            p.kind === "promoted"
+              ? "Demo promoted message"
+              : "Demo community broadcast",
+          ),
+        );
+        card.append(el("h3", "", `${p.emoji || "✦"} ${p.title}`));
+        card.append(
+          el(
+            "p",
+            "",
+            `${p.offering} · ₹${Number(p.price).toLocaleString("en-IN")} / ${p.unit}`,
+          ),
+        );
+        card.append(
+          el("small", "", `${p.shop} · Check the storefront for schedules.`),
+        );
+        const link = el("a", "promotion-link", "Explore offerings ↗");
+        link.href = `../provider/index.html?community=${encodeURIComponent(slug)}&id=${encodeURIComponent(p.provider_id)}`;
+        card.append(link);
+        const sendEvent = async (type) => {
+          const res = await fetch(`${API_BASE}/api/${slug}/promotions/events`, {
+            method: "POST",
+            keepalive: true,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              promotionId: p.id,
+              deliveryId,
+              sessionId: viewerSession,
+              type,
+            }),
+          });
+          if (!res.ok) throw Error("Promotion event unavailable");
+        };
+        let recorded = false,
+          pending;
+        const recordView = () => {
+          if (recorded) return Promise.resolve();
+          if (!pending)
+            pending = sendEvent("impression")
+              .then(() => {
+                recorded = true;
+              })
+              .finally(() => {
+                pending = null;
+              });
+          return pending;
+        };
+        const observer = new IntersectionObserver(
+          (entries) => {
+            if (
+              !document.hidden &&
+              entries.some(
+                (e) => e.isIntersecting && e.intersectionRatio >= 0.5,
+              )
+            ) {
+              recordView()
+                .then(() => {
+                  observer.disconnect();
+                  promotionObservers.delete(observer);
+                })
+                .catch(() => {});
+            }
+          },
+          { threshold: 0.5 },
+        );
+        promotionObservers.add(observer);
+        link.onclick = async (event) => {
+          event.preventDefault();
+          try {
+            await recordView();
+            await sendEvent("click");
+          } catch (_) {}
+          location.href = link.href;
+        };
+        const atBottom =
+          stream.scrollHeight - stream.scrollTop - stream.clientHeight < 60;
+        stream.append(card);
+        observer.card = card;
+        observer.observe(card);
+        if (atBottom) stream.scrollTop = stream.scrollHeight;
+      }
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden)
+          for (const observer of promotionObservers) {
+            observer.disconnect();
+            observer.observe(observer.card);
+          }
+      });
       community.onchange = () => {
         sessionId = crypto.randomUUID();
         welcome();
         loadCatalog();
+        loadPromotions();
       };
       welcome();
       loadCatalog();
+      loadPromotions();
     </script>
   </body>
 </html>

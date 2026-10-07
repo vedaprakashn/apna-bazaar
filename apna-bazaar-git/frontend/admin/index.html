@@ -69,6 +69,31 @@
           <small>Includes clearly labeled demo listings</small>
         </article>
       </div>
+      <section class="panel promotion-analytics">
+        <div class="panel-head">
+          <h2>Broadcast & promotion reach</h2>
+          <span class="tag">Visible messages only</span>
+        </div>
+        <p class="demo-notice">
+          Views count when at least half a message is on screen. Viewers are
+          distinct browser chat sessions per message, not verified people.
+          Clicks open the storefront.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Message / shop</th>
+                <th>Type</th>
+                <th>Views</th>
+                <th>Viewers</th>
+                <th>Clicks</th>
+              </tr>
+            </thead>
+            <tbody id="promotionRows"></tbody>
+          </table>
+        </div>
+      </section>
       <div class="dash-grid">
         <section class="panel">
           <div class="panel-head">
@@ -260,6 +285,19 @@
               hour: "2-digit",
               minute: "2-digit",
             });
+          table(
+            "promotionRows",
+            d.promotions || [],
+            (r) => [
+              r.title + " · " + r.shop,
+              r.kind,
+              number(r.views),
+              number(r.viewers),
+              number(r.clicks),
+            ],
+            5,
+            "No promotion messages configured",
+          );
           const chart = document.getElementById("chart");
           chart.replaceChildren();
           const max = Math.max(1, ...d.daily.map((x) => Number(x.searches)));

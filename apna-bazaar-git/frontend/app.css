@@ -1048,7 +1048,112 @@ td:first-child {
   }
 }
 
-.hero.compact-hero { display: block; padding: 10px 0 0; }
-.hero.compact-hero h1 { font-size: 28px; line-height: 1.25; max-width: none; margin: 0 0 7px; }
-.hero.compact-hero .lead { font-size: 14px; max-width: none; margin: 0; }
-@media(max-width:650px){.hero.compact-hero{padding:0}.hero.compact-hero h1{font-size:23px}.hero.compact-hero .lead{font-size:12px}}
+.hero.compact-hero {
+  display: block;
+  padding: 10px 0 0;
+}
+.hero.compact-hero h1 {
+  font-size: 28px;
+  line-height: 1.25;
+  max-width: none;
+  margin: 0 0 7px;
+}
+.hero.compact-hero .lead {
+  font-size: 14px;
+  max-width: none;
+  margin: 0;
+}
+@media (max-width: 650px) {
+  .hero.compact-hero {
+    padding: 0;
+  }
+  .hero.compact-hero h1 {
+    font-size: 23px;
+  }
+  .hero.compact-hero .lead {
+    font-size: 12px;
+  }
+}
+
+.chat-promotion {
+  margin: 14px 0;
+  padding: 18px;
+  background: #f1f6dd;
+  border: 1px solid #d2dfab;
+  border-radius: 18px;
+}
+.chat-promotion h3 {
+  margin: 8px 0;
+  font-size: 1.05rem;
+}
+.chat-promotion p {
+  margin: 8px 0;
+}
+.chat-promotion small {
+  display: block;
+  color: var(--muted);
+}
+.promotion-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-weight: 700;
+  color: #15694f;
+}
+
+.aapta-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.aapta-heading h2 {
+  margin: 0 0 3px;
+}
+.aapta-heading small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.aapta-avatar {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 16px;
+  background: #d5ed8c;
+  border: 2px solid #183f32;
+  transform: rotate(-5deg);
+  box-shadow: 3px 3px 0 #edf4dc;
+}
+.aapta-avatar::before,
+.aapta-avatar::after {
+  content: "";
+  position: absolute;
+  width: 4px;
+  height: 6px;
+  border-radius: 50%;
+  top: 14px;
+  background: #183f32;
+}
+.aapta-avatar::before {
+  left: 12px;
+}
+.aapta-avatar::after {
+  right: 12px;
+}
+.aapta-avatar i {
+  position: absolute;
+  left: 13px;
+  top: 24px;
+  width: 14px;
+  height: 7px;
+  border: 2px solid #183f32;
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+}
+.message-speaker {
+  display: block;
+  font-weight: 750;
+  font-size: 11px;
+  color: #15694f;
+  margin-bottom: 6px;
+}

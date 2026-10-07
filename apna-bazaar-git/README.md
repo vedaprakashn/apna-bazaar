@@ -79,3 +79,9 @@ The resident chatbot and dashboard share responsive styling. Backend JSON APIs r
 AI search accepts Indian-language scripts, transliterated queries and mixed-language requests. Unicode query normalization preserves native scripts in analytics. Flyway V6 adds a fictional Hindi tutor in each pilot community (25 demo providers per community). Both shop and resident names on search cards open the provider storefront.
 
 Flyway V7 expands each of the 25 demo providers to four offerings, with sample prices and recurring schedules. These catalogs are visible on provider storefronts and available to AI discovery.
+
+Demo chat broadcasts/promotions rotate every three minutes while the page is visible and search is idle. They link to genuine demo catalog offerings, with no invented discounts or live availability. Analytics counts a view when at least half the card is visible, unique browser chat sessions per message, and storefront clicks. `GET /api/{community}/promotions` and `POST /api/{community}/promotions/events` are reusable for a future mobile client. Flyway V8 creates the demo messages; it seeds no view or click events.
+
+Search interprets the original short request into English intent before catalog matching, so informal transliteration and typos (for example, Tanglish “ennaku hindi tuiton venum da”) do not depend on English keywords. Replies use the original request. This uses two AI calls per search.
+
+The community AI guide is Aapta (आप्त, trusted friend), with a friendly character badge and consistent voice in chat and neighbourhood notes.
