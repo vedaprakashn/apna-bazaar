@@ -144,6 +144,28 @@
         }
         box.append(chips);
       }
+      const categoryPrompts = {
+        "Food & Tiffin": "Who’s cooking something good around here? 🍱",
+        "Batter & Dough": "Breakfast sorted? Who’s got fresh batter? 🫓",
+        "Juices & Shakes": "Craving a juice or shake. What’s around? 🥤",
+        "Sweets & Snacks": "Snack cravings are real. Who’s got treats? 🍪",
+        "Frozen Food": "Freezer restock! Any ready-to-cook snacks around? 🧊",
+        "Vegetables & Greens":
+          "Need a veggie restock. Who’s got fresh greens? 🥦",
+        "Dry Fruits & Nuts": "Who’s got good dry fruits and nuts? 🥜",
+        "Oils & Spices":
+          "Pantry needs a glow-up. Any oils and spices around? 🌶️",
+        Dairy: "Any milk, curd or paneer around? 🥛",
+        "Home Painting": "Walls need a fresh vibe. Any painters around? 🎨",
+        "Deep Cleaning":
+          "Time for a clean-up. Who can help with my home or car? 🧽",
+        "Chimney Cleaning": "Chimney needs some TLC. Who can clean it? 🍳",
+        Plumbing: "Plumbing acting up. Who can fix it? 🔧",
+        Electrician: "Any electricians or AC service folks around? ⚡",
+        "Tuition & Classes": "Who’s teaching something cool around here? 📚",
+        "Yoga & Fitness":
+          "Time for a reset. Any yoga or fitness classes around? 🧘",
+      };
       async function loadCatalog() {
         document.getElementById("categories").replaceChildren();
         document.getElementById("count").textContent = "Loading";
@@ -168,7 +190,11 @@
               el("span", "", name),
               el("small", "", `${g.count} listing${g.count === 1 ? "" : "s"}`),
             );
-            b.onclick = () => ask(`Find ${name.toLowerCase()} in my community`);
+            b.onclick = () =>
+              ask(
+                categoryPrompts[name] ||
+                  `Who’s got ${name.toLowerCase()} covered? ${g.emoji || "👀"}`,
+              );
             document.getElementById("categories").append(b);
           }
           if (!catalog.length)
@@ -233,12 +259,13 @@
           ),
         );
         const profile = el(
-          "a",
-          "seller-person provider-link",
+          "div",
+          "seller-person",
           p.name || "Community seller",
         );
-        profile.href = `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(p.id)}&searchEventId=${encodeURIComponent(eventId)}`;
-        profile.onclick = () => {
+        const shopLink = el("a", "provider-link", p.shopName || p.name);
+        shopLink.href = `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(p.id)}&searchEventId=${encodeURIComponent(eventId)}`;
+        shopLink.onclick = () => {
           fetch(`${API_BASE}/api/${community.value}/search/click`, {
             method: "POST",
             keepalive: true,
@@ -250,9 +277,6 @@
             }),
           }).catch(() => {});
         };
-        const shopLink = el("a", "provider-link", p.shopName || p.name);
-        shopLink.href = profile.href;
-        shopLink.onclick = profile.onclick;
         info.querySelector(".seller-shop").append(shopLink);
         info.append(profile);
         info.append(
