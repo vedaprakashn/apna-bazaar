@@ -1744,30 +1744,200 @@ body {
 }
 
 /* Visible search feedback in the conversation, including small mobile screens. */
-.search-pending .aapta-avatar { display: inline-block; vertical-align: middle; margin-right: 12px; width: 36px; height: 36px; }
-.search-pending .aapta-avatar::before { left: 9px; top: 10px; }
-.search-pending .aapta-avatar::after { right: 9px; top: 10px; }
-.search-pending .aapta-avatar i { left: 9px; top: 23px; width: 14px; }
-.aapta-avatar.is-searching::before, .aapta-avatar.is-searching::after { width: 6px; height: 8px; }
-.enquiry-dialog { border: 2px solid #6336f5; border-radius: 20px; padding: 20px; width: min(90vw, 440px); color: var(--text); }
-.enquiry-dialog::backdrop { background: #251d3a80; }
-.enquiry-dialog textarea { width: 100%; min-height: 150px; padding: 12px; border-radius: 12px; font: inherit; margin: 12px 0; }
+.search-pending .aapta-avatar {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 12px;
+  width: 36px;
+  height: 36px;
+}
+.search-pending .aapta-avatar::before {
+  left: 9px;
+  top: 10px;
+}
+.search-pending .aapta-avatar::after {
+  right: 9px;
+  top: 10px;
+}
+.search-pending .aapta-avatar i {
+  left: 9px;
+  top: 23px;
+  width: 14px;
+}
+.aapta-avatar.is-searching::before,
+.aapta-avatar.is-searching::after {
+  width: 6px;
+  height: 8px;
+}
+.enquiry-dialog {
+  border: 2px solid #6336f5;
+  border-radius: 20px;
+  padding: 20px;
+  width: min(90vw, 440px);
+  color: var(--text);
+}
+.enquiry-dialog::backdrop {
+  background: #251d3a80;
+}
+.enquiry-dialog textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border-radius: 12px;
+  font: inherit;
+  margin: 12px 0;
+}
 
-.help-shortcut { display:inline-flex; align-items:center; gap:4px; text-decoration:none; padding:8px; border-radius:10px; background:#fff0e8; color:#75361f; font-weight:800; }
-.urgent-chat-help { padding:16px; margin:12px 0; border:1px solid #ffc7ac; border-radius:16px; background:#fff0e8; }
-.urgent-chat-help a { display:inline-block; padding:10px 16px; background:#b82d22; color:white; border-radius:10px; }
-.help-contact-card a { display:inline-block; padding:10px 0; margin-right:12px; }
-@media(max-width:760px){.help-shortcut { padding:8px; min-width:32px; justify-content:center; }.help-shortcut span{ display:none; }.discovery-page .nav {gap:4px;} }
+.help-shortcut {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  padding: 8px;
+  border-radius: 10px;
+  background: #fff0e8;
+  color: #75361f;
+  font-weight: 800;
+}
+.urgent-chat-help {
+  padding: 16px;
+  margin: 12px 0;
+  border: 1px solid #ffc7ac;
+  border-radius: 16px;
+  background: #fff0e8;
+}
+.urgent-chat-help a {
+  display: inline-block;
+  padding: 10px 16px;
+  background: #b82d22;
+  color: white;
+  border-radius: 10px;
+}
+.help-contact-card a {
+  display: inline-block;
+  padding: 10px 0;
+  margin-right: 12px;
+}
+@media (max-width: 760px) {
+  .help-shortcut {
+    padding: 8px;
+    min-width: 32px;
+    justify-content: center;
+  }
+  .help-shortcut span {
+    display: none;
+  }
+  .discovery-page .nav {
+    gap: 4px;
+  }
+}
 
 /* Product branding owns the app header; Aapta remains the conversation persona. */
-@media(max-width:760px){
- .discovery-page .topbar .brand { display:flex; flex:0 0 auto; gap:0; min-width:0; }
- .discovery-page .topbar .brand .tag { display:none; }
- .discovery-page .topbar .brand-logo { width:104px; height:44px; object-fit:contain; }
- .discovery-page .nav select { width:110px; }
+@media (max-width: 760px) {
+  .discovery-page .topbar .brand {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0;
+    min-width: 0;
+  }
+  .discovery-page .topbar .brand .tag {
+    display: none;
+  }
+  .discovery-page .topbar .brand-logo {
+    width: 104px;
+    height: 44px;
+    object-fit: contain;
+  }
+  .discovery-page .nav select {
+    width: 110px;
+  }
 }
-@media(max-width:350px){
- .discovery-page .topbar .brand-logo { width:76px; }
- .discovery-page .nav select { width:88px; }
- .discovery-page .mobile-explore { font-size:10px; padding:6px; }
+@media (max-width: 350px) {
+  .discovery-page .topbar .brand-logo {
+    width: 76px;
+  }
+  .discovery-page .nav select {
+    width: 88px;
+  }
+  .discovery-page .mobile-explore {
+    font-size: 10px;
+    padding: 6px;
+  }
+}
+
+.operator-menu.app-menu {
+  display: block;
+  position: relative;
+  flex-shrink: 0;
+}
+.app-menu summary {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 44px;
+  list-style: none;
+  cursor: pointer;
+  border-radius: 10px;
+  color: #6336f5;
+}
+.app-menu summary::-webkit-details-marker {
+  display: none;
+}
+.app-menu > div {
+  position: absolute;
+  left: 0;
+  right: auto;
+  top: 48px;
+  z-index: 30;
+  width: 240px;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e5dcf6;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px #38216e20;
+}
+.app-menu > div a {
+  display: block;
+  padding: 12px;
+  font-size: 13px;
+  border-radius: 10px;
+  text-decoration: none;
+}
+.app-menu > div a:hover {
+  background: #f3edff;
+}
+.app-menu small {
+  display: block;
+  color: #a08dab;
+  padding: 12px;
+  font-size: 10px;
+}
+@media (max-width: 760px) {
+  .discovery-page .app-menu .desktop-navigation {
+    display: none;
+  }
+}
+
+.professional-whatsapp {
+  display: block;
+  text-align: center;
+  border-radius: 12px;
+  background: #6336f5;
+  color: white;
+  padding: 12px;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  margin-top: 12px;
+}
+.help-contact-card a.professional-whatsapp {
+  display: block;
+  padding: 12px;
+  margin-right: 0;
+}
+.pilot-contact-note {
+  display: block;
+  color: #8b7b9d;
+  font-size: 10px;
+  margin-top: 6px;
 }

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <title>Hood Plans · HeyHood</title>
+    <link rel="stylesheet" href="../app.css?v=20261007-plans1" />
+    <link rel="stylesheet" href="../help/help.css?v=2" />
+    <link rel="stylesheet" href="plans.css?v=1" />
+  </head>
+  <body class="plans-page">
+    <header class="help-header">
+      <a id="back" href="../chatbot/index.html">← Your hood</a
+      ><strong>Hood Plans ✦</strong
+      ><select id="community" aria-label="Community">
+        <option value="tridasa">MyHome Tridasa</option>
+        <option value="sayuk">MyHome Sayuk</option>
+      </select>
+    </header>
+    <main class="plans-main">
+      <section class="plans-intro">
+        <span class="help-kicker">A FEW NEIGHBOURS. A GOOD PLAN.</span>
+        <h1>Let’s make it happen.</h1>
+        <p>
+          Spot a plan you like? Put your hand up. Enough interest gets it one
+          step closer.
+        </p>
+      </section>
+      <p class="plans-demo">
+        🧪 Demo activities. Interest is not a booking. Dates, prices and
+        organisers still need confirmation.
+      </p>
+      <div class="plans-filter" role="group" aria-label="Filter plans">
+        <button data-filter="all" aria-pressed="true">All plans</button
+        ><button data-filter="mine" aria-pressed="false">I’m in</button>
+      </div>
+      <p id="status" role="status">Loading hood plans…</p>
+      <section
+        id="plans"
+        class="plan-grid"
+        aria-label="Community plans"
+      ></section>
+      <p class="plans-note">
+        Votes are remembered on this browser. Counts reflect anonymous interest,
+        not verified attendees. No payment or appointment is made.
+      </p>
+    </main>
+    <script src="plans.js?v=1"></script>
+  </body>
+</html>

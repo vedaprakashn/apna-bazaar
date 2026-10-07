@@ -1,0 +1,186 @@
+.plans-page {
+  background: #faf7ff;
+}
+.plans-main {
+  max-width: 1120px;
+  margin: auto;
+  padding: 28px 16px 40px;
+}
+.plans-intro {
+  padding: 24px;
+  border-radius: 24px;
+  background: linear-gradient(120deg, #eee5ff, #fff3c5);
+}
+.plans-intro h1 {
+  font-size: 32px;
+  margin: 12px 0;
+}
+.plans-intro p {
+  margin: 0;
+  font-size: 14px;
+}
+.plans-demo,
+.plans-note,
+#status {
+  color: #7a6a8a;
+  font-size: 12px;
+}
+.plans-demo {
+  margin: 18px 0;
+}
+.plans-filter {
+  display: flex;
+  gap: 8px;
+  margin: 22px 0;
+}
+.plans-filter button {
+  background: #f0e9fa;
+  color: #604b7a;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font: inherit;
+  font-size: 13px;
+}
+.plans-filter button[aria-pressed="true"] {
+  background: #6336f5;
+  color: white;
+}
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+.plan-card {
+  background: white;
+  border: 1px solid #e4d8fa;
+  padding: 24px;
+  border-radius: 24px;
+  box-shadow: 0 5px 20px #52319408;
+}
+.plan-top {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+}
+.plan-category {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #764ab3;
+}
+.plan-date {
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fff0bd;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.plan-card h2 {
+  font-size: 22px;
+  margin: 18px 0 12px;
+}
+.plan-description {
+  font-size: 13px;
+  color: #7d6f8d;
+  line-height: 1.6;
+}
+.plan-location,
+.plan-time {
+  font-size: 12px;
+  color: #776881;
+}
+.plan-count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.plan-count strong {
+  font-size: 21px;
+  color: #6037bc;
+}
+.plan-count span {
+  font-size: 12px;
+  color: #867895;
+}
+.plan-progress {
+  width: 100%;
+  height: 10px;
+  border: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 10px;
+  accent-color: #6336f5;
+}
+.plan-progress::-webkit-progress-bar {
+  background: #eee7f8;
+}
+.plan-progress::-webkit-progress-value {
+  background: #6336f5;
+  border-radius: 8px;
+}
+.plan-state {
+  color: #735692;
+  font-size: 12px;
+  min-height: 18px;
+}
+.plan-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.plan-actions button {
+  flex: 1;
+  min-height: 48px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+}
+.plan-in {
+  background: #6336f5;
+  color: white;
+}
+.plan-pass {
+  background: #f5f0fc;
+  color: #8a739f;
+}
+.plan-actions button[aria-pressed="true"] {
+  outline: 2px solid #422378;
+  outline-offset: 2px;
+}
+.plan-actions button:disabled {
+  opacity: 0.55;
+}
+.plan-undo {
+  display: block;
+  padding: 10px 0;
+  font-size: 11px;
+  color: #8a779b;
+  background: transparent;
+}
+.plan-disclaimer {
+  display: block;
+  font-size: 10px;
+  color: #9d8fa9;
+  margin-top: 12px;
+}
+@media (max-width: 600px) {
+  .plan-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .plan-card {
+    padding: 20px;
+  }
+  .plans-intro {
+    padding: 20px;
+  }
+  .plans-intro h1 {
+    font-size: 27px;
+  }
+}

@@ -7,10 +7,45 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css?v=20261007-residents1" />
+    <link rel="stylesheet" href="../app.css?v=20261007-plans1" />
   </head>
   <body class="discovery-page">
     <header class="topbar">
+      <details class="operator-menu app-menu">
+        <summary role="button" aria-label="Open menu">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M4 6h16M4 12h16M4 18h16"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </summary>
+        <div>
+          <a href="index.html">Discover</a>
+          <a data-community-route="plans" href="../plans/index.html"
+            >Hood Plans ✦</a
+          >
+          <a data-community-route="help" href="../help/index.html"
+            >Help & contacts</a
+          >
+          <small class="desktop-navigation">For community operators</small>
+          <a class="desktop-navigation" href="../admin/index.html"
+            >Analytics ↗</a
+          >
+          <a class="desktop-navigation" href="../admin/campaigns.html"
+            >Campaigns ↗</a
+          >
+        </div>
+      </details>
+
       <a class="brand" href="index.html" aria-label="HeyHood home"
         ><img
           class="brand-logo"
@@ -39,15 +74,13 @@
         >
           Explore ✦
         </button>
-        <a class="help-shortcut" href="../help/index.html" aria-label="Help and emergency contacts" title="Help and emergency contacts">＋<span>Help</span></a>
-        <details class="operator-menu">
-          <summary aria-label="Open operator menu">⋯</summary>
-          <div>
-            <small>For community operators</small
-            ><a href="../admin/index.html">Analytics ↗</a
-            ><a href="../admin/campaigns.html">Campaigns ↗</a>
-          </div>
-        </details>
+        <a
+          class="help-shortcut"
+          href="../help/index.html"
+          aria-label="Help and emergency contacts"
+          title="Help and emergency contacts"
+          >＋<span>Help</span></a
+        >
       </nav>
     </header>
     <main class="container">
@@ -85,7 +118,7 @@
             ><input
               id="query"
               maxlength="500"
-              placeholder="Who teaches kids karate on weekends?"
+              placeholder="What’s good in your hood? 👀"
               autocomplete="off"
               required
             /><button
@@ -180,7 +213,7 @@
       <p class="sheet-note">Pilot catalog · Listings are demo examples.</p>
     </dialog>
     <div id="toast" class="toast" role="status" hidden></div>
-    <script src="../contact.js?v=20261007-direct1"></script>
+    <script src="../contact.js?v=20261007-professional1"></script>
     <script>
       function fitMobileViewport() {
         document.documentElement.style.setProperty(
@@ -299,6 +332,7 @@
           ["Breakfast?", "Who’s making breakfast around here?"],
           ["Classes for kids", "Any classes for kids around here?"],
           ["Need a repair", "Who can help with home repairs?"],
+          ["Makeup", "Who does makeup in my community?"],
         ]) {
           const b = el("button", "chip", label);
           b.type = "button";
@@ -364,6 +398,19 @@
       document
         .getElementById("category-search")
         .addEventListener("input", filterCategories);
+      document.querySelectorAll("[data-community-route]").forEach((link) =>
+        link.addEventListener("click", () => {
+          link.href = `../${link.dataset.communityRoute}/index.html?community=${encodeURIComponent(community.value)}`;
+        }),
+      );
+      document
+        .querySelector(".app-menu")
+        .addEventListener("keydown", (event) => {
+          if (event.key === "Escape") {
+            event.currentTarget.open = false;
+            event.currentTarget.querySelector("summary").focus();
+          }
+        });
       document.addEventListener("click", (event) => {
         const menu = document.querySelector(".operator-menu");
         if (!menu.contains(event.target)) menu.open = false;
@@ -371,6 +418,10 @@
       mobileLayout.addEventListener("change", placeCategories);
       placeCategories();
       const categoryPrompts = {
+        "Tailoring & Styling":
+          "Need a fit check. Who does tailoring or saree pleating in my hood? 🧵",
+        "Beauty & Grooming":
+          "Glow-up plans. Who does makeup, mehendi or nail care in my hood? 💅",
         "Meat & Seafood": "Cooking plans? Who’s got meat or seafood? 🍗",
         Biryani: "Biryani cravings just hit. Who’s cooking? 🍚",
         Flowers: "Need flowers for a little wow. Who’s got petals? 💐",
@@ -397,7 +448,11 @@
         "Yoga & Fitness":
           "Time for a reset. Any yoga or fitness classes around? 🧘",
       };
-      document.querySelector(".help-shortcut").addEventListener("click", (event) => { event.currentTarget.href = `../help/index.html?community=${encodeURIComponent(community.value)}`; });
+      document
+        .querySelector(".help-shortcut")
+        .addEventListener("click", (event) => {
+          event.currentTarget.href = `../help/index.html?community=${encodeURIComponent(community.value)}`;
+        });
       async function loadCatalog() {
         document.getElementById("categories").replaceChildren();
         document.getElementById("count").textContent = "Loading";
@@ -500,21 +555,89 @@
       }
       function urgentHelpCard() {
         const card = el("aside", "urgent-chat-help");
-        card.append(el("strong", "", "Real emergency in India?"), el("p", "", "Call 112. Don’t wait for a chat reply."));
-        const call = el("a", "", "Call 112 ↗"); call.href = "tel:112"; card.append(call);
-        card.chatEntry = {kind: "urgent-help"}; stream.append(card); return card;
+        card.append(
+          el("strong", "", "Real emergency in India?"),
+          el("p", "", "Call 112. Don’t wait for a chat reply."),
+        );
+        const call = el("a", "", "Call 112 ↗");
+        call.href = "tel:112";
+        card.append(call);
+        card.chatEntry = { kind: "urgent-help" };
+        stream.append(card);
+        return card;
       }
       function contactCard(c) {
         const card = el("article", "seller help-contact-card");
-        card.append(el("small", "", c.category), el("h3", "", c.name), el("p", "", c.is_demo ? "Demo · Unverified · No live number" : c.verified_at && c.consent_to_listing ? "Verified listing" : "Unverified listing"));
-        if (c.specialty) card.append(el("strong", "contact-specialty", c.specialty));
-        if (c.flat_number) card.append(el("p", "contact-flat", `Flat ${c.flat_number}`));
-        card.append(el("p", "", `${c.scope === "community" ? "In your community" : "Nearby"} · ${c.service_area}`), el("p", "", c.availability));
-        if (!c.is_demo && c.verified_at && c.consent_to_listing && /^\+?[0-9 ()-]{7,25}$/.test(c.phone || "")) {
-          const call = el("a", "", "Call ↗"); call.href = `tel:${c.phone.replace(/[^+0-9]/g, "")}`; card.append(call);
+        card.append(
+          el("small", "", c.category),
+          el("h3", "", c.name),
+          el(
+            "p",
+            "",
+            c.is_demo
+              ? "Demo · Unverified · No live number"
+              : c.verified_at && c.consent_to_listing
+                ? "Verified listing"
+                : "Unverified listing",
+          ),
+        );
+        if (c.specialty)
+          card.append(el("strong", "contact-specialty", c.specialty));
+        if (c.flat_number)
+          card.append(el("p", "contact-flat", `Flat ${c.flat_number}`));
+        card.append(
+          el(
+            "p",
+            "",
+            `${c.scope === "community" ? "In your community" : "Nearby"} · ${c.service_area}`,
+          ),
+          el("p", "", c.availability),
+        );
+        if (
+          !c.is_demo &&
+          c.verified_at &&
+          c.consent_to_listing &&
+          /^\+?[0-9 ()-]{7,25}$/.test(c.phone || "")
+        ) {
+          const call = el("a", "", "Call ↗");
+          call.href = `tel:${c.phone.replace(/[^+0-9]/g, "")}`;
+          card.append(call);
         }
-        const link = el("a", "", "Open help directory ↗"); link.href = `../help/index.html?community=${encodeURIComponent(community.value)}`; card.append(link);
-        card.chatEntry = {kind: "contact", contact: c}; stream.append(card); return card;
+        if (
+          c.section === "professional" &&
+          ((c.is_demo && c.whatsapp_number === "919740893534") ||
+            (c.verified_at && c.consent_to_listing))
+        ) {
+          const contact = heyhoodWhatsAppContact(
+            c.whatsapp_number,
+            null,
+            heyhoodEnquiry(
+              c.name,
+              community.selectedOptions[0].textContent,
+              c.flat_number,
+              c.searchIntent,
+            ),
+          );
+          if (contact) {
+            const wa = el("a", "professional-whatsapp", "WhatsApp ↗");
+            wa.href = contact.url;
+            card.append(wa);
+            if (c.is_demo)
+              card.append(
+                el(
+                  "small",
+                  "pilot-contact-note",
+                  "Pilot · Opens the shared test contact.",
+                ),
+              );
+          }
+        }
+        const link = el("a", "", "Open help directory ↗");
+        link.href = `../help/index.html?community=${encodeURIComponent(community.value)}`;
+        card.append(link);
+        card.chatEntry = { kind: "contact", contact: c };
+        stream.append(card);
+        return card;
       }
       function resultCard(p, eventId, snapshot) {
         const item =
@@ -583,10 +706,7 @@
               : "Ask provider for pricing",
           ),
         );
-        const contact = heyhoodWhatsAppContact(
-          p.whatsappNumber,
-          null,
-        );
+        const contact = heyhoodWhatsAppContact(p.whatsappNumber, null);
         const real = Boolean(contact);
         const b = el("button", "", contact?.label || "WhatsApp ↗");
         b.disabled = !real;
@@ -695,15 +815,26 @@
           pending.remove();
           completedQuestions++;
           suppressPromotions = Boolean(data.urgentHelp);
-          if (completedQuestions % 3 === 0 && !data.urgentHelp) promotionDue = true;
-          if (data.urgentHelp) { promotionDue = false; urgentHelpCard(); }
+          if (completedQuestions % 3 === 0 && !data.urgentHelp)
+            promotionDue = true;
+          if (data.urgentHelp) {
+            promotionDue = false;
+            urgentHelpCard();
+          }
           message(data.intro || "Here’s what I found in your community.");
-          for (const contact of data.contacts || []) contactCard(contact);
+          for (const contact of data.contacts || []) {
+            contact.searchIntent = data.searchIntent || "";
+            contactCard(contact);
+          }
           for (const p of data.providers || []) {
             p.searchIntent = data.searchIntent || "";
             resultCard(p, data.sessionId);
           }
-          if (!(data.providers || []).length && !(data.contacts || []).length && !data.intro)
+          if (
+            !(data.providers || []).length &&
+            !(data.contacts || []).length &&
+            !data.intro
+          )
             message(
               "I couldn’t find a match in your hood yet. Try another item or check Explore.",
             );
@@ -972,7 +1103,9 @@
         loadCatalog();
       };
       try {
-        const selected = new URLSearchParams(location.search).get("community") || sessionStorage.getItem("heyhood-community");
+        const selected =
+          new URLSearchParams(location.search).get("community") ||
+          sessionStorage.getItem("heyhood-community");
         if (Array.from(community.options).some((o) => o.value === selected))
           community.value = selected;
       } catch (_) {}
