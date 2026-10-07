@@ -2003,3 +2003,86 @@ body {
   font-size: 13px;
   line-height: 1.5;
 }
+
+.hood-modules {
+  display: flex;
+  gap: 10px;
+  width: min(100%, 1100px);
+  margin: 0 auto;
+  padding: 8px 16px 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+  scroll-snap-type: x proximity;
+}
+.hood-modules::-webkit-scrollbar {
+  display: none;
+}
+.hood-module {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 1 0 66px;
+  max-width: 150px;
+  min-height: 76px;
+  padding: 9px 10px;
+  border: 1px solid #e6dcfa;
+  border-radius: 20px 20px 12px 12px;
+  background: linear-gradient(145deg, #fff, #f4eeff);
+  color: #493776;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 12px;
+  scroll-snap-align: start;
+  transition:
+    background 0.15s,
+    transform 0.15s;
+}
+.hood-module:nth-child(2) {
+  background: linear-gradient(145deg, #fff9e4, #ffeab8);
+}
+.hood-module:nth-child(3) {
+  background: linear-gradient(145deg, #e9fff7, #caf3e7);
+}
+.hood-module:nth-child(4) {
+  background: linear-gradient(145deg, #fff0f8, #ffd9ec);
+}
+.hood-module:nth-child(5) {
+  background: linear-gradient(145deg, #eaf4ff, #d8e8ff);
+}
+.hood-module[aria-current="page"] {
+  background: linear-gradient(145deg, #8751ff, #6336f5);
+  color: white;
+  border-color: #6336f5;
+  box-shadow: 0 4px 0 #4520a0;
+}
+.hood-module:focus-visible {
+  outline: 3px solid #ffbf37;
+  outline-offset: -3px;
+}
+.module-icon {
+  font-size: 29px;
+  line-height: 1;
+  filter: drop-shadow(0 3px 2px #0001);
+}
+@media (max-width: 760px) {
+  .hood-modules {
+    padding: 4px 10px 9px;
+    gap: 8px;
+  }
+  .hood-module {
+    min-height: 66px;
+    padding: 7px 8px;
+    font-size: 11px;
+  }
+  .module-icon {
+    font-size: 26px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hood-module {
+    transition: none;
+  }
+}

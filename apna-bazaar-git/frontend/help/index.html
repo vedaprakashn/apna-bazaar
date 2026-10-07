@@ -7,18 +7,20 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>Help in your hood · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261007-plans1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-modules1" />
     <link rel="stylesheet" href="help.css?v=3" />
   </head>
   <body class="help-page">
     <header class="help-header">
       <a href="../chatbot/index.html" class="help-back">← Your hood</a
       ><strong>Help in your hood</strong
-      ><select id="community" aria-label="Community">
+      ><select id="community" hidden aria-label="Community">
         <option value="tridasa">MyHome Tridasa</option>
         <option value="sayuk">MyHome Sayuk</option>
       </select>
     </header>
+    <nav class="hood-modules" aria-label="HeyHood modules"></nav>
+    <script src="../modules.js?v=1" defer></script>
     <main class="help-main">
       <section class="urgent-call" aria-labelledby="urgent-title">
         <div>
