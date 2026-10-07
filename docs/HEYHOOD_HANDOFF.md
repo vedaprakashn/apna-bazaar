@@ -307,3 +307,12 @@ The following reconstructs the available context chronologically. It is a decisi
 
 - User reported search eyes and enquiry copying not working. Live Chromium confirmed animation class and Clipboard API succeeded, but that does not establish Android WebView behavior. Made eye motion larger and added the animated face beside the pending message so it remains visible in the conversation.
 - Clipboard API rejection now falls back to selection-based copying. If both methods fail, a dialog shows the full selectable English enquiry; no false success toast. CSS/contact asset URLs are versioned to refresh cached mobile assets. Group invitation links still cannot prefill messages.
+
+### Next-phase requirements: external bookings and verified contacts
+
+Requested 7 October 2026; planned, not implemented or deployed.
+
+1. External service booking: residents can request services outside their community, e.g. a blood test tomorrow 4–5pm. Integrate providers such as Orange Labs and Apollo Diagnostics using authorized APIs; resolve date/time in IST, location, test and home collection vs lab visit; retrieve actual available slots; present provider/slot/location/price; let the resident select; ask explicit confirmation before booking. Only show success with a confirmed provider booking ID. Handle expired slots, retries without duplicate bookings, cancellations and provider failures. API contracts/access and provider onboarding are prerequisites; never fabricate availability or confirmation. Collect only necessary personal/health details with consent and avoid including them in promotion analytics.
+2. Verified contact master: community and nearby doctors, nurses, lawyers, first-aid providers, police stations, snake catchers, fire services and physiotherapists. Make it queryable and directly accessible from a dedicated help screen without depending on AI availability. Distinguish emergency services from routine professional contacts. Store category, name, verified phone, service area, community/nearby scope, location, working hours/24-hour status, verification date/source and consent to listing; support operator updates and removal. Do not invent contacts or label someone available 24/7 without verification. Official urgent numbers should remain prominent and should not require chat, registration or a booking flow.
+
+These requirements are separate from the enquiry/eye-animation compatibility deployment. External-provider APIs and a verified pilot contact list still need sourcing.
