@@ -11,7 +11,7 @@ railway init
 railway up
 
 # Add environment variables
-railway variables set ANTHROPIC_API_KEY=sk-ant-...
+railway variables set APNA_OPENAI_API_KEY=your-openai-api-key
 railway variables set DB_HOST=...   # from Railway PostgreSQL plugin
 railway variables set DB_PORT=5432
 railway variables set DB_NAME=railway
@@ -29,7 +29,7 @@ Add PostgreSQL in Railway dashboard: New → Database → PostgreSQL
 4. Add PostgreSQL plugin: New → Database → PostgreSQL
 5. Add variables in Railway dashboard:
    ```
-   ANTHROPIC_API_KEY = sk-ant-your-key
+   APNA_OPENAI_API_KEY = your-openai-api-key
    DB_HOST     = ${{Postgres.PGHOST}}
    DB_PORT     = ${{Postgres.PGPORT}}
    DB_NAME     = ${{Postgres.PGDATABASE}}
@@ -42,7 +42,7 @@ Add PostgreSQL in Railway dashboard: New → Database → PostgreSQL
 
 ```bash
 cp .env.template .env
-# Add ANTHROPIC_API_KEY to .env
+# Add APNA_OPENAI_API_KEY to .env
 docker-compose up --build
 # API at http://localhost:8080
 # Open frontend/chatbot/index.html in browser

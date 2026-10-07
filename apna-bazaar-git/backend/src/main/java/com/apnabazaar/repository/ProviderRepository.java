@@ -16,7 +16,6 @@ public interface ProviderRepository extends JpaRepository<Provider, UUID> {
     @Query("""
         SELECT DISTINCT p FROM Provider p
         LEFT JOIN FETCH p.offerings o
-        LEFT JOIN FETCH o.schedules
         WHERE p.community.id = :communityId AND p.status = 'active'
         """)
     List<Provider> findActiveWithOfferings(@Param("communityId") UUID communityId);

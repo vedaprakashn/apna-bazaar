@@ -33,7 +33,8 @@ services:
       DB_NAME: apna_bazaar
       DB_USERNAME: apna
       DB_PASSWORD: apna123
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      APNA_OPENAI_API_KEY: ${APNA_OPENAI_API_KEY}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
       SERVER_PORT: 8080
     depends_on:
       postgres:

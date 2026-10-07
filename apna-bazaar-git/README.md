@@ -1,13 +1,13 @@
 # 🏡 Apna Bazaar
 
 Hyperlocal community marketplace for gated communities.
-AI-powered conversational discovery for informal sellers in communities like MyHome Tridasa and MyHome Sayuk.
+OpenAI-powered conversational discovery for informal sellers in communities like MyHome Tridasa and MyHome Sayuk.
 
 ## Quick Start (Docker — no installs needed)
 
 ```bash
 cp .env.template .env
-# Add your ANTHROPIC_API_KEY to .env
+# Add your APNA_OPENAI_API_KEY to .env
 docker-compose up --build
 ```
 
@@ -18,6 +18,7 @@ Open `frontend/chatbot/index.html` in your browser.
 ```bash
 cp .env.template .env
 # Fill in your values
+set -a; source .env; set +a
 cd backend && mvn spring-boot:run
 ```
 
@@ -60,3 +61,9 @@ POST /api/{community}/broadcasts         Create broadcast/nudge
 ```
 
 Community slugs: `tridasa`, `sayuk`
+
+## AI configuration
+
+Set `APNA_OPENAI_API_KEY` securely in your backend environment. It is mapped to Spring AI’s OpenAI client; `OPENAI_MODEL` defaults to `gpt-4o-mini`. The custom key name works with cloud environment settings, where `OPENAI_API_KEY` is reserved. Never put a key in HTML.
+
+The chatbot calls the backend search API. For deployments, set `API_BASE` in `frontend/chatbot/index.html` to the backend URL; local development defaults to port 8080. The backend searches database providers, so register providers and offerings before expecting results.

@@ -5,7 +5,7 @@ import com.apnabazaar.repository.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.anthropic.AnthropicChatModel;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class SearchService {
-    private final AnthropicChatModel chatModel;
+    private final OpenAiChatModel chatModel;
     private final CommunityRepository communityRepo;
     private final ProviderRepository providerRepo;
     private final DailyPostRepository dailyPostRepo;
@@ -38,7 +38,7 @@ public class SearchService {
         Map<UUID, List<DailyPost>> postsByProvider = posts.stream()
             .collect(Collectors.groupingBy(dp -> dp.getProvider().getId()));
 
-        String aiResponse = callClaude(query, buildCatalog(providers, postsByProvider));
+        String aiResponse = callOpenAi(query, buildCatalog(providers, postsByProvider));
         List<MatchedProvider> matched = parseResponse(aiResponse, providers, postsByProvider);
 
         SearchEvent event = analyticsService.recordSearchEvent(
@@ -84,7 +84,7 @@ public class SearchService {
         return sb.toString();
     }
 
-    private String callClaude(String query, String catalog) {
+    private String callOpenAi(String query, String catalog) {
         String sys = """
             You are the Apna Bazaar assistant for a gated community. Help residents find sellers.
             SELLER DATABASE:
@@ -99,7 +99,7 @@ public class SearchService {
             If nothing matches, reply conversationally with no JSON.
             """.formatted(catalog);
         var prompt = new Prompt(List.of(new SystemMessage(sys), new UserMessage(query)));
-        return chatModel.call(prompt).getResult().getOutput().getContent();
+        return chatModel.call(prompt).getResult().getOutput().getText();
     }
 
     private List<MatchedProvider> parseResponse(String raw, List<Provider> providers,

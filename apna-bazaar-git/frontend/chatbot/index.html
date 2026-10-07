@@ -653,61 +653,22 @@ function getTime() {
   return new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
 }
 
-// ── CLAUDE API ──
-async function askClaude(query) {
-  const catalog = sellers.map(s => {
-    const items = s.catalog.map(c => `    - ${c.item}: ${c.desc}`).join('\n');
-    return `SELLER ID:${s.id} | ${s.name} | Shop: ${s.shop} | Flat: ${s.flat}\nCATALOG:\n${items}`;
-  }).join('\n\n---\n\n');
-
-  const system = `You are Apna Bazaar's friendly assistant for MyHome Tridasa gated community. You help residents find sellers who stock what they need.
-
-SELLER DATABASE:
-${catalog}
-
-Rules:
-1. Search semantically across all catalog items — match intent, not just keywords
-2. Be warm, peppy, and use food emojis naturally
-3. When sellers found: respond with a short enthusiastic intro (1 line max), then JSON
-4. When no match: suggest they try a different search or that the category may not have a seller yet
-5. Keep intro punchy — like a friendly neighbour, not a corporate bot
-
-ALWAYS use this exact format when sellers found:
-<intro>One punchy line here! 🎉</intro>
-<sellers>[{"id": <number>, "matchReason": "specific item and why it matches, conversational tone"}]</sellers>
-
-If nothing matches, just reply conversationally — warm, helpful, no JSON.`;
-
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      system,
-      messages: [{ role: 'user', content: query }]
-    })
-  });
+// Backend owns AI authentication; no API key is sent to the browser.
+const API_BASE = 'http://localhost:8080';
+const COMMUNITY_SLUG = 'tridasa';
+async function searchMarketplace(query) {
+  const res = await fetch(`${API_BASE}/api/${COMMUNITY_SLUG}/search?q=${encodeURIComponent(query)}`);
+  if (!res.ok) throw new Error(`Search failed (${res.status})`);
   const data = await res.json();
-  return data.content[0].text;
-}
-
-// ── PARSE ──
-function parseResponse(raw) {
-  const introMatch = raw.match(/<intro>([\s\S]*?)<\/intro>/);
-  const sellersMatch = raw.match(/<sellers>([\s\S]*?)<\/sellers>/);
-  const intro = introMatch ? introMatch[1].trim() : null;
-  let matched = [];
-  if (sellersMatch) {
-    try {
-      const arr = JSON.parse(sellersMatch[1].trim());
-      matched = arr.map(r => ({
-        seller: sellers.find(s => s.id === r.id),
-        reason: r.matchReason
-      })).filter(r => r.seller);
-    } catch(e) {}
-  }
-  return { intro, matched, raw };
+  return {
+    intro: data.intro,
+    matched: data.providers.map(p => ({
+      seller: { name: p.name, shop: p.shopName, flat: p.flatNumber || '',
+        phone: p.whatsappNumber, rating: p.rating || 0, reviews: p.reviewCount || 0,
+        emoji: '🛍️', color: '#fff3e0' },
+      reason: p.matchReason
+    }))
+  };
 }
 
 // ── RENDER ──
@@ -842,16 +803,15 @@ async function sendMsg() {
   const typing = showTyping();
 
   try {
-    const raw = await askClaude(text);
+    const { intro, matched } = await searchMarketplace(text);
     typing.remove();
-    const { intro, matched } = parseResponse(raw);
 
     if (intro) addBotBubble(intro);
     if (matched.length > 0) {
       addSellerCards(matched);
       addBotBubble(`Tap <b>Order</b> to WhatsApp them directly! Anything else you're looking for? 😊`);
     } else if (!intro) {
-      addBotBubble(raw);
+      addBotBubble("No matching sellers found. Try a different search.");
     }
   } catch(e) {
     typing.remove();

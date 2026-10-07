@@ -18,7 +18,10 @@ public class SearchEvent {
     @Column(name = "query_time", nullable = false) private LocalTime queryTime;
     @Column(name = "query_date", nullable = false) private LocalDate queryDate;
     private Short dayOfWeek;
-    @Enumerated(EnumType.STRING) private TimeBucket timeBucket;
+    @Enumerated(EnumType.STRING)
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.NAMED_ENUM)
+    @Column(columnDefinition = "time_bucket_enum")
+    private TimeBucket timeBucket;
     private String deviceType;
     private Instant createdAt = Instant.now();
     public enum TimeBucket {

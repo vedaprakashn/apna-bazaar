@@ -4,7 +4,7 @@ import com.apnabazaar.entity.*;
 import com.apnabazaar.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.anthropic.AnthropicChatModel;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -20,7 +20,7 @@ public class BroadcastService {
     private final BroadcastRepository broadcastRepo;
     private final CommunityRepository communityRepo;
     private final ZeroResultLogRepository zeroResultRepo;
-    private final AnthropicChatModel chatModel;
+    private final OpenAiChatModel chatModel;
 
     @Transactional
     public Broadcast create(String communitySlug, BroadcastRequest req) {
@@ -74,7 +74,7 @@ public class BroadcastService {
             + "Respond ONLY with JSON array: [{\"reason\":\"...\",\"message\":\"...\"}]";
         try {
             String raw = chatModel.call(new Prompt(List.of(new UserMessage(prompt))))
-                .getResult().getOutput().getContent().replaceAll("```json|```","").trim();
+                .getResult().getOutput().getText().replaceAll("```json|```","").trim();
             return parseNudges(raw);
         } catch (Exception e) { log.error("AI nudge generation failed", e); return defaultNudges(); }
     }

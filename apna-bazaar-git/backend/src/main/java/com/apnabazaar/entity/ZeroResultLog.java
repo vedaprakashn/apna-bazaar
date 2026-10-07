@@ -17,6 +17,19 @@ public class ZeroResultLog {
     private Integer occurrenceCount = 1;
     private LocalDate firstSeen;
     private LocalDate lastSeen;
-    @Enumerated(EnumType.STRING) private ZeroResultStatus status = ZeroResultStatus.new_;
+    @Convert(converter = StatusConverter.class)
+    @org.hibernate.annotations.ColumnTransformer(write = "CAST(? AS zero_result_status_enum)")
+    @Column(columnDefinition = "zero_result_status_enum")
+    @Builder.Default
+    private ZeroResultStatus status = ZeroResultStatus.new_;
+    @Converter
+    public static class StatusConverter implements AttributeConverter<ZeroResultStatus, String> {
+        public String convertToDatabaseColumn(ZeroResultStatus status) {
+            return status == null ? null : status == ZeroResultStatus.new_ ? "new" : status.name();
+        }
+        public ZeroResultStatus convertToEntityAttribute(String value) {
+            return value == null ? null : "new".equals(value) ? ZeroResultStatus.new_ : ZeroResultStatus.valueOf(value);
+        }
+    }
     public enum ZeroResultStatus { new_, reviewing, provider_sought, fulfilled, declined }
 }
