@@ -89,3 +89,5 @@ The community AI guide is Aapta (आप्त, trusted friend), with a friendly 
 Supported chat languages: English, Hindi, Telugu, Tamil, Kannada, Malayalam, Marathi, Punjabi, Bengali and Assamese; native scripts, romanized requests and mixed-language queries are supported. Search uses structured JSON with low randomness and preserves the native script in replies.
 
 Mixed-language chat includes Hinglish, Tenglish, Tanglish/Tamglish and English mixed with each supported language, including informal spelling. Bengali and Assamese share an alphabet but retain distinct language preferences.
+
+Chat search is limited to 10 requests per visitor IP in a rolling 60-second window, across communities and session IDs. The server returns HTTP 429 with Retry-After before OpenAI runs; the chat displays the wait time. `CHAT_MESSAGES_PER_MINUTE` changes the limit. Limiter state is bounded and local to one app instance; multiple replicas would need a shared store. Forwarded IPs are used only when running on Railway.

@@ -128,7 +128,7 @@
       function welcome() {
         stream.replaceChildren();
         const box = message(
-          "Hi, I’m Aapta 👋 Your trusted guide to the people and little shops around you. What can I help you find?",
+          `Hey neighbour 👋 I’m Aapta. What are we finding in ${community.selectedOptions[0].textContent} today? 👀`,
         );
         const chips = el("div", "suggestions");
         for (const q of [
@@ -316,6 +316,12 @@
           const r = await fetch(
             `${API_BASE}/api/${community.value}/search?q=${encodeURIComponent(q)}&sessionId=${sessionId}`,
           );
+          if (r.status === 429) {
+            const seconds = Number(r.headers.get("Retry-After")) || 60;
+            pending.textContent = `A little breather, neighbour — you’ve reached the 10-message limit. Try again in ${seconds} seconds.`;
+            input.value = q;
+            return;
+          }
           if (!r.ok) throw Error(`Search unavailable (${r.status})`);
           const data = await r.json();
           pending.remove();
