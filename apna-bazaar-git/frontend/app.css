@@ -1941,3 +1941,21 @@ body {
   font-size: 10px;
   margin-top: 6px;
 }
+
+.ride-chat-help {
+  margin: 12px 0;
+  padding: 14px;
+  background: #f5efff;
+  border-radius: 14px;
+}
+.ride-chat-help a {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+}
+.ride-chat-help small {
+  display: block;
+  color: #9a84ac;
+  font-size: 10px;
+  margin-top: 6px;
+}

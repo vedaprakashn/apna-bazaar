@@ -106,15 +106,11 @@ function render() {
       );
       button.setAttribute("aria-pressed", String(p.my_vote === choice));
       button.disabled = closed;
-      button.onclick = () => vote(p, choice, card);
+      button.onclick = () =>
+        vote(p, p.my_vote === choice ? "clear" : choice, card);
       actions.append(button);
     }
     card.append(actions);
-    if (p.my_vote && !closed) {
-      const undo = el("button", "plan-undo", "Undo my vote");
-      undo.onclick = () => vote(p, "clear", card);
-      card.append(undo);
-    }
     card.append(
       el(
         "small",

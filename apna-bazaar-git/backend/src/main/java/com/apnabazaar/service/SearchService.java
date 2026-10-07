@@ -30,6 +30,7 @@ public class SearchService {
     private final OrderingWindowService orderingWindowService;
     private final ObjectMapper objectMapper;
     private final HelpDirectoryService helpDirectory;
+    private final HoodRideService hoodRides;
 
     @Transactional
     public SearchResponse search(String communitySlug, String query, UUID sessionId) {
@@ -42,6 +43,24 @@ public class SearchService {
             .collect(Collectors.groupingBy(dp -> dp.getProvider().getId()));
 
         QueryIntent interpreted = interpretQuery(query);
+        if (interpreted.rideRequest()) {
+            Instant at = null;
+            boolean badTime = false;
+            if (interpreted.rideAt() != null && !interpreted.rideAt().isBlank()) {
+                try { at = OffsetDateTime.parse(interpreted.rideAt()).toInstant(); }
+                catch (Exception ex) { try { at = LocalDateTime.parse(interpreted.rideAt()).atZone(ZoneId.of("Asia/Kolkata")).toInstant(); } catch(Exception ignored) { badTime=true; } }
+            }
+            boolean past = at != null && !at.isAfter(Instant.now());
+            var rides = badTime || past ? List.<Map<String,Object>>of() : hoodRides.find(community.getId(),interpreted.rideKind(),interpreted.rideDirection(),interpreted.rideDestination(),at,interpreted.rideSeats(),null);
+            String facts = past ? "The requested departure time is already past. Ask the resident for a future date/time."
+                : badTime ? "The requested time could not be understood. Ask for the date and time."
+                : rides.isEmpty() ? "No matching upcoming rides. The resident can open Hood Rides to post a request explicitly; their search has not been published."
+                : "Found " + rides.size() + " upcoming pilot ride posts, matching direction, destination and (when supplied) within one hour of the requested departure. These are not confirmed rides. Invite the resident to discuss exact timing and seats through WhatsApp.";
+            String introJson=callJson(AAPTA_VOICE + " Reply in " + interpreted.responseLanguage() + ". Return JSON with intro only. Explain these facts without inventing posts, transport bookings or availability: " + facts,query);
+            var event=analyticsService.recordSearchEvent(community,query,QueryNormalizer.normalize(query),rides.size(),sessionId,interpreted.intent());
+            if(rides.isEmpty())analyticsService.recordZeroResult(community,query,QueryNormalizer.normalize(query));
+            return SearchResponse.builder().intro(Optional.ofNullable(extract(introJson,"intro")).orElse(facts)).providers(List.of()).rides(rides).rideQuery(Map.of("kind",interpreted.rideKind(),"direction",interpreted.rideDirection(),"destination",interpreted.rideDestination(),"at",at==null?"":at.toString(),"seats",interpreted.rideSeats())).sessionId(event.getId()).totalResults(rides.size()).searchIntent(interpreted.intent()).build();
+        }
         if (interpreted.contactRequest()) {
             var contacts = helpDirectory.contacts(community.getId(), interpreted.contactCategories(), interpreted.doctorSpecialty());
             boolean urgent = contacts.stream().anyMatch(c -> "urgent".equals(c.get("section")))
@@ -128,7 +147,7 @@ public class SearchService {
         return sb.toString();
     }
 
-    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest, boolean contactRequest, List<String> contactCategories, String doctorSpecialty) {}
+    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest, boolean contactRequest, List<String> contactCategories, String doctorSpecialty, boolean rideRequest, String rideKind, String rideDirection, String rideDestination, String rideAt, int rideSeats) {}
 
     private QueryIntent interpretQuery(String query) {
         // Interpret the short request before the larger catalog can distract from its meaning.
@@ -187,16 +206,35 @@ public class SearchService {
                 Understand this across all supported languages and romanized speech.
                 Do not route food, classes (including first-aid classes), or a blood-test booking into contacts.
                 Do not invent nearest distances or appointment slots.
-                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false,"contactRequest":false,"contactCategories":[],"doctorSpecialty":null}.
+                Set rideRequest=true for carpool/ride-sharing requests or offers, e.g. "anyone going to airport tonight at 11pm".
+                rideKind is the type of OTHER PEOPLE'S posts to search, not the user's own type.
+                Set rideKind="offer" for passengers looking for a driver: "anyone going to airport tonight at 11pm", "need a ride", "can I join someone", "airport lift chahiye" all search offers.
+                Set rideKind="request" ONLY when the user clearly has a ride to offer and wants passengers: "I am driving to airport, anyone need a lift?", "I have two seats available".
+                Questions about anyone going somewhere default to offer; they do NOT mean the user is a driver.
+                Set rideDirection="outbound" for community-to-destination, "inbound" for returning to the community.
+                Set rideDestination to a concise English place name; RGIA/Shamshabad airport means Airport.
+                Set rideAt to the requested departure datetime in ISO-8601 with +05:30 offset, resolving tonight/tomorrow against current India time.
+                Set rideSeats to the number of seats requested, default 1 (maximum 6).
+                If no time requested set rideAt=null. Preserve past times rather than silently changing tonight to tomorrow.
+                Never classify blood-test booking, bicycle repair or general service requests as carpooling.
+                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false,"contactRequest":false,"contactCategories":[],"doctorSpecialty":null,"rideRequest":false,"rideKind":"offer","rideDirection":"outbound","rideDestination":"","rideAt":null,"rideSeats":1}.
                 Do not use Markdown fences.
-                """, query);
+                """ + "\nCurrent India datetime (Asia/Kolkata): " + LocalDateTime.now(ZoneId.of("Asia/Kolkata")), query);
         String intent = query, responseLanguage = "the original request language and script", teachingLanguage = null, doctorSpecialty = null;
-        boolean learningRequest = false, contactRequest = false;
+        boolean learningRequest = false, contactRequest = false, rideRequest = false;
+        String rideKind="offer", rideDirection="outbound", rideDestination="", rideAt=null;
+        int rideSeats=1;
         List<String> contactCategories = new ArrayList<>();
         try {
             var interpreted = objectMapper.readTree(interpretation);
             intent = interpreted.path("intent").asText(query);
             contactRequest = interpreted.path("contactRequest").asBoolean(false);
+            rideRequest=interpreted.path("rideRequest").asBoolean(false);
+            rideKind="request".equals(interpreted.path("rideKind").asText())?"request":"offer";
+            rideDirection="inbound".equals(interpreted.path("rideDirection").asText())?"inbound":"outbound";
+            rideDestination=interpreted.path("rideDestination").asText("");
+            rideAt=interpreted.path("rideAt").asText(null);
+            rideSeats=Math.max(1,Math.min(6,interpreted.path("rideSeats").asInt(1)));
             doctorSpecialty = interpreted.path("doctorSpecialty").asText(null);
             for (var category : interpreted.path("contactCategories")) {
                 if (HelpDirectoryService.CATEGORIES.contains(category.asText())) contactCategories.add(category.asText());
@@ -218,7 +256,7 @@ public class SearchService {
             responseLanguage += "; preserve the original alphabet: " + alphabet + "; never Latin transliteration";
         }
         if (nativeScript.isEmpty()) responseLanguage += "; write in Latin script only, matching the romanized input";
-        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest, contactRequest, contactCategories, doctorSpecialty);
+        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest, contactRequest, contactCategories, doctorSpecialty, rideRequest, rideKind, rideDirection, rideDestination, rideAt, rideSeats);
     }
 
     private static final String AAPTA_VOICE = """

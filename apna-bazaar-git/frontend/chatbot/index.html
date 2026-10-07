@@ -7,7 +7,7 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css?v=20261007-plans1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-rides1" />
   </head>
   <body class="discovery-page">
     <header class="topbar">
@@ -30,6 +30,9 @@
         </summary>
         <div>
           <a href="index.html">Discover</a>
+          <a data-community-route="rides" href="../rides/index.html"
+            >Hood Rides ↗</a
+          >
           <a data-community-route="plans" href="../plans/index.html"
             >Hood Plans ✦</a
           >
@@ -214,6 +217,7 @@
     </dialog>
     <div id="toast" class="toast" role="status" hidden></div>
     <script src="../contact.js?v=20261007-professional1"></script>
+    <script src="../rides/contact.js?v=1"></script>
     <script>
       function fitMobileViewport() {
         document.documentElement.style.setProperty(
@@ -285,6 +289,8 @@
           else if (entry.kind === "result")
             resultCard(entry.provider, entry.eventId, entry.item);
           else if (entry.kind === "contact") contactCard(entry.contact);
+          else if (entry.kind === "ride") rideCard(entry.ride);
+          else if (entry.kind === "ride-help") rideHelp(entry.query);
           else if (entry.kind === "urgent-help") urgentHelpCard();
           else if (entry.kind === "promotion")
             renderPromotion(entry.provider, entry);
@@ -566,6 +572,72 @@
         stream.append(card);
         return card;
       }
+      function rideHelp(query = {}) {
+        const card = el("div", "ride-chat-help");
+        const link = el("a", "", "Open Hood Rides ↗");
+        const params = new URLSearchParams({ community: community.value });
+        for (const key of ["kind", "direction", "destination", "at", "seats"])
+          if (query[key]) params.set(key, query[key]);
+        link.href = `../rides/index.html?${params}`;
+        card.append(
+          link,
+          el("small", "", "Search first. Posting is your choice—no broadcast."),
+        );
+        card.chatEntry = { kind: "ride-help", query };
+        stream.append(card);
+        return card;
+      }
+      function rideCard(r) {
+        const card = el("article", "seller ride-chat-card");
+        const route =
+          r.direction === "inbound"
+            ? `${r.destination} → ${community.selectedOptions[0].textContent}`
+            : `${community.selectedOptions[0].textContent} → ${r.destination}`;
+        card.append(
+          el("small", "", r.kind === "offer" ? "Ride offered" : "Needs a ride"),
+          el("h3", "", route),
+        );
+        card.append(
+          el(
+            "p",
+            "",
+            new Intl.DateTimeFormat("en-IN", {
+              timeZone: "Asia/Kolkata",
+              dateStyle: "medium",
+              timeStyle: "short",
+            }).format(new Date(r.departure_at)) + " IST",
+          ),
+          el(
+            "p",
+            "",
+            `${r.name} · ${r.seats} ${r.kind === "offer" ? "seats offered" : "seats needed"} · ${r.pickup}`,
+          ),
+        );
+        const contact = heyhoodWhatsAppContact(
+          r.whatsapp_number,
+          null,
+          heyhoodRideEnquiry(r, community.selectedOptions[0].textContent),
+        );
+        if (contact) {
+          const link = el(
+            "a",
+            "professional-whatsapp",
+            r.kind === "offer" ? "Connect on WhatsApp ↗" : "I can help ↗",
+          );
+          link.href = contact.url;
+          card.append(link);
+        }
+        card.append(
+          el(
+            "small",
+            "pilot-contact-note",
+            "Pilot · shared test contact. Ride not confirmed.",
+          ),
+        );
+        card.chatEntry = { kind: "ride", ride: r };
+        stream.append(card);
+        return card;
+      }
       function contactCard(c) {
         const card = el("article", "seller help-contact-card");
         card.append(
@@ -822,6 +894,10 @@
             urgentHelpCard();
           }
           message(data.intro || "Here’s what I found in your community.");
+          if (data.rides) {
+            for (const ride of data.rides) rideCard(ride);
+            rideHelp(data.rideQuery || {});
+          }
           for (const contact of data.contacts || []) {
             contact.searchIntent = data.searchIntent || "";
             contactCard(contact);
