@@ -795,3 +795,8 @@ td:first-child {
     bottom: 16px;
   }
 }
+
+.seller-person { margin-top: 10px; font-weight: 600; font-size: 13px; }
+.seller-flat { margin-top: 4px; color: var(--muted); font-size: 12px; }
+.contact-note { margin: 12px 0 0; font-size: 11px; color: var(--muted); line-height: 1.5; }
+.seller-footer button:disabled { cursor: not-allowed; background: #e3e9df; color: #607167; opacity: 1; }

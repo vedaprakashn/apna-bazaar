@@ -201,34 +201,18 @@
         }
       }
       async function recordInterest(eventId, p, button) {
+        if (!/^\d{10,15}$/.test(p.whatsappNumber || "")) return;
         button.disabled = true;
         try {
-          const real = /^\d{10,15}$/.test(p.whatsappNumber || "");
-          const r = await fetch(
-            `${API_BASE}/api/${community.value}/search/click`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                searchEventId: eventId,
-                providerId: p.id,
-                clickType: real ? "whatsapp_tap" : "profile_view",
-              }),
-            },
-          );
+          const r = await fetch(`${API_BASE}/api/${community.value}/search/click`, {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({searchEventId: eventId, providerId: p.id, clickType: "whatsapp_tap"})
+          });
           if (!r.ok) throw Error();
-          if (real) {
-            location.href = `https://wa.me/${p.whatsappNumber}?text=${encodeURIComponent("Hi, I found your listing on Apna Bazaar. I would like to know more.")}`;
-          } else {
-            toast(
-              "Interest recorded. This is a fictional demo listing; no WhatsApp contact is available.",
-            );
-            button.textContent = "Interest recorded ✓";
-          }
+          location.href = `https://wa.me/${p.whatsappNumber}?text=${encodeURIComponent("Hi " + p.name + ", I found your listing on Apna Bazaar. I would like to know more.")}`;
         } catch (e) {
-          toast("Could not record your interest. Please try again.");
-          button.disabled = false;
-        }
+          toast("Could not open WhatsApp. Please try again.");
+        } finally { button.disabled = false; }
       }
       function resultCard(p, eventId) {
         const item = catalog.find((x) => x.id === p.id);
@@ -244,6 +228,8 @@
             item?.category || p.flatNumber || "Community provider",
           ),
         );
+        info.append(el("div", "seller-person", p.name || "Community seller"));
+        info.append(el("div", "seller-flat", "Flat: " + (p.flatNumber || "Not provided")));
         top.append(info);
         card.append(
           top,
@@ -265,10 +251,13 @@
           ),
         );
         const real = /^\d{10,15}$/.test(p.whatsappNumber || "");
-        const b = el("button", "", real ? "WhatsApp ↗" : "Demo interest ♡");
+        const b = el("button", "", "Whatsapp Message");
+        b.disabled = !real;
+        if (!real) b.title = "Demo listing — no WhatsApp number configured";
         b.onclick = () => recordInterest(eventId, p, b);
         footer.append(b);
         card.append(footer);
+        if (!real) card.append(el("p", "contact-note", "Demo listing · WhatsApp is available once a real contact number is added."));
         stream.append(card);
       }
       async function ask(q) {
