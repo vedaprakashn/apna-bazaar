@@ -613,7 +613,7 @@
           for (const p of data.providers || []) resultCard(p, data.sessionId);
           if (!(data.providers || []).length && !data.intro)
             message(
-              "No matches this time. Your question has been logged as unmet demand, helping us find the next provider to onboard.",
+              "I couldn’t find a match in your hood yet. Try another item or check Explore.",
             );
         } catch (err) {
           pending.textContent =

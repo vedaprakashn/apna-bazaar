@@ -21,7 +21,7 @@ Proposed revenue: free listings; seller subscriptions (Starter ₹99/month, Grow
 - Homepage supporting line: **Your hood. Your people. Your next find. ✨**
 - AI persona: **Aapta**, selected as a warm, trusted community guide.
 - Persona tagline: **Your hood, decoded 👀**.
-- Voice: friendly, contemporary, community-specific; avoid stiff language such as “AI discovery”, “Find dairy in my community”, and “Back to discovery”.
+- Voice: relaxed and respectful, using short everyday words and natural contractions; conversational without exaggerated slang or forced emojis. No-result replies say “I couldn’t find [specific request] in your hood yet.” Do not claim nobody offers it or promise future availability. Apply this naturally across supported languages; avoid stiff language such as “AI discovery”, “Find dairy in my community”, and “Back to discovery”.
 - Return link: **← Back to your hood**.
 - Search loading line: **Checking your hood… 👀**.
 - Colors: electric violet, warm yellow, peach/pastel accents, warm light backgrounds; previous green theme retired.
@@ -285,3 +285,7 @@ The following reconstructs the available context chronologically. It is a decisi
 - Collaborator access: repository owner can invite their friend's GitHub account via repository Settings → Collaborators / Manage access. Chat collaboration depends on the chat client's sharing features; the coding assistant cannot add someone to this chat or assume they inherit a workspace/session automatically.
 
 - User requested the loading line also connect to “hood”; changed Finding your local gems to Checking your hood… 👀 in this release.
+
+- User reported formal no-result copy for Bharatanatyam lessons and requested a warmer, moderately informal voice. Updated the shared AI voice instructions for both populated and empty-catalog paths and softened the frontend no-result fallback; preserve language, truthful matching and no invented alternatives.
+
+- Voice-change validation: Maven verify passed. Local OpenAI-backed checks returned warm, specific no-match replies for Bharatanatyam in English, Hindi and Romanized Tamil; Hindi tuition remained one matching provider, and German tuition exercised the empty-catalog path without inventing a match.
