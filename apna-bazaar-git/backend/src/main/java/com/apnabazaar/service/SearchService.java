@@ -47,7 +47,7 @@ public class SearchService {
         else analyticsService.recordImpressions(event, matched);
 
         return SearchResponse.builder()
-            .intro(extract(aiResponse, "intro"))
+            .intro(Optional.ofNullable(extract(aiResponse, "intro")).orElse(matched.isEmpty() ? aiResponse : "Here are your community matches."))
             .providers(matched)
             .sessionId(event.getId())
             .totalResults(matched.size())
@@ -67,9 +67,16 @@ public class SearchService {
               .append(" | Shop: ").append(p.getShopName() != null ? p.getShopName() : p.getName())
               .append(" | Flat: ").append(p.getFlatNumber())
               .append("\nPERMANENT CATALOG:\n");
-            if (p.getOfferings() != null)
-                p.getOfferings().stream().filter(o -> Boolean.TRUE.equals(o.getIsAvailable()))
-                    .forEach(o -> sb.append("  - ").append(o.getName()).append(": ").append(o.getDescription()).append("\n"));
+            if (p.getOfferings() != null) {
+                p.getOfferings().stream().filter(o -> Boolean.TRUE.equals(o.getIsAvailable())).forEach(o -> {
+                    sb.append("  - ").append(o.getName()).append(": ").append(o.getDescription())
+                      .append(" | Price: Rs.").append(o.getBasePrice()).append("/").append(o.getUnit()).append("\n");
+                    o.getSchedules().stream().filter(sc -> Boolean.TRUE.equals(sc.getIsActive())).forEach(sc ->
+                        sb.append("    Schedule: ").append(sc.getDayScope()).append(" ")
+                          .append(sc.getDaysOfWeek() == null ? "" : sc.getDaysOfWeek()).append(" ")
+                          .append(sc.getServesFrom()).append("–").append(sc.getServesTo()).append(" Asia/Kolkata\n"));
+                });
+            }
             List<DailyPost> dp = posts.get(p.getId());
             if (dp != null && !dp.isEmpty()) {
                 sb.append("TODAY'S MENU:\n");
@@ -90,7 +97,9 @@ public class SearchService {
             SELLER DATABASE:
             %s
             Rules:
-            1. Match semantically — understand intent, not keywords
+            1. Match semantically — understand intent, not keywords. Respect stated days and schedules.
+            Only use sellers from this database. Explain when availability is on a different day.
+            Listings marked DEMO are fictional; do not invent contacts, ratings, or stock.
             2. Be warm, peppy, use food emojis naturally
             3. Keep intro to ONE punchy sentence max
             4. ALWAYS respond in this exact format when sellers found:

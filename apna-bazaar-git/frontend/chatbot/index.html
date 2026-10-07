@@ -1,868 +1,324 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Apna Bazaar</title>
-<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --swiggy: #FC8019;
-    --zomato: #E23744;
-    --turmeric: #F4C430;
-    --mango: #FF6B35;
-    --deep-red: #C0392B;
-    --mint: #00B894;
-    --mint-light: #E0F7F3;
-    --cream: #FFF8F0;
-    --card-bg: #FFFFFF;
-    --ink: #1A1A2E;
-    --subtext: #6B7280;
-    --border: #FFE8D6;
-    --pill-bg: #FFF3E8;
-    --shadow-warm: 0 4px 24px rgba(252,128,25,0.15);
-    --shadow-card: 0 2px 16px rgba(0,0,0,0.08);
-    --radius: 20px;
-    --radius-sm: 12px;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: var(--cream);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    max-width: 480px;
-    margin: 0 auto;
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  /* ── HEADER ── */
-  .header {
-    background: linear-gradient(135deg, #FF6B35 0%, #FC8019 50%, #E23744 100%);
-    padding: 16px 20px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    box-shadow: 0 4px 20px rgba(226,55,68,0.3);
-  }
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .brand-icon {
-    width: 42px; height: 42px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 14px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    backdrop-filter: blur(8px);
-    border: 1.5px solid rgba(255,255,255,0.35);
-  }
-  .brand-text h1 {
-    font-family: 'Baloo 2', cursive;
-    font-size: 22px;
-    font-weight: 800;
-    color: white;
-    line-height: 1;
-    letter-spacing: -0.3px;
-  }
-  .brand-text p {
-    font-size: 11px;
-    color: rgba(255,255,255,0.85);
-    font-weight: 600;
-    margin-top: 1px;
-  }
-  .online-badge {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(255,255,255,0.2);
-    border: 1px solid rgba(255,255,255,0.3);
-    padding: 5px 10px;
-    border-radius: 20px;
-    backdrop-filter: blur(8px);
-  }
-  .online-dot {
-    width: 7px; height: 7px;
-    background: #00FF88;
-    border-radius: 50%;
-    animation: pulse-dot 2s infinite;
-  }
-  @keyframes pulse-dot {
-    0%,100% { opacity:1; transform:scale(1); }
-    50% { opacity:0.6; transform:scale(1.3); }
-  }
-  .online-badge span {
-    font-size: 11px;
-    color: white;
-    font-weight: 700;
-  }
-
-  /* Quick pills in header */
-  .quick-pills {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-    scrollbar-width: none;
-  }
-  .quick-pills::-webkit-scrollbar { display: none; }
-  .qpill {
-    flex-shrink: 0;
-    background: rgba(255,255,255,0.2);
-    border: 1.5px solid rgba(255,255,255,0.35);
-    color: white;
-    padding: 7px 14px;
-    border-radius: 30px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s;
-    white-space: nowrap;
-    backdrop-filter: blur(4px);
-  }
-  .qpill:hover, .qpill:active { background: rgba(255,255,255,0.4); transform: scale(0.97); }
-
-  /* ── CHAT AREA ── */
-  .chat-area {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding-bottom: 120px;
-  }
-  .chat-area::-webkit-scrollbar { width: 3px; }
-  .chat-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-
-  /* ── DATE CHIP ── */
-  .date-chip {
-    text-align: center;
-    margin: 4px 0;
-  }
-  .date-chip span {
-    background: #F3E8FF;
-    color: #7C3AED;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 4px 14px;
-    border-radius: 20px;
-  }
-
-  /* ── MESSAGES ── */
-  .msg { display: flex; flex-direction: column; animation: popIn 0.28s cubic-bezier(0.175,0.885,0.32,1.275); }
-  @keyframes popIn {
-    from { opacity:0; transform:translateY(10px) scale(0.96); }
-    to   { opacity:1; transform:translateY(0) scale(1); }
-  }
-  .msg.user { align-items: flex-end; }
-  .msg.bot  { align-items: flex-start; }
-
-  .msg-row { display: flex; align-items: flex-end; gap: 8px; }
-  .bot-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    background: linear-gradient(135deg, #FF6B35, #E23744);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-    flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(252,128,25,0.4);
-  }
-
-  .bubble {
-    max-width: 78%;
-    padding: 12px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    line-height: 1.55;
-    font-weight: 600;
-  }
-  .msg.user .bubble {
-    background: linear-gradient(135deg, #FF6B35, #FC8019);
-    color: white;
-    border-radius: 20px 20px 4px 20px;
-    box-shadow: 0 3px 12px rgba(252,128,25,0.35);
-  }
-  .msg.bot .bubble {
-    background: white;
-    color: var(--ink);
-    border-radius: 20px 20px 20px 4px;
-    box-shadow: var(--shadow-card);
-    border: 1px solid rgba(0,0,0,0.05);
-  }
-  .msg-time {
-    font-size: 10px;
-    color: var(--subtext);
-    margin-top: 4px;
-    padding: 0 4px;
-    font-weight: 600;
-  }
-
-  /* ── TYPING ── */
-  .typing-indicator {
-    display: flex; align-items: flex-end; gap: 8px;
-  }
-  .typing-bubble {
-    background: white;
-    border-radius: 20px 20px 20px 4px;
-    padding: 14px 18px;
-    display: flex; gap: 5px; align-items: center;
-    box-shadow: var(--shadow-card);
-    border: 1px solid rgba(0,0,0,0.05);
-  }
-  .typing-bubble span {
-    width: 8px; height: 8px;
-    background: var(--swiggy);
-    border-radius: 50%;
-    animation: typeBounce 1.2s infinite;
-  }
-  .typing-bubble span:nth-child(2) { animation-delay: 0.15s; background: var(--mango); }
-  .typing-bubble span:nth-child(3) { animation-delay: 0.3s; background: var(--zomato); }
-  @keyframes typeBounce {
-    0%,60%,100% { transform:translateY(0); }
-    30% { transform:translateY(-6px); }
-  }
-
-  /* ── SELLER CARDS ── */
-  .seller-cards-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
-    max-width: 320px;
-  }
-
-  .seller-card {
-    background: white;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: var(--shadow-card);
-    border: 1px solid rgba(0,0,0,0.06);
-    animation: popIn 0.28s cubic-bezier(0.175,0.885,0.32,1.275);
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-  }
-  .seller-card:active { transform: scale(0.98); }
-  .seller-card:hover { box-shadow: var(--shadow-warm); }
-
-  .card-top {
-    padding: 14px 14px 10px;
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  .card-emoji-wrap {
-    width: 50px; height: 50px;
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-    flex-shrink: 0;
-  }
-  .card-info { flex: 1; min-width: 0; }
-  .card-name {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--ink);
-    font-family: 'Baloo 2', cursive;
-    line-height: 1.2;
-  }
-  .card-shop {
-    font-size: 11px;
-    color: var(--swiggy);
-    font-weight: 700;
-    margin-top: 1px;
-  }
-  .card-flat {
-    font-size: 11px;
-    color: var(--subtext);
-    font-weight: 600;
-    margin-top: 3px;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .card-match {
-    font-size: 12px;
-    color: var(--ink);
-    font-weight: 600;
-    line-height: 1.4;
-    margin-top: 6px;
-    background: #FFF8F0;
-    padding: 6px 10px;
-    border-radius: 10px;
-    border-left: 3px solid var(--swiggy);
-  }
-  .card-tags {
-    display: flex; gap: 5px; flex-wrap: wrap;
-    padding: 0 14px 10px;
-  }
-  .ctag {
-    background: var(--mint-light);
-    color: var(--mint);
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .card-footer {
-    border-top: 1px solid #F5F5F5;
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .rating-wrap {
-    display: flex; align-items: center; gap: 4px;
-  }
-  .rating-wrap .stars { font-size: 12px; }
-  .rating-wrap .score {
-    font-size: 12px;
-    font-weight: 800;
-    color: var(--ink);
-  }
-  .rating-wrap .count {
-    font-size: 11px;
-    color: var(--subtext);
-    font-weight: 600;
-  }
-  .wa-btn {
-    background: #25D366;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 30px;
-    font-family: 'Nunito', sans-serif;
-    font-size: 12px;
-    font-weight: 800;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.18s;
-    box-shadow: 0 2px 8px rgba(37,211,102,0.35);
-  }
-  .wa-btn:active { transform: scale(0.96); }
-
-  /* ── NO RESULT ── */
-  .no-result-card {
-    background: white;
-    border-radius: 18px;
-    padding: 20px;
-    max-width: 280px;
-    text-align: center;
-    box-shadow: var(--shadow-card);
-  }
-  .no-result-card .emoji { font-size: 36px; margin-bottom: 8px; }
-  .no-result-card p { font-size: 13px; color: var(--subtext); font-weight: 600; line-height: 1.5; }
-
-  /* ── DAILY DIGEST CARD ── */
-  .digest-card {
-    background: linear-gradient(135deg, #FFF3E0, #FFE0CC);
-    border-radius: 18px;
-    padding: 16px;
-    max-width: 300px;
-    border: 1.5px solid #FFDAB9;
-    box-shadow: var(--shadow-card);
-  }
-  .digest-title {
-    font-family: 'Baloo 2', cursive;
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--ink);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .digest-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-    border-bottom: 1px dashed #FFD0A8;
-  }
-  .digest-item:last-child { border-bottom: none; }
-  .digest-item .di-emoji { font-size: 18px; }
-  .digest-item .di-info { flex: 1; }
-  .digest-item .di-name { font-size: 12px; font-weight: 800; color: var(--ink); }
-  .digest-item .di-desc { font-size: 11px; color: var(--subtext); font-weight: 600; }
-  .digest-item .di-price { font-size: 12px; font-weight: 800; color: var(--swiggy); }
-
-  /* ── INPUT BAR ── */
-  .input-bar {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    background: white;
-    padding: 12px 14px 20px;
-    border-top: 1px solid #F0F0F0;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
-    z-index: 40;
-  }
-  .input-wrap {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    background: #F8F8F8;
-    border-radius: 30px;
-    padding: 6px 6px 6px 18px;
-    border: 2px solid transparent;
-    transition: border 0.2s;
-  }
-  .input-wrap:focus-within {
-    border-color: var(--swiggy);
-    background: white;
-    box-shadow: 0 0 0 4px rgba(252,128,25,0.1);
-  }
-  .input-wrap input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-family: 'Nunito', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ink);
-    outline: none;
-  }
-  .input-wrap input::placeholder { color: #BDBDBD; font-weight: 600; }
-  .send-btn {
-    width: 42px; height: 42px;
-    background: linear-gradient(135deg, #FF6B35, #FC8019);
-    border: none;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-    cursor: pointer;
-    transition: all 0.18s;
-    box-shadow: 0 2px 10px rgba(252,128,25,0.4);
-    flex-shrink: 0;
-  }
-  .send-btn:active { transform: scale(0.92); }
-  .send-btn:disabled { background: #E0E0E0; box-shadow: none; }
-
-  /* ── WELCOME CARD ── */
-  .welcome-card {
-    background: white;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: var(--shadow-card);
-    max-width: 300px;
-  }
-  .welcome-banner {
-    background: linear-gradient(135deg, #FF6B35, #FC8019, #E23744);
-    padding: 18px;
-    text-align: center;
-  }
-  .welcome-banner .big-emoji { font-size: 42px; }
-  .welcome-banner h2 {
-    font-family: 'Baloo 2', cursive;
-    font-size: 20px;
-    font-weight: 800;
-    color: white;
-    margin-top: 6px;
-  }
-  .welcome-banner p { font-size: 12px; color: rgba(255,255,255,0.9); font-weight: 600; margin-top: 3px; }
-  .welcome-body { padding: 14px; }
-  .welcome-body p { font-size: 13px; color: var(--subtext); font-weight: 600; line-height: 1.55; }
-  .try-chips {
-    display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px;
-  }
-  .try-chip {
-    background: var(--pill-bg);
-    border: 1.5px solid var(--border);
-    color: var(--swiggy);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s;
-  }
-  .try-chip:active { background: var(--swiggy); color: white; transform: scale(0.96); }
-
-  /* ── SCROLLBAR ── */
-  * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
-</style>
-</head>
-<body>
-
-<!-- HEADER -->
-<div class="header">
-  <div class="header-top">
-    <div class="brand">
-      <div class="brand-icon">🛍️</div>
-      <div class="brand-text">
-        <h1>Apna Bazaar</h1>
-        <p>MyHome Tridasa · 2700 Flats</p>
-      </div>
-    </div>
-    <div class="online-badge">
-      <div class="online-dot"></div>
-      <span>Live</span>
-    </div>
-  </div>
-  <div class="quick-pills">
-    <div class="qpill" onclick="quickAsk('idli or dosa batter')">🫓 Batter</div>
-    <div class="qpill" onclick="quickAsk('home kitchen lunch today')">🍱 Lunch</div>
-    <div class="qpill" onclick="quickAsk('fresh juice or shakes')">🥤 Juice</div>
-    <div class="qpill" onclick="quickAsk('dry fruits or cooking oil')">🫙 Dry Fruits</div>
-    <div class="qpill" onclick="quickAsk('homemade sweets or snacks')">🍬 Sweets</div>
-    <div class="qpill" onclick="quickAsk('dinner tonight')">🌙 Dinner</div>
-    <div class="qpill" onclick="quickAsk('frozen food ready to cook')">❄️ Frozen</div>
-    <div class="qpill" onclick="quickAsk('tuition or classes for kids')">📚 Classes</div>
-  </div>
-</div>
-
-<!-- CHAT -->
-<div class="chat-area" id="chatArea">
-  <div class="date-chip"><span>Today, ${getDate()}</span></div>
-</div>
-
-<!-- INPUT BAR -->
-<div class="input-bar">
-  <div class="input-wrap">
-    <input type="text" id="chatInput" placeholder="Ask anything… 'who makes biryani tonight?'" onkeydown="if(event.key==='Enter') sendMsg()" autocomplete="off" />
-    <button class="send-btn" id="sendBtn" onclick="sendMsg()">↑</button>
-  </div>
-</div>
-
-<script>
-// ── DATA ──
-const sellers = [
-  {
-    id:1, name:'Lakshmi Reddy', shop:"Lakshmi's Fresh Corner",
-    flat:'T4 · 2205', phone:'919876543210',
-    emoji:'🥬', color:'#E8F5E9', rating:4.8, reviews:34,
-    catalog:[
-      {item:'Dosa Batter', desc:'Stone-ground fermented batter, order before 8 PM'},
-      {item:'Idli Batter', desc:'Soft & fluffy guaranteed, fresh daily'},
-      {item:'Ragi Dosa Batter', desc:'Healthy ragi blend, great for kids'},
-      {item:'Ragi Idli Batter', desc:'Nutritious ragi idli batter'},
-      {item:'Pesara Batter', desc:'Green moong dal batter for pesarattu'},
-      {item:'Vada Batter', desc:'Crispy medu vada batter'},
-      {item:'Gongura Pickle', desc:'Traditional Andhra gongura pachadi, medium spicy'},
-      {item:'Mixed Vegetable Pickle', desc:'Carrot, raw mango, green chilli in mustard oil'},
-    ]
-  },
-  {
-    id:2, name:'Sunita Mishra', shop:"Healthy Rasoi by Akku's Kitchen",
-    flat:'T5 · 3604', phone:'919318329996',
-    emoji:'🍱', color:'#FFF8E1', rating:4.9, reviews:67,
-    catalog:[
-      {item:'South Indian Lunch Box', desc:'Rice, sambar, rasam, dal, 2 curries, papad — ₹129/plate'},
-      {item:'Idli Sambar', desc:'Soft steamed idlis with hotel-style sambar & chutney'},
-      {item:'Dosa', desc:'Crispy plain dosa, masala dosa, pesarattu'},
-      {item:'Vada', desc:'Medu vada with sambar and coconut chutney'},
-      {item:'Daal Lobhiya Rice', desc:'Comforting light healthy lunch — ₹129/plate'},
-      {item:'Custom Birthday Cake', desc:'Layered fondant cakes, 3 days advance order'},
-      {item:'Festive Sweets Box', desc:'Diwali boxes — ladoo, barfi, chakli'},
-    ]
-  },
-  {
-    id:3, name:'Sravanthi B', shop:"BH Cloud Kitchen",
-    flat:'T5 · 2506', phone:'917702377787',
-    emoji:'🍗', color:'#FFF3E0', rating:4.7, reviews:28,
-    catalog:[
-      {item:'Paneer Pulao with Vegetables', desc:'Fragrant pulao — ₹220'},
-      {item:'Garlic Chicken Fry', desc:'Crispy garlic chicken — ₹300'},
-      {item:'Thursday Dinner Special', desc:'Pickup 8 PM, order before 5 PM'},
-      {item:'Chicken Curry', desc:'Home-style Andhra chicken curry'},
-    ]
-  },
-  {
-    id:4, name:'Rahul Sharma', shop:"MP Wala Taste",
-    flat:'T3 · 1102', phone:'919806255324',
-    emoji:'🟢', color:'#E8F5E9', rating:4.6, reviews:19,
-    catalog:[
-      {item:'Hara Bhara Kabab', desc:'Frozen, 100% veg, packed with greens — just fry & serve'},
-      {item:'Dal Kachori', desc:'Crispy flaky kachori, frozen, zero preservatives'},
-      {item:'Air Fryer Friendly Frozen Snacks', desc:'Healthy veg frozen snacks, home delivery ₹20 extra'},
-      {item:'MP Style Namkeen', desc:'Traditional madhya pradesh snacks'},
-    ]
-  },
-  {
-    id:5, name:'Gruha Ruchulu', shop:"Shree Vaibhavam Kitchen",
-    flat:'T6 · 1002', phone:'919966474812',
-    emoji:'🪷', color:'#FCE4EC', rating:4.9, reviews:51,
-    catalog:[
-      {item:'Bagara Rice', desc:'750ml + raitha — ₹170, pre-orders till 6 PM'},
-      {item:'Andhra Chicken Iguru', desc:'Spicy dry chicken curry — ₹300'},
-      {item:'Uthapam', desc:'2 uthapam + chutney — ₹90'},
-      {item:'Idli', desc:'4 idlis + chutney — ₹65'},
-      {item:'Idli Dosa Batter', desc:'Fresh homemade batter, order by 3 PM for next morning delivery'},
-      {item:'Spice Powders', desc:'Sambar powder, rasam powder, homemade masalas'},
-    ]
-  },
-  {
-    id:6, name:'Meena Iyer', shop:"Meena's Juice Bar",
-    flat:'T2 · 803', phone:'919871234560',
-    emoji:'🥤', color:'#E3F2FD', rating:4.7, reviews:33,
-    catalog:[
-      {item:'Fresh Mosambi Juice', desc:'Freshly pressed, no sugar added'},
-      {item:'Sugarcane Juice', desc:'Cold-pressed with ginger and lemon'},
-      {item:'Mango Milkshake', desc:'Thick alphonso mango shake'},
-      {item:'Strawberry Shake', desc:'Fresh strawberries, full-fat milk'},
-      {item:'Smoothie Bowl', desc:'Banana acai bowl — weekends only'},
-      {item:'Homemade Ice Cream', desc:'Kesar pista, filter coffee — Saturdays & Sundays'},
-    ]
-  },
-  {
-    id:7, name:'Farida Begum', shop:"Farida's Dry Fruits & Oils",
-    flat:'T1 · 901', phone:'919765432109',
-    emoji:'🫙', color:'#FBE9E7', rating:4.9, reviews:44,
-    catalog:[
-      {item:'Premium Cashews W240', desc:'Goa-sourced, roasted & raw available'},
-      {item:'California Almonds', desc:'500g and 1kg packs, whole and sliced'},
-      {item:'Mixed Dry Fruits Gift Box', desc:'Dates, figs, apricots, raisins, walnuts — festive boxes'},
-      {item:'Cold Pressed Coconut Oil', desc:'Virgin, extracted without heat — cooking & hair care'},
-      {item:'Filtered Groundnut Oil', desc:'Wood-churned traditional Hyderabadi style'},
-      {item:'Cold Pressed Sesame Oil', desc:'Till ka tel for pickles & South Indian cooking'},
-    ]
-  },
-  {
-    id:8, name:'Venkat Rao', shop:"Venkat Classes",
-    flat:'T4 · 608', phone:'919432109876',
-    emoji:'📚', color:'#E8EAF6', rating:5.0, reviews:22,
-    catalog:[
-      {item:'Maths Tuition 6th-10th', desc:'CBSE and state board, IIT alumnus'},
-      {item:'Science Coaching', desc:'Physics, chemistry, biology — board exam focus'},
-      {item:'JEE NEET Foundation', desc:'Early foundation for 9th and 10th graders'},
-    ]
-  },
-];
-
-// ── UTILS ──
-function getDate() {
-  return new Date().toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'long' });
-}
-function getTime() {
-  return new Date().toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
-}
-
-// Backend owns AI authentication; no API key is sent to the browser.
-const API_BASE = (window.location.protocol === 'file:' || window.location.port === '8000')
-  ? 'http://localhost:8080' : '';
-const COMMUNITY_SLUG = 'tridasa';
-async function searchMarketplace(query) {
-  const res = await fetch(`${API_BASE}/api/${COMMUNITY_SLUG}/search?q=${encodeURIComponent(query)}`);
-  if (!res.ok) throw new Error(`Search failed (${res.status})`);
-  const data = await res.json();
-  return {
-    intro: data.intro,
-    matched: data.providers.map(p => ({
-      seller: { name: p.name, shop: p.shopName, flat: p.flatNumber || '',
-        phone: p.whatsappNumber, rating: p.rating || 0, reviews: p.reviewCount || 0,
-        emoji: '🛍️', color: '#fff3e0' },
-      reason: p.matchReason
-    }))
-  };
-}
-
-// ── RENDER ──
-const chatArea = document.getElementById('chatArea');
-
-function scrollBottom() {
-  setTimeout(() => chatArea.scrollTop = chatArea.scrollHeight, 60);
-}
-
-function addUserMsg(text) {
-  const el = document.createElement('div');
-  el.className = 'msg user';
-  el.innerHTML = `<div class="bubble">${text}</div><div class="msg-time">${getTime()}</div>`;
-  chatArea.appendChild(el);
-  scrollBottom();
-}
-
-function addBotBubble(html) {
-  const el = document.createElement('div');
-  el.className = 'msg bot';
-  el.innerHTML = `
-    <div class="msg-row">
-      <div class="bot-avatar">🛍️</div>
-      <div class="bubble">${html}</div>
-    </div>
-    <div class="msg-time" style="margin-left:40px">${getTime()}</div>`;
-  chatArea.appendChild(el);
-  scrollBottom();
-  return el;
-}
-
-function addSellerCards(matched) {
-  const wrap = document.createElement('div');
-  wrap.className = 'msg bot';
-  const inner = document.createElement('div');
-  inner.style.marginLeft = '40px';
-
-  const cards = document.createElement('div');
-  cards.className = 'seller-cards-wrap';
-
-  matched.forEach(({ seller, reason }) => {
-    const card = document.createElement('div');
-    card.className = 'seller-card';
-    card.innerHTML = `
-      <div class="card-top">
-        <div class="card-emoji-wrap" style="background:${seller.color}">${seller.emoji}</div>
-        <div class="card-info">
-          <div class="card-name">${seller.name}</div>
-          <div class="card-shop">${seller.shop}</div>
-          <div class="card-flat">📍 ${seller.flat}</div>
-          <div class="card-match">🎯 ${reason}</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Apna Bazaar · Your neighbourhood, discovered</title>
+    <link rel="stylesheet" href="../app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="index.html"
+        ><span class="brand-icon">✳</span>apna bazaar<span class="tag"
+          >pilot</span
+        ></a
+      >
+      <nav class="nav">
+        <a class="active" href="index.html">Discover</a
+        ><a href="../admin/index.html">Analytics ↗</a
+        ><label
+          ><span class="sr-only">Community</span
+          ><select id="community">
+            <option value="tridasa">MyHome Tridasa</option>
+            <option value="sayuk">MyHome Sayuk</option>
+          </select></label
+        >
+      </nav>
+    </header>
+    <main class="container">
+      <section class="hero">
+        <div>
+          <div class="eyebrow">Good neighbours. Great discoveries.</div>
+          <h1>
+            Your community’s<br />best-kept secrets,<br /><em
+              >one question away.</em
+            >
+          </h1>
+          <p class="lead">
+            Fresh food, new hobbies, a helping hand. Discover the people who
+            make your neighbourhood feel like home.
+          </p>
         </div>
-      </div>
-      <div class="card-footer">
-        <div class="rating-wrap">
-          <span class="stars">⭐</span>
-          <span class="score">${seller.rating}</span>
-          <span class="count">(${seller.reviews})</span>
-        </div>
-        <button class="wa-btn" onclick="openWA('${seller.phone}','${seller.name}')">
-          <span>💬</span> Order
-        </button>
-      </div>`;
-    cards.appendChild(card);
-  });
-
-  inner.appendChild(cards);
-  wrap.appendChild(inner);
-  chatArea.appendChild(wrap);
-  scrollBottom();
-}
-
-function addDigest() {
-  const digestData = [
-    { emoji:'🫓', name:"Lakshmi's Batter", desc:'Dosa, Idli, Ragi — T4·2205', price:'From ₹50' },
-    { emoji:'🍱', name:"Akku's Kitchen", desc:'Lunch box special today', price:'₹129/plate' },
-    { emoji:'🪷', name:'Shree Vaibhavam', desc:'Bagara Rice + Chicken Iguru', price:'From ₹65' },
-    { emoji:'🥤', name:"Meena's Juice Bar", desc:'Fresh mosambi, mango shake', price:'From ₹40' },
-    { emoji:'🟢', name:'MP Wala Taste', desc:'Hara Bhara Kabab frozen packs', price:'Home delivery' },
-  ];
-
-  const wrap = document.createElement('div');
-  wrap.className = 'msg bot';
-  wrap.innerHTML = `
-    <div class="msg-row">
-      <div class="bot-avatar">🛍️</div>
-      <div class="digest-card">
-        <div class="digest-title">☀️ Today's Sellers are Live!</div>
-        ${digestData.map(d => `
-          <div class="digest-item">
-            <div class="di-emoji">${d.emoji}</div>
-            <div class="di-info">
-              <div class="di-name">${d.name}</div>
-              <div class="di-desc">${d.desc}</div>
-            </div>
-            <div class="di-price">${d.price}</div>
-          </div>`).join('')}
-      </div>
-    </div>
-    <div class="msg-time" style="margin-left:40px">${getTime()}</div>`;
-  chatArea.appendChild(wrap);
-  scrollBottom();
-}
-
-function showTyping() {
-  const el = document.createElement('div');
-  el.id = 'typing';
-  el.className = 'msg bot typing-indicator';
-  el.innerHTML = `
-    <div class="bot-avatar">🛍️</div>
-    <div class="typing-bubble"><span></span><span></span><span></span></div>`;
-  chatArea.appendChild(el);
-  scrollBottom();
-  return el;
-}
-
-function openWA(phone, name) {
-  const msg = encodeURIComponent(`Hi ${name}! I found you on Apna Bazaar (MyHome Tridasa). I'd like to place an order 🙏`);
-  window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
-}
-
-// ── SEND ──
-async function sendMsg() {
-  const input = document.getElementById('chatInput');
-  const btn = document.getElementById('sendBtn');
-  const text = input.value.trim();
-  if (!text || btn.disabled) return;
-  input.value = '';
-  btn.disabled = true;
-
-  addUserMsg(text);
-  const typing = showTyping();
-
-  try {
-    const { intro, matched } = await searchMarketplace(text);
-    typing.remove();
-
-    if (intro) addBotBubble(intro);
-    if (matched.length > 0) {
-      addSellerCards(matched);
-      addBotBubble(`Tap <b>Order</b> to WhatsApp them directly! Anything else you're looking for? 😊`);
-    } else if (!intro) {
-      addBotBubble("No matching sellers found. Try a different search.");
-    }
-  } catch(e) {
-    typing.remove();
-    addBotBubble("Oops! Something went wrong 😅 Try again in a moment.");
-  }
-
-  btn.disabled = false;
-  input.focus();
-}
-
-function quickAsk(q) {
-  document.getElementById('chatInput').value = q;
-  sendMsg();
-}
-
-// ── WELCOME ──
-function initChat() {
-  // Welcome card
-  const wrapW = document.createElement('div');
-  wrapW.className = 'msg bot';
-  wrapW.innerHTML = `
-    <div class="msg-row">
-      <div class="bot-avatar">🛍️</div>
-      <div class="welcome-card">
-        <div class="welcome-banner">
-          <div class="big-emoji">🏡</div>
-          <h2>Namaste, neighbour!</h2>
-          <p>Your community's own marketplace</p>
-        </div>
-        <div class="welcome-body">
-          <p>I know every seller in Tridasa — home kitchens, batter, dry fruits, juices, sweets & more. Just ask me anything! 🌟</p>
-          <div class="try-chips">
-            <div class="try-chip" onclick="quickAsk('who makes idli batter?')">🫓 Idli batter?</div>
-            <div class="try-chip" onclick="quickAsk('dinner tonight')">🌙 Dinner tonight?</div>
-            <div class="try-chip" onclick="quickAsk('healthy lunch option')">🥗 Healthy lunch?</div>
-            <div class="try-chip" onclick="quickAsk('frozen snacks to stock up')">❄️ Frozen snacks?</div>
+        <div class="hero-art">
+          <span class="tag">Made for your community</span>
+          <h2>A whole bazaar.<br />Right next door.</h2>
+          <div class="floating-list">
+            <span>🍱 Home kitchens</span><span>🎨 Weekend classes</span
+            ><span>🛠 Home services</span><span>🌿 Daily essentials</span>
           </div>
         </div>
+      </section>
+      <div class="demo-notice">
+        🧪 Pilot catalog: fictional demo providers across all categories. Prices
+        and schedules are examples; demo listings have no real contact numbers.
       </div>
-    </div>
-    <div class="msg-time" style="margin-left:40px">${getTime()}</div>`;
-  chatArea.appendChild(wrapW);
-
-  // Daily digest
-  setTimeout(() => addDigest(), 600);
-
-  scrollBottom();
-}
-
-initChat();
-</script>
-</body>
+      <section class="layout">
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Ask your neighbourhood</h2>
+            <span class="live">AI discovery</span>
+          </div>
+          <div
+            id="stream"
+            class="chat-stream"
+            aria-live="polite"
+            aria-label="Chat messages"
+          ></div>
+          <form id="form" class="composer">
+            <label class="sr-only" for="query">What are you looking for?</label
+            ><input
+              id="query"
+              maxlength="500"
+              placeholder="Who teaches kids karate on weekends?"
+              autocomplete="off"
+              required
+            /><button
+              class="send"
+              id="send"
+              type="submit"
+              aria-label="Send question"
+            >
+              Ask ↗
+            </button>
+          </form>
+        </div>
+        <aside>
+          <div class="panel">
+            <div class="panel-head">
+              <h2>A little of everything</h2>
+              <span class="tag" id="count">Loading</span>
+            </div>
+            <div id="categories" class="browse"></div>
+          </div>
+          <p class="demo-notice">
+            Try a category or ask in your own words. Availability is based on
+            each provider’s listed schedule in India Standard Time.
+          </p>
+        </aside>
+      </section>
+      <footer class="footer">
+        <span>Apna Bazaar · Your community’s own bazaar</span
+        ><span>Discover → connect → support a neighbour</span>
+      </footer>
+    </main>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script>
+      const API_BASE =
+        location.protocol === "file:" || location.port === "8000"
+          ? "http://localhost:8080"
+          : "";
+      const stream = document.getElementById("stream"),
+        community = document.getElementById("community");
+      let catalog = [],
+        busy = false,
+        sessionId = crypto.randomUUID();
+      function el(tag, cls, text) {
+        const n = document.createElement(tag);
+        if (cls) n.className = cls;
+        if (text !== undefined) n.textContent = text;
+        return n;
+      }
+      function message(text, type = "bot") {
+        const n = el("div", "message " + type, text);
+        stream.append(n);
+        stream.scrollTop = stream.scrollHeight;
+        return n;
+      }
+      function toast(text) {
+        const n = document.getElementById("toast");
+        n.textContent = text;
+        n.hidden = false;
+        clearTimeout(toast.timer);
+        toast.timer = setTimeout(() => (n.hidden = true), 5000);
+      }
+      function welcome() {
+        stream.replaceChildren();
+        const box = message(
+          "Hey neighbour 👋 What can I help you discover today?",
+        );
+        const chips = el("div", "suggestions");
+        for (const q of [
+          "Fresh idli batter",
+          "Kids karate on weekends",
+          "Muffins on Saturday",
+          "Car wash this Sunday",
+        ]) {
+          const b = el("button", "chip", q);
+          b.type = "button";
+          b.onclick = () => ask(q);
+          chips.append(b);
+        }
+        box.append(chips);
+      }
+      async function loadCatalog() {
+        document.getElementById("categories").replaceChildren();
+        document.getElementById("count").textContent = "Loading";
+        try {
+          const r = await fetch(
+            `${API_BASE}/api/${community.value}/admin/catalog`,
+          );
+          if (!r.ok) throw Error();
+          catalog = await r.json();
+          const groups = new Map();
+          for (const item of catalog) {
+            if (!groups.has(item.category))
+              groups.set(item.category, { emoji: item.emoji, count: 0 });
+            groups.get(item.category).count++;
+          }
+          document.getElementById("count").textContent =
+            `${catalog.length} offerings`;
+          for (const [name, g] of groups) {
+            const b = el("button", "category");
+            b.append(
+              el("b", "", g.emoji || "✳"),
+              el("span", "", name),
+              el("small", "", `${g.count} listing${g.count === 1 ? "" : "s"}`),
+            );
+            b.onclick = () => ask(`Find ${name.toLowerCase()} in my community`);
+            document.getElementById("categories").append(b);
+          }
+          if (!catalog.length)
+            document
+              .getElementById("categories")
+              .append(
+                el(
+                  "p",
+                  "empty",
+                  "No listings yet. Your community catalog is getting started.",
+                ),
+              );
+        } catch (e) {
+          document.getElementById("count").textContent = "Unavailable";
+          document
+            .getElementById("categories")
+            .append(
+              el(
+                "p",
+                "empty",
+                "Could not load the catalog. Refresh to try again.",
+              ),
+            );
+        }
+      }
+      async function recordInterest(eventId, p, button) {
+        button.disabled = true;
+        try {
+          const real = /^\d{10,15}$/.test(p.whatsappNumber || "");
+          const r = await fetch(
+            `${API_BASE}/api/${community.value}/search/click`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                searchEventId: eventId,
+                providerId: p.id,
+                clickType: real ? "whatsapp_tap" : "profile_view",
+              }),
+            },
+          );
+          if (!r.ok) throw Error();
+          if (real) {
+            location.href = `https://wa.me/${p.whatsappNumber}?text=${encodeURIComponent("Hi, I found your listing on Apna Bazaar. I would like to know more.")}`;
+          } else {
+            toast(
+              "Interest recorded. This is a fictional demo listing; no WhatsApp contact is available.",
+            );
+            button.textContent = "Interest recorded ✓";
+          }
+        } catch (e) {
+          toast("Could not record your interest. Please try again.");
+          button.disabled = false;
+        }
+      }
+      function resultCard(p, eventId) {
+        const item = catalog.find((x) => x.id === p.id);
+        const card = el("article", "seller"),
+          top = el("div", "seller-top"),
+          info = el("div");
+        top.append(el("div", "seller-icon", item?.emoji || "🛍"));
+        info.append(
+          el("h3", "", p.shopName || p.name),
+          el(
+            "small",
+            "",
+            item?.category || p.flatNumber || "Community provider",
+          ),
+        );
+        top.append(info);
+        card.append(
+          top,
+          el(
+            "p",
+            "reason",
+            p.matchReason || "A match from your community catalog.",
+          ),
+        );
+        if (item) card.append(el("p", "reason", item.offering));
+        const footer = el("div", "seller-footer");
+        footer.append(
+          el(
+            "span",
+            "price",
+            item?.price != null
+              ? `₹${Number(item.price).toLocaleString("en-IN")} / ${item.unit || "item"}`
+              : "Ask provider for pricing",
+          ),
+        );
+        const real = /^\d{10,15}$/.test(p.whatsappNumber || "");
+        const b = el("button", "", real ? "WhatsApp ↗" : "Demo interest ♡");
+        b.onclick = () => recordInterest(eventId, p, b);
+        footer.append(b);
+        card.append(footer);
+        stream.append(card);
+      }
+      async function ask(q) {
+        if (busy) return;
+        document.getElementById("query").value = q;
+        document.getElementById("form").requestSubmit();
+      }
+      document.getElementById("form").onsubmit = async (e) => {
+        e.preventDefault();
+        if (busy) return;
+        const input = document.getElementById("query"),
+          q = input.value.trim();
+        if (!q) return;
+        busy = true;
+        document.getElementById("send").disabled = true;
+        community.disabled = true;
+        input.value = "";
+        message(q, "user");
+        const pending = message("Looking around your neighbourhood…");
+        try {
+          const r = await fetch(
+            `${API_BASE}/api/${community.value}/search?q=${encodeURIComponent(q)}&sessionId=${sessionId}`,
+          );
+          if (!r.ok) throw Error(`Search unavailable (${r.status})`);
+          const data = await r.json();
+          pending.remove();
+          message(data.intro || "Here’s what I found in your community.");
+          for (const p of data.providers || []) resultCard(p, data.sessionId);
+          if (!(data.providers || []).length)
+            message(
+              "No matches this time. Your question has been logged as unmet demand, helping us find the next provider to onboard.",
+            );
+        } catch (err) {
+          pending.textContent =
+            "We couldn’t complete that search. Please try again shortly.";
+        } finally {
+          busy = false;
+          document.getElementById("send").disabled = false;
+          community.disabled = false;
+          stream.scrollTop = stream.scrollHeight;
+          input.focus();
+        }
+      };
+      community.onchange = () => {
+        sessionId = crypto.randomUUID();
+        welcome();
+        loadCatalog();
+      };
+      welcome();
+      loadCatalog();
+    </script>
+  </body>
 </html>

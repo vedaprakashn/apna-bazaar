@@ -15,6 +15,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @Slf4j
 public class AnalyticsService {
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final SearchEventRepository searchEventRepo;
     private final SearchResultImpressionRepository impressionRepo;
     private final ProviderClickEventRepository clickRepo;
@@ -29,14 +30,23 @@ public class AnalyticsService {
     public SearchEvent recordSearchEvent(Community community, String rawQuery,
                                           String normalisedQuery, int resultCount, UUID sessionId) {
         LocalDateTime now = LocalDateTime.now(IST);
-        return searchEventRepo.save(SearchEvent.builder()
+        SearchEvent event = SearchEvent.builder().id(UUID.randomUUID())
             .community(community).sessionId(sessionId)
             .rawQuery(rawQuery).normalisedQuery(normalisedQuery)
             .resultCount(resultCount).hadResults(resultCount > 0)
             .queryTime(now.toLocalTime()).queryDate(now.toLocalDate())
             .dayOfWeek((short) now.getDayOfWeek().getValue())
-            .timeBucket(timeBucket(now.getHour(), now.getMinute()))
-            .build());
+            .createdAt(Instant.now()).timeBucket(timeBucket(now.getHour(), now.getMinute())).build();
+        // Bind LocalDate/LocalTime directly: Hibernate's JDBC timezone would shift
+        // an already-local IST clock a second time.
+        jdbc.update("""
+            INSERT INTO search_event (id,community_id,session_id,raw_query,normalised_query,
+                result_count,had_results,query_time,query_date,day_of_week,time_bucket)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?::time_bucket_enum)
+            """, event.getId(), community.getId(), sessionId, rawQuery, normalisedQuery,
+            resultCount, resultCount > 0, now.toLocalTime(), now.toLocalDate(),
+            (short) now.getDayOfWeek().getValue(), event.getTimeBucket().name());
+        return event;
     }
 
     @Transactional
@@ -54,34 +64,31 @@ public class AnalyticsService {
     public void recordImpressions(SearchEvent event, List<MatchedProvider> matched) {
         LocalDate today = LocalDate.now(IST);
         for (int i = 0; i < matched.size(); i++) {
-            MatchedProvider mp = matched.get(i);
-            Provider pRef = new Provider(); pRef.setId(mp.id());
-            impressionRepo.save(SearchResultImpression.builder()
-                .searchEvent(event).provider(pRef).rankShown(i + 1)
-                .matchReason(mp.matchReason()).build());
-            providerAnalyticsRepo.findByProviderIdAndAnalyticsDate(mp.id(), today)
-                .ifPresentOrElse(
-                    pad -> { pad.setImpressions(pad.getImpressions() + 1); providerAnalyticsRepo.save(pad); },
-                    () -> providerAnalyticsRepo.save(ProviderAnalyticsDaily.builder()
-                        .provider(pRef).analyticsDate(today).impressions(1).build()));
+            MatchedProvider provider = matched.get(i);
+            jdbc.update("INSERT INTO search_result_impression (search_event_id,provider_id,rank_shown,match_reason) VALUES (?,?,?,?)",
+                event.getId(), provider.id(), i + 1, provider.matchReason());
+            jdbc.update("""
+                INSERT INTO provider_analytics_daily (provider_id,analytics_date,impressions,searches_matched)
+                VALUES (?,?,1,1) ON CONFLICT (provider_id,analytics_date)
+                DO UPDATE SET impressions=provider_analytics_daily.impressions+1,
+                              searches_matched=provider_analytics_daily.searches_matched+1
+                """, provider.id(), today);
         }
     }
 
     @Transactional
     public void recordClick(UUID searchEventId, UUID providerId, String clickType) {
-        SearchEvent eRef = new SearchEvent(); eRef.setId(searchEventId);
-        Provider pRef = new Provider(); pRef.setId(providerId);
-        clickRepo.save(ProviderClickEvent.builder()
-            .searchEvent(eRef).provider(pRef)
-            .clickType(ProviderClickEvent.ClickType.valueOf(clickType)).build());
-        if ("whatsapp_tap".equals(clickType)) {
-            LocalDate today = LocalDate.now(IST);
-            providerAnalyticsRepo.findByProviderIdAndAnalyticsDate(providerId, today)
-                .ifPresentOrElse(
-                    pad -> { pad.setWhatsappClicks(pad.getWhatsappClicks() + 1); providerAnalyticsRepo.save(pad); },
-                    () -> providerAnalyticsRepo.save(ProviderAnalyticsDaily.builder()
-                        .provider(pRef).analyticsDate(today).whatsappClicks(1).build()));
-        }
+        ProviderClickEvent.ClickType.valueOf(clickType);
+        Integer matches = jdbc.queryForObject("SELECT count(*) FROM search_result_impression WHERE search_event_id=? AND provider_id=?",
+            Integer.class, searchEventId, providerId);
+        if (matches == null || matches == 0) throw new org.springframework.web.server.ResponseStatusException(
+            org.springframework.http.HttpStatus.BAD_REQUEST, "Provider must belong to these search results");
+        jdbc.update("INSERT INTO provider_click_event (search_event_id,provider_id,click_type) VALUES (?,?,?::click_type_enum)",
+            searchEventId, providerId, clickType);
+        String column = "whatsapp_tap".equals(clickType) ? "whatsapp_clicks" : "profile_clicks";
+        jdbc.update("INSERT INTO provider_analytics_daily (provider_id,analytics_date," + column + ") VALUES (?,?,1) "
+            + "ON CONFLICT (provider_id,analytics_date) DO UPDATE SET " + column + "=provider_analytics_daily." + column + "+1",
+            providerId, LocalDate.now(IST));
     }
 
     @Scheduled(cron = "${apna.analytics.insight-generation-cron:0 0 2 * * MON}")

@@ -67,3 +67,11 @@ Community slugs: `tridasa`, `sayuk`
 Set `APNA_OPENAI_API_KEY` securely in your backend environment. It is mapped to Spring AI’s OpenAI client; `OPENAI_MODEL` defaults to `gpt-4o-mini`. The custom key name works with cloud environment settings, where `OPENAI_API_KEY` is reserved. Never put a key in HTML.
 
 The backend serves the chatbot at `/chatbot/index.html`; deployed search uses the same domain automatically. A standalone frontend on port 8000 uses the local backend on port 8080. The backend searches database providers, so register providers and offerings before expecting results.
+
+## Pilot catalog and live analytics
+
+Flyway V4 inserts 24 fictional providers in each pilot community, covering all 16 categories. Listings are marked Demo, with no real contacts or fabricated ratings. They have recurring schedules; AI search receives these schedules. The migration preserves existing providers and does not create fake search events.
+
+The operator dashboard at `/admin/index.html` loads `/api/{community}/admin/activity` and shows actual search activity, missed queries, category coverage and provider interest. Demo taps record `profile_view`; real WhatsApp buttons record `whatsapp_tap`. Date ranges and daily charts use India Standard Time.
+
+The resident chatbot and dashboard share responsive styling. Backend JSON APIs remain independent of the web presentation, allowing Android/iOS clients after functional completion. Native screens, authentication, notification delivery and app-store packaging remain future work.

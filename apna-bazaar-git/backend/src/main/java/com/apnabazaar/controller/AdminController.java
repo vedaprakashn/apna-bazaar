@@ -11,6 +11,18 @@ import java.time.LocalDate;
 @CrossOrigin(origins = "*")
 public class AdminController {
     private final AnalyticsService analyticsService;
+    private final com.apnabazaar.service.LiveDashboardService liveDashboard;
+
+    @GetMapping("/activity")
+    public ResponseEntity<?> activity(@PathVariable String communitySlug,
+                                      @RequestParam(defaultValue = "14") int days) {
+        return ResponseEntity.ok(liveDashboard.activity(communitySlug, days));
+    }
+
+    @GetMapping("/catalog")
+    public ResponseEntity<?> catalog(@PathVariable String communitySlug) {
+        return ResponseEntity.ok(liveDashboard.catalog(communitySlug));
+    }
 
     @GetMapping("/dashboard")
     public ResponseEntity<?> getDashboard(@PathVariable String communitySlug,
