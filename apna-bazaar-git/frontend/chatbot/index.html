@@ -228,6 +228,12 @@
           );
         } catch (_) {}
       }
+      function scrollChatToEnd() {
+        const behavior = stream.style.scrollBehavior;
+        stream.style.scrollBehavior = "auto";
+        stream.scrollTop = stream.scrollHeight;
+        stream.style.scrollBehavior = behavior;
+      }
       function restoreChat() {
         let saved;
         try {
@@ -249,12 +255,12 @@
             renderPromotion(entry.provider, entry);
         }
         requestAnimationFrame(() => {
-          stream.scrollTop = stream.scrollHeight;
+          scrollChatToEnd();
         });
       }
       window.addEventListener("pagehide", saveChat);
       window.addEventListener("pageshow", () => {
-        requestAnimationFrame(() => { stream.scrollTop = stream.scrollHeight; });
+        requestAnimationFrame(scrollChatToEnd);
       });
       document.getElementById("query").addEventListener("input", saveChat);
       function el(tag, cls, text) {
