@@ -302,3 +302,8 @@ The following reconstructs the available context chronologically. It is a decisi
 - User requested returning from storefront scroll to latest conversation. Restore and browser pageshow now scroll to the end without focusing the composer; conversation and draft remain retained. This supersedes restoring the previous scroll offset on return.
 - Firebase project supplied: japamala-8284d (HeyHood). Native push notifications remain deferred at the user’s request; do not claim foreground promotions are background notifications. Uploaded Firebase files remain outside the repository.
 - Validation: Maven verify passed 14 tests, including moderation, rate limiting, matching and campaign checks. OpenAI-backed local Tamil-transliterated Hindi tuition search returned English intent “Hindi tuition”; the storefront retrieved the same persisted intent. Local migration checks found ten active campaigns per community and the configured pilot group. Browser checks verified mobile keyboard behavior, stop/abort, responsive layout and promotion dismissal. Deployment status must be confirmed against production after merge.
+
+### Search feedback and enquiry compatibility follow-up
+
+- User reported search eyes and enquiry copying not working. Live Chromium confirmed animation class and Clipboard API succeeded, but that does not establish Android WebView behavior. Made eye motion larger and added the animated face beside the pending message so it remains visible in the conversation.
+- Clipboard API rejection now falls back to selection-based copying. If both methods fail, a dialog shows the full selectable English enquiry; no false success toast. CSS/contact asset URLs are versioned to refresh cached mobile assets. Group invitation links still cannot prefill messages.

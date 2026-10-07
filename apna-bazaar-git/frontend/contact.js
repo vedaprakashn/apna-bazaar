@@ -31,17 +31,42 @@ window.heyhoodEnquiry = function (shop, community, flat, intent) {
 };
 window.heyhoodCopyEnquiry = async function (message) {
   if (navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(message);
-    return;
+    try {
+      await navigator.clipboard.writeText(message);
+      return true;
+    } catch (_) { /* WebViews may deny Clipboard API; try selection copy. */ }
   }
   const field = document.createElement("textarea");
   field.value = message;
-  field.readOnly = true;
+  field.setAttribute("aria-label", "WhatsApp enquiry");
   field.style.position = "fixed";
-  field.style.opacity = "0";
+  field.style.opacity = "0.01";
   document.body.append(field);
+  field.focus({ preventScroll: true });
   field.select();
-  const copied = document.execCommand("copy");
+  field.setSelectionRange(0, message.length);
+  let copied = false;
+  try { copied = document.execCommand("copy"); } catch (_) {}
   field.remove();
-  if (!copied) throw Error("Copy unavailable");
+  if (copied) return true;
+  const dialog = document.createElement("dialog");
+  dialog.className = "enquiry-dialog";
+  const title = document.createElement("h3");
+  title.textContent = "Your WhatsApp enquiry";
+  const hint = document.createElement("p");
+  hint.textContent = "Copy isn’t available here. Press and hold the text to copy it, then paste it into WhatsApp.";
+  const text = document.createElement("textarea");
+  text.readOnly = true;
+  text.value = message;
+  text.setAttribute("aria-label", "Enquiry to copy");
+  const close = document.createElement("button");
+  close.textContent = "Done";
+  close.onclick = () => dialog.close();
+  dialog.append(title, hint, text, close);
+  dialog.addEventListener("close", () => dialog.remove(), { once: true });
+  document.body.append(dialog);
+  dialog.showModal();
+  text.focus({ preventScroll: true });
+  text.select();
+  return false;
 };

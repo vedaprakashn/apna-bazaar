@@ -7,7 +7,7 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css" />
+    <link rel="stylesheet" href="../app.css?v=20261007-eyes2" />
   </head>
   <body class="discovery-page">
     <header class="topbar">
@@ -183,7 +183,7 @@
       <p class="sheet-note">Pilot catalog · Listings are demo examples.</p>
     </dialog>
     <div id="toast" class="toast" role="status" hidden></div>
-    <script src="../contact.js"></script>
+    <script src="../contact.js?v=20261007-copy2"></script>
     <script>
       function fitMobileViewport() {
         document.documentElement.style.setProperty(
@@ -578,7 +578,7 @@
           copy.type = "button";
           copy.onclick = async () => {
             try {
-              await heyhoodCopyEnquiry(
+              const copied = await heyhoodCopyEnquiry(
                 heyhoodEnquiry(
                   p.shopName || p.name,
                   community.selectedOptions[0].textContent,
@@ -586,7 +586,7 @@
                   p.searchIntent,
                 ),
               );
-              toast("Enquiry copied—paste it into the group.");
+              if (copied) toast("Enquiry copied—paste it into the group.");
             } catch (_) {
               toast("Couldn’t copy. Please try from your browser.");
             }
@@ -654,7 +654,12 @@
         if (mobileLayout.matches) input.blur();
         const userMessage = message(q, "user");
         lastTyping = 0;
-        const pending = message("Checking your hood… 👀");
+        const pending = message("Checking your hood…");
+        pending.classList.add("search-pending");
+        const searchFace = el("span", "aapta-avatar is-searching");
+        searchFace.setAttribute("aria-hidden", "true");
+        searchFace.append(document.createElement("i"));
+        pending.prepend(searchFace);
         delete pending.chatEntry;
         saveChat();
         try {
