@@ -28,11 +28,11 @@ public class AnalyticsService {
 
     @Transactional
     public SearchEvent recordSearchEvent(Community community, String rawQuery,
-                                          String normalisedQuery, int resultCount, UUID sessionId) {
+                                          String normalisedQuery, int resultCount, UUID sessionId, String englishIntent) {
         LocalDateTime now = LocalDateTime.now(IST);
         SearchEvent event = SearchEvent.builder().id(UUID.randomUUID())
             .community(community).sessionId(sessionId)
-            .rawQuery(rawQuery).normalisedQuery(normalisedQuery)
+            .rawQuery(rawQuery).normalisedQuery(normalisedQuery).englishIntent(englishIntent)
             .resultCount(resultCount).hadResults(resultCount > 0)
             .queryTime(now.toLocalTime()).queryDate(now.toLocalDate())
             .dayOfWeek((short) now.getDayOfWeek().getValue())
@@ -41,11 +41,11 @@ public class AnalyticsService {
         // an already-local IST clock a second time.
         jdbc.update("""
             INSERT INTO search_event (id,community_id,session_id,raw_query,normalised_query,
-                result_count,had_results,query_time,query_date,day_of_week,time_bucket)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?::time_bucket_enum)
+                result_count,had_results,query_time,query_date,day_of_week,time_bucket,english_intent)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?::time_bucket_enum,?)
             """, event.getId(), community.getId(), sessionId, rawQuery, normalisedQuery,
             resultCount, resultCount > 0, now.toLocalTime(), now.toLocalDate(),
-            (short) now.getDayOfWeek().getValue(), event.getTimeBucket().name());
+            (short) now.getDayOfWeek().getValue(), event.getTimeBucket().name(), englishIntent);
         return event;
     }
 

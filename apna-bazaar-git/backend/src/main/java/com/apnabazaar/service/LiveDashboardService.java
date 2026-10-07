@@ -90,7 +90,7 @@ public class LiveDashboardService {
 
     public List<Map<String, Object>> catalog(String slug) {
         return jdbc.queryForList("""
-            SELECT p.id, p.name, p.shop_name AS shop, p.whatsapp_number AS whatsapp, o.name AS offering, o.description,
+            SELECT p.id, p.name, p.shop_name AS shop, p.whatsapp_number AS whatsapp, p.whatsapp_group_url, o.name AS offering, o.description,
                    o.base_price AS price, o.unit, c.name AS category, c.icon_emoji AS emoji
             FROM provider p JOIN offering o ON o.provider_id=p.id JOIN category c ON c.id=o.category_id
             WHERE p.community_id=? AND p.status='active' AND o.is_available=true
@@ -98,10 +98,13 @@ public class LiveDashboardService {
             """, community(slug));
     }
     @Transactional(readOnly = true)
-    public Map<String, Object> storefront(String slug, UUID providerId) {
+    public Map<String, Object> storefront(String slug, UUID providerId) { return storefront(slug, providerId, null); }
+
+    @Transactional(readOnly = true)
+    public Map<String, Object> storefront(String slug, UUID providerId, UUID searchEventId) {
         UUID communityId = community(slug);
         var providers = jdbc.queryForList("""
-            SELECT p.id,p.name,p.shop_name AS shop,p.flat_number AS flat,p.whatsapp_number AS whatsapp,
+            SELECT p.id,p.name,p.shop_name AS shop,p.flat_number AS flat,p.whatsapp_number AS whatsapp,p.whatsapp_group_url,
                    p.is_verified AS verified,c.name AS community,p.provider_type::text AS type
             FROM provider p JOIN community c ON c.id=p.community_id
             WHERE p.id=? AND p.community_id=? AND p.status='active'
@@ -127,7 +130,17 @@ public class LiveDashboardService {
             FROM daily_line_item li JOIN daily_post dp ON dp.id=li.daily_post_id
             WHERE dp.provider_id=? AND dp.post_date=? AND dp.is_active=true ORDER BY li.item_name
             """, providerId, today);
-        return Map.of("provider", providers.getFirst(), "offerings", offerings, "todayMenu", menu, "date", today);
+        String searchIntent = "";
+        if (searchEventId != null) {
+            var intents = jdbc.queryForList("""
+                SELECT e.english_intent FROM search_event e
+                JOIN search_result_impression i ON i.search_event_id=e.id
+                WHERE e.id=? AND e.community_id=? AND i.provider_id=? AND e.english_intent IS NOT NULL
+                LIMIT 1
+                """, searchEventId, communityId, providerId);
+            if (!intents.isEmpty()) searchIntent = String.valueOf(intents.getFirst().get("english_intent"));
+        }
+        return Map.of("provider", providers.getFirst(), "offerings", offerings, "todayMenu", menu, "date", today, "searchIntent", searchIntent);
     }
 
 }

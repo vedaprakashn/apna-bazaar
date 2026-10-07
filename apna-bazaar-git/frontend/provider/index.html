@@ -87,6 +87,7 @@
       </footer>
     </main>
     <div id="toast" class="toast" role="status" hidden></div>
+    <script src="../contact.js"></script>
     <script>
       const API_BASE =
         location.protocol === "file:" || location.port === "8000"
@@ -176,7 +177,7 @@
               "No provider selected. Open a provider’s name from chatbot search results.",
             );
           const r = await fetch(
-            `${API_BASE}/api/${encodeURIComponent(slug)}/providers/${encodeURIComponent(id)}/storefront`,
+            `${API_BASE}/api/${encodeURIComponent(slug)}/providers/${encodeURIComponent(id)}/storefront${eventId ? `?searchEventId=${encodeURIComponent(eventId)}` : ""}`,
           );
           if (r.status === 404)
             throw Error("This provider is not available in this community.");
@@ -246,13 +247,48 @@
                 ),
               );
           const button = document.getElementById("contact"),
-            real = /^\d{10,15}$/.test(p.whatsapp || "");
+            contact = heyhoodWhatsAppContact(
+              p.whatsapp,
+              p.whatsapp_group_url,
+              heyhoodEnquiry(
+                p.shop || p.name,
+                p.community,
+                p.flat,
+                data.searchIntent,
+              ),
+            ),
+            real = Boolean(contact);
           button.disabled = !real;
-          document.getElementById("contactNote").textContent = real
-            ? p.whatsapp === "919740893534"
-              ? "Pilot · Messages reach the shared test contact."
-              : "Message the provider to confirm availability or book."
-            : "No WhatsApp contact number has been added for this listing.";
+          button.textContent = contact?.label || "WhatsApp ↗";
+          document.getElementById("contactNote").textContent =
+            contact?.type === "group"
+              ? "Opens the shared pilot WhatsApp group."
+              : real
+                ? p.whatsapp === "919740893534"
+                  ? "Pilot · Messages reach the shared test contact."
+                  : "Message the provider to confirm availability or book."
+                : "No WhatsApp contact has been added for this listing.";
+          if (contact?.type === "group") {
+            const copy = el("button", "copy-enquiry", "Copy enquiry");
+            copy.type = "button";
+            copy.onclick = async () => {
+              try {
+                await heyhoodCopyEnquiry(
+                  heyhoodEnquiry(
+                    p.shop || p.name,
+                    p.community,
+                    p.flat,
+                    data.searchIntent,
+                  ),
+                );
+                copy.textContent = "Copied ✓";
+              } catch (_) {
+                document.getElementById("contactNote").textContent =
+                  "Couldn’t copy. Please try from your browser.";
+              }
+            };
+            button.after(copy);
+          }
           button.onclick = () => {
             if (!real) return;
             if (eventId)
@@ -266,7 +302,7 @@
                   clickType: "whatsapp_tap",
                 }),
               }).catch(() => {});
-            location.href = `https://wa.me/${p.whatsapp}?text=${encodeURIComponent(`Hi! I found ${p.shop || p.name} in ${p.community}, flat ${p.flat || "not listed"}, on HeyHood. I’d like to know more about your offerings.`)}`;
+            location.href = contact.url;
           };
           document.getElementById("store").hidden = false;
         } catch (e) {

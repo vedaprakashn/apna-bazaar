@@ -3,6 +3,7 @@ package com.apnabazaar;
 import com.apnabazaar.service.ChatRateLimiter;
 import com.apnabazaar.controller.SearchController;
 import com.apnabazaar.service.SearchService;
+import com.apnabazaar.service.MessageModerationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,7 +47,9 @@ class ChatRateLimiterTest {
     void rejectsBeforeAiAcrossCommunitiesAndSessionIds() throws Exception {
         var service=mock(SearchService.class);
         var limiter=new ChatRateLimiter(10,()->0);
-        var mvc=MockMvcBuilders.standaloneSetup(new SearchController(service,limiter,"railway-test")).build();
+        var moderation=mock(MessageModerationService.class);
+        when(moderation.check(anyString())).thenReturn(MessageModerationService.Decision.ALLOW);
+        var mvc=MockMvcBuilders.standaloneSetup(new SearchController(service,limiter,moderation,"railway-test")).build();
         for(int i=0;i<10;i++)mvc.perform(get("/api/tridasa/search").param("q","idli")
             .param("sessionId",UUID.randomUUID().toString())
             .header("X-Forwarded-For","198.51.100."+i+", 203.0.113.8")).andExpect(status().isOk());
