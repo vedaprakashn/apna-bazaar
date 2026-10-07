@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
     <title>HeyHood · Good things. Close by.</title>
     <link rel="stylesheet" href="../app.css" />
   </head>
@@ -15,10 +18,16 @@
           alt="HeyHood — Good things. Close by."
         /><span class="tag">pilot</span></a
       >
+      <div class="mobile-guide">
+        <span class="aapta-avatar" aria-hidden="true"><i></i></span>
+        <div><strong>Aapta</strong><small>Your hood, decoded 👀</small></div>
+      </div>
       <nav class="nav">
-        <a class="active" href="index.html">Discover</a
-        ><a href="../admin/index.html">Analytics ↗</a
-        ><a href="../admin/campaigns.html">Campaigns ↗</a
+        <a class="active desktop-navigation" href="index.html">Discover</a
+        ><a class="desktop-navigation" href="../admin/index.html"
+          >Analytics ↗</a
+        ><a class="desktop-navigation" href="../admin/campaigns.html"
+          >Campaigns ↗</a
         ><label
           ><span class="sr-only">Community</span
           ><select id="community">
@@ -26,6 +35,22 @@
             <option value="sayuk">MyHome Sayuk</option>
           </select></label
         >
+        <button
+          type="button"
+          class="mobile-explore"
+          aria-haspopup="dialog"
+          aria-controls="explore-sheet"
+        >
+          Explore ✦
+        </button>
+        <details class="operator-menu">
+          <summary aria-label="Open operator menu">⋯</summary>
+          <div>
+            <small>For community operators</small
+            ><a href="../admin/index.html">Analytics ↗</a
+            ><a href="../admin/campaigns.html">Campaigns ↗</a>
+          </div>
+        </details>
       </nav>
     </header>
     <main class="container">
@@ -79,14 +104,6 @@
           <div class="panel">
             <div class="panel-head">
               <h2>Explore your hood</h2>
-              <button
-                type="button"
-                class="category-toggle"
-                aria-expanded="false"
-                aria-controls="categories"
-              >
-                All categories
-              </button>
               <span class="tag" id="count">Loading</span>
             </div>
             <div id="categories" class="browse"></div>
@@ -102,6 +119,34 @@
         ><span>Discover → connect → support a neighbour</span>
       </footer>
     </main>
+    <dialog
+      id="explore-sheet"
+      class="explore-sheet"
+      aria-labelledby="explore-title"
+    >
+      <div class="sheet-handle" aria-hidden="true"></div>
+      <div class="sheet-heading">
+        <div>
+          <h2 id="explore-title">Explore your hood ✦</h2>
+          <p>Pick a vibe. Aapta finds the people.</p>
+        </div>
+        <button type="button" class="sheet-close" aria-label="Close Explore">
+          ✕
+        </button>
+      </div>
+      <label class="sr-only" for="category-search">Search categories</label>
+      <input
+        id="category-search"
+        type="search"
+        placeholder="Search categories…"
+        autocomplete="off"
+      />
+      <div id="sheet-categories"></div>
+      <p id="category-empty" hidden>
+        No categories match. Try another word, or ask Aapta.
+      </p>
+      <p class="sheet-note">Pilot catalog · Listings are demo examples.</p>
+    </dialog>
     <div id="toast" class="toast" role="status" hidden></div>
     <script>
       function fitMobileViewport() {
@@ -204,17 +249,69 @@
         }
         box.append(chips);
       }
-      document.querySelector(".category-toggle").onclick = (event) => {
-        const expanded =
-          event.currentTarget.getAttribute("aria-expanded") !== "true";
-        event.currentTarget.setAttribute("aria-expanded", String(expanded));
-        event.currentTarget.textContent = expanded
-          ? "Show less"
-          : "All categories";
-        document
-          .querySelector(".discovery-categories")
-          .classList.toggle("expanded", expanded);
+      const exploreSheet = document.getElementById("explore-sheet"),
+        categoriesAside = document.querySelector(".discovery-categories"),
+        categoriesPanel = categoriesAside.querySelector(".panel"),
+        mobileLayout = matchMedia("(max-width: 760px)");
+      function placeCategories() {
+        if (mobileLayout.matches)
+          document.getElementById("sheet-categories").append(categoriesPanel);
+        else {
+          if (exploreSheet.open) exploreSheet.close();
+          categoriesAside.prepend(categoriesPanel);
+          document.getElementById("category-search").value = "";
+          filterCategories();
+        }
+      }
+      function filterCategories() {
+        const query = document
+          .getElementById("category-search")
+          .value.trim()
+          .toLocaleLowerCase();
+        let visible = 0;
+        for (const tile of document.querySelectorAll("#categories .category")) {
+          tile.hidden = !tile.textContent.toLocaleLowerCase().includes(query);
+          if (!tile.hidden) visible++;
+        }
+        document.getElementById("category-empty").hidden =
+          visible > 0 || !query;
+      }
+      document.querySelector(".mobile-explore").onclick = () => {
+        document.querySelector(".operator-menu").open = false;
+        document.getElementById("query").blur();
+        document.getElementById("category-search").value = "";
+        filterCategories();
+        exploreSheet.showModal();
+        document.querySelector(".sheet-close").focus();
       };
+      document.querySelector(".sheet-close").onclick = () =>
+        exploreSheet.close();
+      exploreSheet.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          exploreSheet.close();
+        }
+      });
+      exploreSheet.addEventListener("click", (event) => {
+        if (event.target === exploreSheet) {
+          const rect = exploreSheet.getBoundingClientRect();
+          if (
+            event.clientY < rect.top ||
+            event.clientX < rect.left ||
+            event.clientX > rect.right
+          )
+            exploreSheet.close();
+        }
+      });
+      document
+        .getElementById("category-search")
+        .addEventListener("input", filterCategories);
+      document.addEventListener("click", (event) => {
+        const menu = document.querySelector(".operator-menu");
+        if (!menu.contains(event.target)) menu.open = false;
+      });
+      mobileLayout.addEventListener("change", placeCategories);
+      placeCategories();
       const categoryPrompts = {
         "Meat & Seafood": "Cooking plans? Who’s got meat or seafood? 🍗",
         Biryani: "Biryani cravings just hit. Who’s cooking? 🍚",
@@ -273,6 +370,7 @@
               );
             document.getElementById("categories").append(b);
           }
+          filterCategories();
           if (!catalog.length)
             document
               .getElementById("categories")
@@ -354,10 +452,14 @@
           }).catch(() => {});
         };
         info.querySelector(".seller-shop").append(shopLink);
-        info.append(profile);
-        info.append(
-          el("div", "seller-flat", "Flat: " + (p.flatNumber || "Not provided")),
+        profile.append(
+          el(
+            "span",
+            "seller-flat",
+            " · Flat " + (p.flatNumber || "not listed"),
+          ),
         );
+        info.append(profile);
         top.append(info);
         card.append(
           top,
@@ -367,7 +469,7 @@
             p.matchReason || "A match from your community catalog.",
           ),
         );
-        if (item) card.append(el("p", "reason", item.offering));
+        if (item) card.append(el("p", "offering-summary", item.offering));
         const footer = el("div", "seller-footer");
         footer.append(
           el(
@@ -379,7 +481,7 @@
           ),
         );
         const real = /^\d{10,15}$/.test(p.whatsappNumber || "");
-        const b = el("button", "", "Whatsapp Message");
+        const b = el("button", "", "WhatsApp ↗");
         b.disabled = !real;
         if (!real) b.title = "Demo listing — no WhatsApp number configured";
         b.onclick = () => recordInterest(eventId, p, b);
@@ -387,17 +489,14 @@
         card.append(footer);
         if (!real)
           card.append(
-            el(
-              "p",
-              "contact-note",
-              "Demo listing · WhatsApp is available once a real contact number is added.",
-            ),
+            el("p", "contact-note", "Demo · Contact not connected yet."),
           );
         card.chatEntry = { kind: "result", provider: p, eventId, item };
         stream.append(card);
       }
       async function ask(q) {
         if (busy) return;
+        if (exploreSheet.open) exploreSheet.close();
         document.getElementById("query").value = q;
         document.getElementById("form").requestSubmit();
       }
