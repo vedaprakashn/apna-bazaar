@@ -1633,3 +1633,20 @@ body {
     display: block;
   }
 }
+
+.send-stop {
+  display: none;
+}
+.discovery-page .send.is-searching {
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  min-height: 48px;
+}
+.discovery-page .send.is-searching .send-label,
+.discovery-page .send.is-searching .send-arrow {
+  display: none;
+}
+.discovery-page .send.is-searching .send-stop {
+  display: block;
+}
