@@ -6,7 +6,7 @@
     <title>HeyHood · Good things. Close by.</title>
     <link rel="stylesheet" href="../app.css" />
   </head>
-  <body>
+  <body class="discovery-page">
     <header class="topbar">
       <a class="brand" href="index.html"
         ><img
@@ -32,9 +32,7 @@
       <section class="hero compact-hero">
         <div>
           <h1>Good things. Close by.</h1>
-          <p class="lead">
-            Food, classes and home services — ask in your language.
-          </p>
+          <p class="lead">Your hood. Your people. Your next find. ✨</p>
         </div>
       </section>
       <div class="demo-notice">
@@ -77,10 +75,18 @@
             </button>
           </form>
         </div>
-        <aside>
+        <aside class="discovery-categories">
           <div class="panel">
             <div class="panel-head">
-              <h2>A little of everything</h2>
+              <h2>Explore your hood</h2>
+              <button
+                type="button"
+                class="category-toggle"
+                aria-expanded="false"
+                aria-controls="categories"
+              >
+                All categories
+              </button>
               <span class="tag" id="count">Loading</span>
             </div>
             <div id="categories" class="browse"></div>
@@ -98,6 +104,15 @@
     </main>
     <div id="toast" class="toast" role="status" hidden></div>
     <script>
+      function fitMobileViewport() {
+        document.documentElement.style.setProperty(
+          "--chat-viewport",
+          `${window.visualViewport?.height || window.innerHeight}px`,
+        );
+      }
+      fitMobileViewport();
+      window.visualViewport?.addEventListener("resize", fitMobileViewport);
+      window.addEventListener("resize", fitMobileViewport);
       const API_BASE =
         location.protocol === "file:" || location.port === "8000"
           ? "http://localhost:8080"
@@ -189,6 +204,17 @@
         }
         box.append(chips);
       }
+      document.querySelector(".category-toggle").onclick = (event) => {
+        const expanded =
+          event.currentTarget.getAttribute("aria-expanded") !== "true";
+        event.currentTarget.setAttribute("aria-expanded", String(expanded));
+        event.currentTarget.textContent = expanded
+          ? "Show less"
+          : "All categories";
+        document
+          .querySelector(".discovery-categories")
+          .classList.toggle("expanded", expanded);
+      };
       const categoryPrompts = {
         "Meat & Seafood": "Cooking plans? Who’s got meat or seafood? 🍗",
         Biryani: "Biryani cravings just hit. Who’s cooking? 🍚",
