@@ -1758,3 +1758,16 @@ body {
 .urgent-chat-help a { display:inline-block; padding:10px 16px; background:#b82d22; color:white; border-radius:10px; }
 .help-contact-card a { display:inline-block; padding:10px 0; margin-right:12px; }
 @media(max-width:760px){.help-shortcut { padding:8px; min-width:32px; justify-content:center; }.help-shortcut span{ display:none; }.discovery-page .nav {gap:4px;} }
+
+/* Product branding owns the app header; Aapta remains the conversation persona. */
+@media(max-width:760px){
+ .discovery-page .topbar .brand { display:flex; flex:0 0 auto; gap:0; min-width:0; }
+ .discovery-page .topbar .brand .tag { display:none; }
+ .discovery-page .topbar .brand-logo { width:104px; height:44px; object-fit:contain; }
+ .discovery-page .nav select { width:110px; }
+}
+@media(max-width:350px){
+ .discovery-page .topbar .brand-logo { width:76px; }
+ .discovery-page .nav select { width:88px; }
+ .discovery-page .mobile-explore { font-size:10px; padding:6px; }
+}

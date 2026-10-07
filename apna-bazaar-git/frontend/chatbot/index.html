@@ -7,21 +7,17 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css?v=20261007-help1" />
+    <link rel="stylesheet" href="../app.css?v=20261007-residents1" />
   </head>
   <body class="discovery-page">
     <header class="topbar">
-      <a class="brand" href="index.html"
+      <a class="brand" href="index.html" aria-label="HeyHood home"
         ><img
           class="brand-logo"
           src="../assets/heyhood-logo.png"
           alt="HeyHood — Good things. Close by."
         /><span class="tag">pilot</span></a
       >
-      <div class="mobile-guide">
-        <span class="aapta-avatar" aria-hidden="true"><i></i></span>
-        <div><strong>Aapta</strong><small>Your hood, decoded 👀</small></div>
-      </div>
       <nav class="nav">
         <a class="active desktop-navigation" href="index.html">Discover</a
         ><a class="desktop-navigation" href="../admin/index.html"
@@ -511,6 +507,8 @@
       function contactCard(c) {
         const card = el("article", "seller help-contact-card");
         card.append(el("small", "", c.category), el("h3", "", c.name), el("p", "", c.is_demo ? "Demo · Unverified · No live number" : c.verified_at && c.consent_to_listing ? "Verified listing" : "Unverified listing"));
+        if (c.specialty) card.append(el("strong", "contact-specialty", c.specialty));
+        if (c.flat_number) card.append(el("p", "contact-flat", `Flat ${c.flat_number}`));
         card.append(el("p", "", `${c.scope === "community" ? "In your community" : "Nearby"} · ${c.service_area}`), el("p", "", c.availability));
         if (!c.is_demo && c.verified_at && c.consent_to_listing && /^\+?[0-9 ()-]{7,25}$/.test(c.phone || "")) {
           const call = el("a", "", "Call ↗"); call.href = `tel:${c.phone.replace(/[^+0-9]/g, "")}`; card.append(call);

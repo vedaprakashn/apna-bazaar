@@ -30,3 +30,34 @@
 .help-footer { margin-top:24px; }
 @media(max-width:900px){.contact-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }}
 @media(max-width:600px){.help-header { padding:12px; gap:8px; flex-wrap:wrap; }.help-header strong { font-size:14px; }.help-header select { width:100%;max-width:none; }.urgent-call { padding:18px;flex-direction:column;align-items:stretch;gap:16px; }.call-112 { text-align:center; }.urgent-call h1 { font-size:24px; }.help-filters { flex-direction:column;gap:8px; }.help-filters select { width:100%; }.contact-grid { grid-template-columns:1fr; }.help-tabs button { font-size:13px; }.help-main { padding-top:16px; }}
+
+/* Compact profile cards with clear identity, specialty and resident location. */
+.contact-grid { gap:18px; align-items:start; }
+.contact-card { position:relative; overflow:hidden; padding:20px; border:1px solid #e6dcf8; box-shadow:0 5px 18px #52319409; background:linear-gradient(145deg,#fff 65%,#fbf8ff); }
+.contact-card::before { content:""; display:block; height:4px; position:absolute; top:0; left:20px; right:20px; border-radius:0 0 8px 8px; background:#c9b4ff; }
+.response-card { background:linear-gradient(145deg,#fff 65%,#fff7ef); }.response-card::before { background:#ffca9f; }
+.contact-top { display:flex; align-items:center; gap:12px; margin:0 0 15px; }
+.contact-avatar { display:grid; place-items:center; width:48px; height:48px; flex:0 0 48px; border-radius:16px; background:#eee7ff; color:#6336f5; font-size:24px; border:1px solid #e1d3ff; }
+.response-card .contact-avatar { background:#fff0df; color:#9d4a22; border-color:#ffe0ba; }
+.contact-identity { min-width:0; }.contact-identity h2 { font-size:16px; line-height:1.35; margin:4px 0 0; overflow-wrap:anywhere; }
+.contact-category { font-size:10px; letter-spacing:.06em; text-transform:uppercase; }
+.contact-specialty { display:block; font-size:15px; color:#3c225f; margin-bottom:12px; }
+.contact-badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+.flat-badge,.scope-badge { font-size:10px; border-radius:8px; padding:5px 8px; font-weight:700; background:#f3edff; color:#6437a4; }
+.flat-badge { background:#fff2c6; color:#72561a; }.scope-badge { background:#f4f1f8; color:#736780; }
+.contact-info { min-height:62px; }.contact-card .contact-area { margin:0 0 6px; font-size:12px; color:#655970; }
+.contact-card .availability { font-size:11px; color:#7e708c; margin:0 0 16px; }
+.contact-bottom { display:flex; align-items:center; justify-content:space-between; gap:8px; border-top:1px solid #eee7f7; padding-top:12px; }
+.verification { font-size:10px; border-radius:6px; }.verification.demo { background:#f5f0fa; color:#877990; }.verification.verified { background:#e8f7ed; color:#30744b; }
+.contact-unavailable { font-size:10px; color:#998ca5; }.contact-call { padding:9px 14px; font-size:12px; }
+.contact-details { margin-top:12px; color:#796a89; }.contact-details summary { cursor:pointer; font-size:11px; padding:5px 0; min-height:24px; }.contact-details p { font-size:12px; }
+.help-tabs { background:#eee7f9; padding:5px; border-radius:18px; }.help-tabs button { border:0; background:transparent; }.help-tabs button[aria-selected=true] { box-shadow:0 3px 9px #6336f525; }
+@media(max-width:600px){.contact-grid { gap:12px; }.contact-card { padding:18px; border-radius:20px; }.contact-avatar { width:44px; height:44px; flex-basis:44px; }.contact-info { min-height:0; }}
+
+@media(max-width:600px){
+ .help-page[data-section=professional] .urgent-call { flex-direction:row; align-items:center; padding:14px; gap:12px; }
+ .help-page[data-section=professional] .urgent-call h1 { display:none; }
+ .help-page[data-section=professional] .urgent-call p { font-size:11px; margin-top:5px; }
+ .help-page[data-section=professional] .help-kicker { font-size:9px; }
+ .help-page[data-section=professional] .call-112 { padding:12px; font-size:12px; }
+}

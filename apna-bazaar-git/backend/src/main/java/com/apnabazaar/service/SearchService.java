@@ -43,9 +43,9 @@ public class SearchService {
 
         QueryIntent interpreted = interpretQuery(query);
         if (interpreted.contactRequest()) {
-            var contacts = helpDirectory.contacts(community.getId(), interpreted.contactCategories());
+            var contacts = helpDirectory.contacts(community.getId(), interpreted.contactCategories(), interpreted.doctorSpecialty());
             boolean urgent = contacts.stream().anyMatch(c -> "urgent".equals(c.get("section")))
-                || interpreted.contactCategories().stream().anyMatch(c -> Set.of("First aid","Police","Fire services","Snake rescue").contains(c));
+                || interpreted.contactCategories().stream().anyMatch(c -> Set.of("First aid","Police","Fire services","Snake rescue","Ambulance").contains(c));
             String fallback = urgent ? "For a real emergency in India, call 112 now. These local contacts are demo listings only." : "Here are demo contacts in and around your hood. Their details aren’t verified yet.";
             String introJson = callJson(AAPTA_VOICE + "\nReply in " + interpreted.responseLanguage()
                 + ". Return only JSON with intro. Explain these exact facts: " + fallback
@@ -128,7 +128,7 @@ public class SearchService {
         return sb.toString();
     }
 
-    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest, boolean contactRequest, List<String> contactCategories) {}
+    private record QueryIntent(String intent, String responseLanguage, String teachingLanguage, boolean learningRequest, boolean contactRequest, List<String> contactCategories, String doctorSpecialty) {}
 
     private QueryIntent interpretQuery(String query) {
         // Interpret the short request before the larger catalog can distract from its meaning.
@@ -174,24 +174,30 @@ public class SearchService {
                 This is the language to be taught, never simply the language of the request.
                 Set learningRequest=true for requests to learn, tuition, lessons, teachers,
                 coaching, classes or workshops; false for buying food, goods or repair services.
-                Set contactRequest=true for requests to find/contact doctors, nurses, lawyers, physiotherapists,
+                Set contactRequest=true for requests to find/contact doctors, nurses, lawyers, physiotherapists, ambulance,
                 first aid, local police, fire services, snake rescue, or the community help directory.
                 Set contactCategories to an array of relevant exact names from:
-                Doctors, Nurses, Lawyers, Physiotherapists, First aid, Police, Fire services, Snake rescue.
+                Doctors, Nurses, Lawyers, Physiotherapists, First aid, Police, Fire services, Snake rescue, Ambulance.
+                If a doctor specialty is requested, set doctorSpecialty to its English medical specialty.
+                Canonical values: General medicine (general physician), Paediatrics (child doctor),
+                Cardiology (heart doctor), Dermatology (skin doctor), Orthopaedics (bone/joint doctor).
+                For other specialties preserve the English specialty (do not replace with one of these).
+                For generic doctor requests or non-doctor requests, doctorSpecialty=null.
                 For all help contacts use an empty array and contactRequest=true.
                 Understand this across all supported languages and romanized speech.
                 Do not route food, classes (including first-aid classes), or a blood-test booking into contacts.
                 Do not invent nearest distances or appointment slots.
-                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false,"contactRequest":false,"contactCategories":[]}.
+                Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false,"contactRequest":false,"contactCategories":[],"doctorSpecialty":null}.
                 Do not use Markdown fences.
                 """, query);
-        String intent = query, responseLanguage = "the original request language and script", teachingLanguage = null;
+        String intent = query, responseLanguage = "the original request language and script", teachingLanguage = null, doctorSpecialty = null;
         boolean learningRequest = false, contactRequest = false;
         List<String> contactCategories = new ArrayList<>();
         try {
             var interpreted = objectMapper.readTree(interpretation);
             intent = interpreted.path("intent").asText(query);
             contactRequest = interpreted.path("contactRequest").asBoolean(false);
+            doctorSpecialty = interpreted.path("doctorSpecialty").asText(null);
             for (var category : interpreted.path("contactCategories")) {
                 if (HelpDirectoryService.CATEGORIES.contains(category.asText())) contactCategories.add(category.asText());
             }
@@ -212,7 +218,7 @@ public class SearchService {
             responseLanguage += "; preserve the original alphabet: " + alphabet + "; never Latin transliteration";
         }
         if (nativeScript.isEmpty()) responseLanguage += "; write in Latin script only, matching the romanized input";
-        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest, contactRequest, contactCategories);
+        return new QueryIntent(intent, responseLanguage, teachingLanguage, learningRequest, contactRequest, contactCategories, doctorSpecialty);
     }
 
     private static final String AAPTA_VOICE = """
