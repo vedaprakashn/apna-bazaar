@@ -325,3 +325,7 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 - External appointment integration remains planned, awaiting provider APIs. Notifications remain excluded.
 
 - Help release validation: Maven verify passed 14 tests. Local PostgreSQL migrations applied V16/V17; each community has eleven unverified demo contacts. Live-model local queries returned doctors, Hindi-script nurse contacts and snake rescue correctly; Hindi tuition still returned marketplace providers. Browser checks cover tabs, search/category filters, 320/390/1440 layouts, directory-outage 112 access, contact-card restoration and urgent promotion suppression. Individual WhatsApp is restored with no group URL.
+
+### Product branding in the mobile header
+
+- User reported the mobile header made the app look named Aapta. Removed the top-left persona block and restored the HeyHood logo in the mobile header. Aapta remains the speaker inside the conversation and animated loading feedback. Desktop branding stays consistent. Compact sizes retain community, Explore, Help and operator controls on small screens; CSS version changed to refresh cached clients.
