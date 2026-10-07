@@ -7,7 +7,7 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css?v=20261007-eyes2" />
+    <link rel="stylesheet" href="../app.css?v=20261007-help1" />
   </head>
   <body class="discovery-page">
     <header class="topbar">
@@ -43,6 +43,7 @@
         >
           Explore ✦
         </button>
+        <a class="help-shortcut" href="../help/index.html" aria-label="Help and emergency contacts" title="Help and emergency contacts">＋<span>Help</span></a>
         <details class="operator-menu">
           <summary aria-label="Open operator menu">⋯</summary>
           <div>
@@ -183,7 +184,7 @@
       <p class="sheet-note">Pilot catalog · Listings are demo examples.</p>
     </dialog>
     <div id="toast" class="toast" role="status" hidden></div>
-    <script src="../contact.js?v=20261007-copy2"></script>
+    <script src="../contact.js?v=20261007-direct1"></script>
     <script>
       function fitMobileViewport() {
         document.documentElement.style.setProperty(
@@ -204,6 +205,7 @@
         busy = false,
         sessionId = crypto.randomUUID(),
         completedQuestions = 0,
+        suppressPromotions = false,
         promotionDue = false,
         seenPromotionIds = [];
       let activeCommunity = community.value;
@@ -216,6 +218,7 @@
             JSON.stringify({
               sessionId,
               completedQuestions,
+              suppressPromotions,
               promotionDue,
               seenPromotionIds,
               promotionIndex,
@@ -242,6 +245,7 @@
         activeCommunity = community.value;
         sessionId = saved?.sessionId || crypto.randomUUID();
         completedQuestions = saved?.completedQuestions || 0;
+        suppressPromotions = saved?.suppressPromotions || false;
         promotionDue = saved?.promotionDue || false;
         seenPromotionIds = saved?.seenPromotionIds || [];
         promotionIndex = saved?.promotionIndex || 0;
@@ -251,6 +255,8 @@
           if (entry.kind === "message") message(entry.text, entry.type);
           else if (entry.kind === "result")
             resultCard(entry.provider, entry.eventId, entry.item);
+          else if (entry.kind === "contact") contactCard(entry.contact);
+          else if (entry.kind === "urgent-help") urgentHelpCard();
           else if (entry.kind === "promotion")
             renderPromotion(entry.provider, entry);
         }
@@ -395,6 +401,7 @@
         "Yoga & Fitness":
           "Time for a reset. Any yoga or fitness classes around? 🧘",
       };
+      document.querySelector(".help-shortcut").addEventListener("click", (event) => { event.currentTarget.href = `../help/index.html?community=${encodeURIComponent(community.value)}`; });
       async function loadCatalog() {
         document.getElementById("categories").replaceChildren();
         document.getElementById("count").textContent = "Loading";
@@ -467,7 +474,7 @@
       async function recordInterest(eventId, p, button) {
         const contact = heyhoodWhatsAppContact(
           p.whatsappNumber,
-          p.whatsappGroupUrl,
+          null,
           heyhoodEnquiry(
             p.shopName || p.name,
             community.selectedOptions[0].textContent,
@@ -494,6 +501,22 @@
         } finally {
           button.disabled = false;
         }
+      }
+      function urgentHelpCard() {
+        const card = el("aside", "urgent-chat-help");
+        card.append(el("strong", "", "Real emergency in India?"), el("p", "", "Call 112. Don’t wait for a chat reply."));
+        const call = el("a", "", "Call 112 ↗"); call.href = "tel:112"; card.append(call);
+        card.chatEntry = {kind: "urgent-help"}; stream.append(card); return card;
+      }
+      function contactCard(c) {
+        const card = el("article", "seller help-contact-card");
+        card.append(el("small", "", c.category), el("h3", "", c.name), el("p", "", c.is_demo ? "Demo · Unverified · No live number" : c.verified_at && c.consent_to_listing ? "Verified listing" : "Unverified listing"));
+        card.append(el("p", "", `${c.scope === "community" ? "In your community" : "Nearby"} · ${c.service_area}`), el("p", "", c.availability));
+        if (!c.is_demo && c.verified_at && c.consent_to_listing && /^\+?[0-9 ()-]{7,25}$/.test(c.phone || "")) {
+          const call = el("a", "", "Call ↗"); call.href = `tel:${c.phone.replace(/[^+0-9]/g, "")}`; card.append(call);
+        }
+        const link = el("a", "", "Open help directory ↗"); link.href = `../help/index.html?community=${encodeURIComponent(community.value)}`; card.append(link);
+        card.chatEntry = {kind: "contact", contact: c}; stream.append(card); return card;
       }
       function resultCard(p, eventId, snapshot) {
         const item =
@@ -564,7 +587,7 @@
         );
         const contact = heyhoodWhatsAppContact(
           p.whatsappNumber,
-          p.whatsappGroupUrl,
+          null,
         );
         const real = Boolean(contact);
         const b = el("button", "", contact?.label || "WhatsApp ↗");
@@ -573,26 +596,6 @@
         b.onclick = () => recordInterest(eventId, p, b);
         footer.append(b);
         card.append(footer);
-        if (contact?.type === "group") {
-          const copy = el("button", "copy-enquiry", "Copy enquiry");
-          copy.type = "button";
-          copy.onclick = async () => {
-            try {
-              const copied = await heyhoodCopyEnquiry(
-                heyhoodEnquiry(
-                  p.shopName || p.name,
-                  community.selectedOptions[0].textContent,
-                  p.flatNumber,
-                  p.searchIntent,
-                ),
-              );
-              if (copied) toast("Enquiry copied—paste it into the group.");
-            } catch (_) {
-              toast("Couldn’t copy. Please try from your browser.");
-            }
-          };
-          card.append(copy);
-        }
         if (!real)
           card.append(
             el("p", "contact-note", "Demo · Contact not connected yet."),
@@ -693,13 +696,16 @@
             throw new DOMException("Search stopped", "AbortError");
           pending.remove();
           completedQuestions++;
-          if (completedQuestions % 3 === 0) promotionDue = true;
+          suppressPromotions = Boolean(data.urgentHelp);
+          if (completedQuestions % 3 === 0 && !data.urgentHelp) promotionDue = true;
+          if (data.urgentHelp) { promotionDue = false; urgentHelpCard(); }
           message(data.intro || "Here’s what I found in your community.");
+          for (const contact of data.contacts || []) contactCard(contact);
           for (const p of data.providers || []) {
             p.searchIntent = data.searchIntent || "";
             resultCard(p, data.sessionId);
           }
-          if (!(data.providers || []).length && !data.intro)
+          if (!(data.providers || []).length && !(data.contacts || []).length && !data.intro)
             message(
               "I couldn’t find a match in your hood yet. Try another item or check Explore.",
             );
@@ -759,6 +765,7 @@
         return (
           !document.hidden &&
           !busy &&
+          !suppressPromotions &&
           !exploreSheet.open &&
           !document.querySelector(".operator-menu").open &&
           document.activeElement !== document.getElementById("query") &&
@@ -967,7 +974,7 @@
         loadCatalog();
       };
       try {
-        const selected = sessionStorage.getItem("heyhood-community");
+        const selected = new URLSearchParams(location.search).get("community") || sessionStorage.getItem("heyhood-community");
         if (Array.from(community.options).some((o) => o.value === selected))
           community.value = selected;
       } catch (_) {}
