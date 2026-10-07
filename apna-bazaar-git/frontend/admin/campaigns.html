@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Campaign studio · HeyHood</title>
+    <link rel="stylesheet" href="../app.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../chatbot/index.html"
+        ><img
+          class="brand-logo"
+          src="../assets/heyhood-logo.png"
+          alt="HeyHood — Good things. Close by."
+        /><span class="tag">back office</span></a
+      >
+      <nav class="nav">
+        <a href="index.html">Analytics</a
+        ><a class="active" href="campaigns.html">Campaigns</a
+        ><label
+          ><span class="sr-only">Community</span
+          ><select id="community">
+            <option value="tridasa">MyHome Tridasa</option>
+            <option value="sayuk">MyHome Sayuk</option>
+          </select></label
+        >
+      </nav>
+    </header>
+    <main class="container">
+      <section class="hero compact-hero">
+        <h1>A little buzz for your bazaar.</h1>
+        <p class="lead">
+          Create neighbourhood notes, spotlight a seller, and make every tap
+          count.
+        </p>
+      </section>
+      <div id="status" class="demo-notice" role="status"></div>
+      <div class="layout campaign-layout">
+        <section class="panel">
+          <div class="panel-head">
+            <h2 id="formTitle">Create a campaign</h2>
+            <button class="chip" id="newCampaign" type="button">
+              Fresh start ＋
+            </button>
+          </div>
+          <form id="campaignForm" class="campaign-form">
+            <label
+              >Admin key<input
+                id="adminKey"
+                type="password"
+                autocomplete="off"
+                placeholder="Your campaign admin key"
+                required
+            /></label>
+            <label
+              >Category<select id="categoryFilter">
+                <option value="">All categories</option>
+              </select></label
+            >
+            <label
+              >Seller & offering<select id="offering" required></select
+            ></label>
+            <label
+              >Headline<input
+                id="title"
+                maxlength="120"
+                placeholder="Biryani o’clock"
+                required
+            /></label>
+            <label
+              >Message<textarea
+                id="body"
+                rows="4"
+                maxlength="2000"
+                placeholder="Lakshmi’s Biryani lists chicken biryani for pickup starting at 1pm. Want to try a box?"
+                required
+              ></textarea>
+            </label>
+            <label
+              >Button text<input
+                id="cta"
+                maxlength="80"
+                placeholder="Take me to biryani 🍚"
+                required
+            /></label>
+            <label
+              >Message type<select id="kind">
+                <option value="promoted">Promoted</option>
+                <option value="broadcast">Community broadcast</option>
+              </select></label
+            >
+            <div class="campaign-times">
+              <label
+                >Starts (IST, optional)<input
+                  id="starts"
+                  type="datetime-local" /></label
+              ><label
+                >Ends (IST, optional)<input id="ends" type="datetime-local"
+              /></label>
+            </div>
+            <label class="campaign-checkbox"
+              ><input id="active" type="checkbox" checked />Campaign
+              enabled</label
+            >
+            <p class="demo-notice">
+              The CTA opens this seller’s storefront. Keep serving times and
+              prices accurate. All campaign schedules use India Standard Time.
+            </p>
+            <button class="send" id="save" type="submit">
+              Save campaign ↗
+            </button>
+          </form>
+        </section>
+        <section>
+          <div class="panel-head">
+            <h2>Your campaigns</h2>
+            <span class="tag" id="count">Loading</span>
+          </div>
+          <div id="campaigns"></div>
+        </section>
+      </div>
+    </main>
+    <script>
+      const api = location.port === "8000" ? "http://localhost:8080" : "";
+      const community = document.getElementById("community");
+      let items = [],
+        campaigns = [],
+        editing = null,
+        requestNumber = 0;
+      const field = (id) => document.getElementById(id);
+      function el(tag, cls, text) {
+        const e = document.createElement(tag);
+        e.className = cls || "";
+        if (text !== undefined) e.textContent = text;
+        return e;
+      }
+      function status(text) {
+        field("status").textContent = text;
+      }
+      function options(selected) {
+        field("offering").replaceChildren();
+        const category = field("categoryFilter").value;
+        for (const item of items.filter(
+          (x) => !category || x.category === category,
+        )) {
+          const o = el("option", "", `${item.shop} · ${item.name}`);
+          o.value = item.id;
+          field("offering").append(o);
+        }
+        if (selected) field("offering").value = selected;
+      }
+      function reset() {
+        const key = field("adminKey").value;
+        editing = null;
+        field("campaignForm").reset();
+        field("adminKey").value = key;
+        field("formTitle").textContent = "Create a campaign";
+        field("categoryFilter").value = "";
+        options();
+      }
+      function payload(c) {
+        return {
+          offeringId: c.offering_id,
+          title: c.title,
+          body: c.body,
+          ctaText: c.cta_text,
+          kind: c.kind,
+          active: c.active,
+          startsAt: c.starts_local ? c.starts_local + ":00+05:30" : null,
+          endsAt: c.ends_local ? c.ends_local + ":00+05:30" : null,
+        };
+      }
+      async function write(id, data) {
+        const key = field("adminKey").value.trim();
+        if (!key) throw Error("Enter your campaign admin key first.");
+        const slug = community.value;
+        const r = await fetch(
+          `${api}/api/${slug}/admin/campaigns${id ? "/" + id : ""}`,
+          {
+            method: id ? "PUT" : "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + key,
+            },
+            body: JSON.stringify(data),
+          },
+        );
+        if (!r.ok) {
+          if (r.status === 401)
+            throw Error("That admin key didn’t match. Please check it.");
+          if (r.status === 503)
+            throw Error(
+              "Set CAMPAIGN_ADMIN_TOKEN in Railway to enable campaign editing.",
+            );
+          throw Error(
+            "Could not save. Check the offering, message and date range.",
+          );
+        }
+      }
+      function edit(c) {
+        editing = c.id;
+        field("formTitle").textContent = "Edit campaign";
+        field("categoryFilter").value = c.category || "";
+        options(c.offering_id);
+        for (const [id, value] of Object.entries({
+          title: c.title,
+          body: c.body,
+          cta: c.cta_text,
+          kind: c.kind,
+          starts: c.starts_local || "",
+          ends: c.ends_local || "",
+        }))
+          field(id).value = value;
+        field("active").checked = c.active;
+        field("campaignForm").scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+      function render() {
+        field("campaigns").replaceChildren();
+        field("count").textContent = `${campaigns.length} campaigns`;
+        if (!campaigns.length)
+          field("campaigns").append(
+            el(
+              "p",
+              "empty",
+              "No campaigns yet. Give a neighbour’s shop a little spotlight.",
+            ),
+          );
+        for (const c of campaigns) {
+          const card = el("article", "chat-promotion campaign-card");
+          let state = c.active ? "Enabled" : "Paused";
+          const now = Date.now();
+          if (
+            c.active &&
+            c.ends_local &&
+            Date.parse(c.ends_local + ":00+05:30") <= now
+          )
+            state = "Ended";
+          else if (
+            c.active &&
+            c.starts_local &&
+            Date.parse(c.starts_local + ":00+05:30") > now
+          )
+            state = "Scheduled";
+          card.append(
+            el("div", "eyebrow", `${c.kind} · ${state}`),
+            el("h3", "", c.title),
+            el("p", "", c.body),
+            el("small", "", `${c.shop} · ${c.category}`),
+          );
+          if (c.starts_local || c.ends_local)
+            card.append(
+              el(
+                "small",
+                "",
+                `${c.starts_local?.replace("T", " ") || "Now"} → ${c.ends_local?.replace("T", " ") || "No end"} IST`,
+              ),
+            );
+          const link = el("a", "promotion-link", c.cta_text);
+          link.href = `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(c.provider_id)}`;
+          card.append(link);
+          const actions = el("div", "campaign-actions");
+          const button = el("button", "chip", "Edit message");
+          button.type = "button";
+          button.onclick = () => edit(c);
+          const toggle = el(
+            "button",
+            "chip",
+            c.active ? "Pause campaign" : "Enable campaign",
+          );
+          toggle.type = "button";
+          toggle.onclick = async () => {
+            toggle.disabled = true;
+            try {
+              await write(c.id, { ...payload(c), active: !c.active });
+              status(c.active ? "Campaign paused." : "Campaign enabled.");
+              await load();
+            } catch (e) {
+              status(e.message);
+            } finally {
+              toggle.disabled = false;
+            }
+          };
+          actions.append(button, toggle);
+          card.append(actions);
+          field("campaigns").append(card);
+        }
+      }
+      async function load() {
+        const number = ++requestNumber,
+          slug = community.value;
+        try {
+          const results = await Promise.all([
+            fetch(`${api}/api/${slug}/admin/campaigns`),
+            fetch(`${api}/api/${slug}/admin/campaigns/offerings`),
+          ]);
+          if (results.some((r) => !r.ok))
+            throw Error("Could not load campaigns. Please refresh.");
+          const data = await Promise.all(results.map((r) => r.json()));
+          if (number !== requestNumber) return;
+          [campaigns, items] = data;
+          field("categoryFilter").replaceChildren(
+            new Option("All categories", ""),
+          );
+          for (const name of new Set(items.map((x) => x.category))) {
+            const o = el("option", "", name);
+            o.value = name;
+            field("categoryFilter").append(o);
+          }
+          options();
+          render();
+        } catch (e) {
+          status(e.message);
+        }
+      }
+      field("categoryFilter").onchange = () => options();
+      field("newCampaign").onclick = reset;
+      field("campaignForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const data = {
+          offeringId: field("offering").value,
+          title: field("title").value,
+          body: field("body").value,
+          ctaText: field("cta").value,
+          kind: field("kind").value,
+          active: field("active").checked,
+          startsAt: field("starts").value
+            ? field("starts").value + ":00+05:30"
+            : null,
+          endsAt: field("ends").value
+            ? field("ends").value + ":00+05:30"
+            : null,
+        };
+        if (
+          data.startsAt &&
+          data.endsAt &&
+          Date.parse(data.endsAt) <= Date.parse(data.startsAt)
+        ) {
+          status("Choose an end after the start.");
+          return;
+        }
+        field("save").disabled = true;
+        try {
+          await write(editing, data);
+          status(
+            "Saved! Enabled campaigns rotate in chat every three minutes during their scheduled window.",
+          );
+          const key = field("adminKey").value;
+          reset();
+          field("adminKey").value = key;
+          await load();
+        } catch (e) {
+          status(e.message);
+        } finally {
+          field("save").disabled = false;
+        }
+      };
+      community.onchange = () => {
+        reset();
+        load();
+      };
+      load();
+    </script>
+  </body>
+</html>

@@ -3,15 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Provider storefront · Apna Bazaar</title>
+    <title>Provider storefront · HeyHood</title>
     <link rel="stylesheet" href="../app.css" />
   </head>
   <body>
     <header class="topbar">
       <a class="brand" href="../chatbot/index.html"
-        ><span class="brand-icon">✳</span>apna bazaar<span class="tag"
-          >local storefront</span
-        ></a
+        ><img
+          class="brand-logo"
+          src="../assets/heyhood-logo.png"
+          alt="HeyHood — Good things. Close by."
+        /><span class="tag">local storefront</span></a
       >
       <nav class="nav">
         <a href="../chatbot/index.html">← Back to discovery</a>
@@ -71,7 +73,7 @@
               <hr />
               <p class="contact-note">
                 Prices and availability are set by the provider. Confirm your
-                order or booking directly on WhatsApp. Apna Bazaar helps you
+                order or booking directly on WhatsApp. HeyHood helps you
                 discover; payments and fulfilment happen with the provider.
               </p>
             </div>
@@ -79,7 +81,7 @@
         </section>
       </div>
       <footer class="footer">
-        <span>Apna Bazaar · Support a neighbour</span
+        <span>HeyHood · Support a neighbour</span
         ><a href="../chatbot/index.html">Explore your community →</a>
       </footer>
     </main>
@@ -181,7 +183,7 @@
             throw Error("Could not load this storefront. Please try again.");
           data = await r.json();
           const p = data.provider;
-          document.title = `${p.shop || p.name} · Apna Bazaar`;
+          document.title = `${p.shop || p.name} · HeyHood`;
           document.getElementById("shop").textContent = p.shop || p.name;
           document.getElementById("owner").textContent = "By " + p.name;
           document.getElementById("location").textContent =
@@ -261,7 +263,7 @@
                   clickType: "whatsapp_tap",
                 }),
               }).catch(() => {});
-            location.href = `https://wa.me/${p.whatsapp}?text=${encodeURIComponent("Hi " + p.name + ", I found your storefront on Apna Bazaar and would like to enquire about your catalog.")}`;
+            location.href = `https://wa.me/${p.whatsapp}?text=${encodeURIComponent("Hi " + p.name + ", I found your storefront on HeyHood and would like to enquire about your catalog.")}`;
           };
           document.getElementById("store").hidden = false;
         } catch (e) {

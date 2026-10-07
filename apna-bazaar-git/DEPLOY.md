@@ -40,3 +40,23 @@ This is a pilot deployment: API endpoints currently lack authentication, and sea
 ## Local Docker
 
 From `apna-bazaar-git`, copy `.env.template` to `.env`, fill the key securely, and run `docker compose up --build`. Open the backend's `/chatbot/index.html` path on port 8080.
+
+## HeyHood branding and custom domain
+
+The public brand is now **HeyHood — Good things. Close by.** The repository and Railway service can keep their existing technical names.
+
+1. Register `heyhood.in` with an accredited registrar. NIXI RDAP reported it available on 7 October 2026; purchase availability can change.
+2. In the Railway app service, open **Settings → Networking → Custom Domain** and enter `heyhood.in`. The app listens on port **8080** unless Railway injects another `PORT`.
+3. In your domain provider's DNS settings, add the target and verification records **exactly as Railway displays them**. For the root `@` record, use the provider's supported CNAME flattening / ALIAS / ANAME method if required. Railway provides the target; do not guess it from the existing public URL.
+4. Wait for Railway to verify DNS and issue HTTPS. `https://heyhood.in/` opens the chatbot; `/admin/index.html` is analytics and `/admin/campaigns.html` is campaign management. Add `www.heyhood.in` separately in Railway if wanted.
+
+Frontend API calls use the current origin, so they work on the custom domain without hardcoded API URL changes.
+
+For campaign editing, set **CAMPAIGN_ADMIN_TOKEN** to a long random value in the app service's Railway Variables and redeploy. Enter that same key in the campaign studio. Use a separate value from the OpenAI API key. Viewing campaigns and the seeded in-chat promotions works without this editing key.
+
+Current demo URLs after the Railway domain rename:
+- Chat: https://heyhood-production-b1b8.up.railway.app/chatbot/index.html
+- Analytics: https://heyhood-production-b1b8.up.railway.app/admin/index.html
+- Campaign studio: https://heyhood-production-b1b8.up.railway.app/admin/campaigns.html
+
+The previous apna-bazaar public domain was removed by the Railway rename. Use the HeyHood hostname for bookmarks and shared links.

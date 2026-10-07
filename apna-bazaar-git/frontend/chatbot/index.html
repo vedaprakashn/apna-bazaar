@@ -3,15 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Apna Bazaar · Your neighbourhood, discovered</title>
+    <title>HeyHood · Good things. Close by.</title>
     <link rel="stylesheet" href="../app.css" />
   </head>
   <body>
     <header class="topbar">
       <a class="brand" href="index.html"
-        ><span class="brand-icon">✳</span>apna bazaar<span class="tag"
-          >pilot</span
-        ></a
+        ><img
+          class="brand-logo"
+          src="../assets/heyhood-logo.png"
+          alt="HeyHood — Good things. Close by."
+        /><span class="tag">pilot</span></a
       >
       <nav class="nav">
         <a class="active" href="index.html">Discover</a
@@ -28,7 +30,7 @@
     <main class="container">
       <section class="hero compact-hero">
         <div>
-          <h1>Find it in your community.</h1>
+          <h1>Good things. Close by.</h1>
           <p class="lead">
             Food, classes and home services — ask in your language.
           </p>
@@ -89,7 +91,7 @@
         </aside>
       </section>
       <footer class="footer">
-        <span>Apna Bazaar · Your community’s own bazaar</span
+        <span>HeyHood · Good things. Close by.</span
         ><span>Discover → connect → support a neighbour</span>
       </footer>
     </main>
@@ -145,6 +147,11 @@
         box.append(chips);
       }
       const categoryPrompts = {
+        "Meat & Seafood": "Cooking plans? Who’s got meat or seafood? 🍗",
+        Biryani: "Biryani cravings just hit. Who’s cooking? 🍚",
+        Flowers: "Need flowers for a little wow. Who’s got petals? 💐",
+        "Ice Creams": "Scoop break! Any ice cream around? 🍦",
+        "Gifts & Crafts": "Gift mode: on. What’s cute around here? 🎁",
         "Food & Tiffin": "Who’s cooking something good around here? 🍱",
         "Batter & Dough": "Breakfast sorted? Who’s got fresh batter? 🫓",
         "Juices & Shakes": "Craving a juice or shake. What’s around? 🥤",
@@ -237,7 +244,7 @@
             },
           );
           if (!r.ok) throw Error();
-          location.href = `https://wa.me/${p.whatsappNumber}?text=${encodeURIComponent("Hi " + p.name + ", I found your listing on Apna Bazaar. I would like to know more.")}`;
+          location.href = `https://wa.me/${p.whatsappNumber}?text=${encodeURIComponent("Hi " + p.name + ", I found your listing on HeyHood. I would like to know more.")}`;
         } catch (e) {
           toast("Could not open WhatsApp. Please try again.");
         } finally {
@@ -386,8 +393,23 @@
           promotionTimer = setInterval(showPromotion, 180000);
         } catch (_) {}
       }
-      function showPromotion() {
-        if (document.hidden || busy || !promotions.length) return;
+      async function showPromotion() {
+        if (document.hidden || busy) return;
+        const requestedCommunity = community.value;
+        try {
+          const res = await fetch(
+            `${API_BASE}/api/${requestedCommunity}/promotions`,
+            { cache: "no-store" },
+          );
+          if (!res.ok) return;
+          const latest = await res.json();
+          if (community.value !== requestedCommunity || document.hidden || busy)
+            return;
+          promotions = latest;
+        } catch (_) {
+          return;
+        }
+        if (!promotions.length) return;
         const p = promotions[promotionIndex++ % promotions.length];
         const slug = community.value,
           viewerSession = sessionId;
@@ -400,12 +422,11 @@
           el(
             "div",
             "eyebrow",
-            p.kind === "promoted"
-              ? "Demo promoted message"
-              : "Demo community broadcast",
+            `${p.demo ? "Demo · " : ""}${p.kind === "promoted" ? "Promoted" : "Community broadcast"}`,
           ),
         );
         card.append(el("h3", "", `${p.emoji || "✦"} ${p.title}`));
+        if (p.body) card.append(el("p", "promotion-body", p.body));
         card.append(
           el(
             "p",
@@ -416,7 +437,11 @@
         card.append(
           el("small", "", `${p.shop} · Check the storefront for schedules.`),
         );
-        const link = el("a", "promotion-link", "Explore offerings ↗");
+        const link = el(
+          "a",
+          "promotion-link",
+          p.cta_text || "Explore offerings ↗",
+        );
         link.href = `../provider/index.html?community=${encodeURIComponent(slug)}&id=${encodeURIComponent(p.provider_id)}`;
         card.append(link);
         const sendEvent = async (type) => {

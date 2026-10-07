@@ -106,7 +106,7 @@ public class BroadcastService {
             new AISuggestedNudge("Morning", "☀️ Good morning! Fresh home food available today. Ask me 'what\'s cooking' 🍱"),
             new AISuggestedNudge("Evening", "🌙 Dinner time! Home kitchens are ready tonight. Ask me what\'s available 🍽️"),
             new AISuggestedNudge("Weekend", "🛌 Order your batter tonight for tomorrow\'s lazy Sunday breakfast 🫓"),
-            new AISuggestedNudge("Discovery", "🏡 10+ neighbours sell things in Tridasa! Ask Apna Bazaar to discover!")
+            new AISuggestedNudge("Discovery", "🏡 10+ neighbours sell things in Tridasa! Ask HeyHood to discover!")
         );
     }
 

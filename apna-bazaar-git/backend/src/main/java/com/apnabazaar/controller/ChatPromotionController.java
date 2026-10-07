@@ -16,12 +16,14 @@ public class ChatPromotionController {
     @GetMapping
     public List<Map<String, Object>> list(@PathVariable String slug) {
         return jdbc.queryForList("""
-            SELECT m.id,m.title,m.kind,p.id AS provider_id,p.shop_name AS shop,
+            SELECT m.id,m.title,m.body,m.cta_text,m.kind,p.id AS provider_id,p.shop_name AS shop,
+                   p.name LIKE '% · Demo' AS demo,
                    o.name AS offering,o.base_price AS price,o.unit,c.icon_emoji AS emoji
             FROM chat_promotion m JOIN community co ON co.id=m.community_id
             JOIN offering o ON o.id=m.offering_id JOIN provider p ON p.id=o.provider_id
             LEFT JOIN category c ON c.id=o.category_id
             WHERE co.slug=? AND m.active AND o.is_available AND p.status='active'
+              AND (m.starts_at IS NULL OR m.starts_at<=NOW()) AND (m.ends_at IS NULL OR m.ends_at>NOW())
             ORDER BY m.id
             """, slug);
     }
@@ -39,6 +41,7 @@ public class ChatPromotionController {
                 SELECT ?,m.id,? FROM chat_promotion m JOIN community c ON c.id=m.community_id
                 JOIN offering o ON o.id=m.offering_id JOIN provider p ON p.id=o.provider_id
                 WHERE m.id=? AND c.slug=? AND m.active AND o.is_available AND p.status='active'
+                  AND (m.starts_at IS NULL OR m.starts_at<=NOW()) AND (m.ends_at IS NULL OR m.ends_at>NOW())
                 ON CONFLICT(id) DO NOTHING
                 """, event.deliveryId(),event.sessionId(),event.promotionId(),slug);
             if (count==0 && !Boolean.TRUE.equals(jdbc.queryForObject("""
