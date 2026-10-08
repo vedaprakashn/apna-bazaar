@@ -2144,9 +2144,19 @@ body {
   gap: 8px;
 }
 .discovery-page .topbar .brand-logo {
-  width: 96px;
-  max-height: 36px;
-  object-fit: contain;
+  width: 152px;
+  height: 44px;
+  max-height: 44px;
+  /* Fill the compact header using the asset's transparent top/bottom padding. */
+  object-fit: cover;
+  object-position: center;
+}
+@media (min-width: 761px) {
+  .discovery-page .topbar .brand-logo {
+    width: 176px;
+    height: 50px;
+    max-height: 50px;
+  }
 }
 .discovery-page .app-menu summary {
   height: 40px;
