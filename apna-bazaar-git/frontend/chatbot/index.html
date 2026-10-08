@@ -9,6 +9,8 @@
     <title>HeyHood · Good things. Close by.</title>
     <link rel="stylesheet" href="../app.css?v=20261008-brand2" />
     <script src="../resident.js?v=1"></script>
+    <script src="../reputation.js?v=1"></script>
+    <link rel="stylesheet" href="../reputation.css?v=1" />
   </head>
   <body class="discovery-page">
     <header class="topbar">
@@ -487,6 +489,7 @@
               clickType: "whatsapp_tap",
             }),
           }).catch(() => {});
+          heyhoodRecordContact(p.id, p.shopName || p.name);
           location.href = contact.url;
         } catch (e) {
           toast("Could not open WhatsApp. Please try again.");
@@ -780,7 +783,7 @@
             " · Flat " + (p.flatNumber || "not listed"),
           ),
         );
-        info.append(profile);
+        info.append(profile, heyhoodReputationBadge({ ...p, ...item }));
         top.append(info);
         card.append(
           top,

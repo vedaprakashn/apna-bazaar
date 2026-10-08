@@ -6,6 +6,8 @@
     <title>Provider storefront · HeyHood</title>
     <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
     <script src="../resident.js?v=1"></script>
+    <script src="../reputation.js?v=1"></script>
+    <link rel="stylesheet" href="../reputation.css?v=1" />
   </head>
   <body>
     <header class="topbar">
@@ -81,6 +83,10 @@
             </div>
           </aside>
         </section>
+        <section
+          id="reviews"
+          aria-label="Provider ratings and reviews"
+        ></section>
       </div>
       <footer class="footer">
         <span>HeyHood · Support a neighbour</span
@@ -309,9 +315,11 @@
                   clickType: "whatsapp_tap",
                 }),
               }).catch(() => {});
+            heyhoodRecordContact(id, p.shop || p.name);
             location.href = contact.url;
           };
           document.getElementById("store").hidden = false;
+          heyhoodLoadReputation(id);
         } catch (e) {
           const error = document.getElementById("error");
           error.textContent = e.message;

@@ -77,6 +77,7 @@ public class ResidentController {
  @PostMapping("/requests/{id}/close") public void close(@PathVariable String slug,@RequestHeader(value="Authorization",required=false) String auth,@PathVariable UUID id,HttpServletRequest request){rate(request);if(jdbc.update("UPDATE hood_request SET status='closed' WHERE id=? AND resident_id=? AND community_id=?",id,residents.authorize(slug,auth),residents.community(slug))==0)throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Your request was not found");}
  @GetMapping("/activity") public Map<String,Object> activity(@PathVariable String slug,@RequestHeader(value="Authorization",required=false) String auth){
   UUID id=residents.authorize(slug,auth),c=residents.community(slug);Map<String,Object> result=new LinkedHashMap<>();result.put("profile",residents.profile(id));
+  result.put("contacts",jdbc.queryForList("SELECT p.id,p.shop_name AS title,CASE WHEN f.answered_at IS NULL THEN NULL ELSE f.outcome END AS outcome,f.contacted_at,f.answered_at FROM provider_contact_feedback f JOIN provider p ON p.id=f.provider_id WHERE f.resident_id=? AND p.community_id=? ORDER BY f.contacted_at DESC LIMIT 50",id,c));
   result.put("saved",jdbc.queryForList("""
    SELECT s.kind,s.entity_id,s.following,COALESCE(p.shop_name,p.name,r.destination,h.title) AS title,
     CASE WHEN s.kind='ride' THEN r.status ELSE h.status END AS status

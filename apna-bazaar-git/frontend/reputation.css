@@ -1,0 +1,84 @@
+.reputation-card {
+  background: #f5f0ff;
+  border: 1px solid #ded3fc;
+  border-radius: 20px;
+  padding: 18px;
+  margin: 12px 0;
+  color: #28203c;
+  overflow-wrap: anywhere;
+}
+.reputation-card p {
+  margin: 8px 0;
+  font-size: 0.95rem;
+}
+.reputation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.reputation-card button {
+  border-radius: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border: 1px solid #b69bea;
+  background: white;
+  color: #462180;
+  font: inherit;
+}
+.reputation-card button[aria-pressed="true"] {
+  background: #6b30ed;
+  color: white;
+}
+.reputation-card button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.reputation-card label {
+  display: block;
+  margin: 12px 0;
+}
+.reputation-card textarea,
+.reputation-card select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #b69bea;
+  border-radius: 12px;
+  font: inherit;
+  background: white;
+  color: #28203c;
+  font-size: 16px;
+}
+.reputation-card input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+}
+.reputation-summary {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 0.85rem;
+  color: #5425a5;
+  margin: 8px 0;
+}
+.reputation-summary span {
+  background: #eee5ff;
+  padding: 5px 9px;
+  border-radius: 10px;
+}
+#reviews {
+  scroll-margin-top: 20px;
+  margin: 24px 0;
+}
+.reputation-card a {
+  display: inline-block;
+  margin-right: 12px;
+}
+.reputation-card :focus-visible {
+  outline: 3px solid #e5b200;
+  outline-offset: 3px;
+}

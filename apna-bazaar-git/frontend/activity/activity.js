@@ -173,6 +173,20 @@ function renderActivity(a) {
       root.append(grid);
     }
   }
+  section(
+    "Did you connect?",
+    [
+      ...(a.contacts || []),
+      ...heyhoodPendingContacts().filter(
+        (p) => !(a.contacts || []).some((c) => c.id === p.id),
+      ),
+    ],
+    (c) =>
+      heyhoodFeedbackCard({
+        ...c,
+        synced: c.synced ?? Boolean(c.contacted_at),
+      }),
+  );
   section("Saved & followed", a.saved, (s) => {
     const c = card(s.title, null, s.following ? "Following" : "Saved");
     const url =
