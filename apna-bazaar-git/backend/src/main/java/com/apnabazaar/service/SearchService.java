@@ -247,9 +247,9 @@ public class SearchService {
                 Set rideDestination to a concise English place name; RGIA/Shamshabad airport means Airport.
                 Set rideAt to the requested departure datetime in ISO-8601 with +05:30 offset, resolving tonight/tomorrow against current India time.
                 Set rideArrangement="shared_cab" for splitting an Uber/cab; "school_run" for recurring school pickup/drop; otherwise "".
-                For a week or date range, set rideUntil to the last day's 23:59:59+05:30; otherwise null. For school pickup afternoon use 15:30 if no exact time given, morning drop use 08:00, state assumptions in intent.
+                For a week or date range, rideAt MUST be the first day in that requested range, and rideUntil the last day's 23:59:59+05:30. Next week means the next Monday through Sunday, not the next seven days starting today. For a whole-week search without a clock time use 00:00:00 on the first day so the full range is included. Never leave rideAt null when a date range is requested. Otherwise rideUntil=null. For school pickup afternoon use 15:30 if no exact time given, morning drop use 08:00, state assumptions in intent.
                 Set rideSeats to the number of seats requested, default 1 (maximum 6).
-                If no time requested set rideAt=null. Preserve past times rather than silently changing tonight to tomorrow.
+                If neither a date nor a time is requested set rideAt=null. Preserve past times rather than silently changing tonight to tomorrow.
                 Never classify blood-test booking, bicycle repair or general service requests as carpooling.
                 Return only JSON: {"intent":"English meaning","responseLanguage":"language and script","teachingLanguage":null,"learningRequest":false,"contactRequest":false,"contactCategories":[],"doctorSpecialty":null,"rideRequest":false,"rideKind":"offer","rideDirection":"outbound","rideDestination":"","rideAt":null,"rideSeats":1,"discoveryModule":"","rideArrangement":"","rideUntil":null}.
                 Do not use Markdown fences.
