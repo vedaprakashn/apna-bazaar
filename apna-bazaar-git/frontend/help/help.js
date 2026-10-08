@@ -78,17 +78,12 @@ function render() {
       el(
         "span",
         "scope-badge",
-        c.scope === "community"
-          ? "In your community"
-          : "Response service · nearby",
+        c.scope === "community" ? "Your hood" : "Nearby response",
       ),
     );
     card.append(badges);
     const info = el("div", "contact-info");
-    info.append(
-      el("p", "contact-area", c.service_area),
-      el("p", "availability", `◷ ${c.availability}`),
-    );
+    info.append(el("p", "availability", `◷ ${c.availability}`));
     card.append(info);
     const footer = el("div", "contact-bottom");
     const verified = !demo && c.verified_at && c.consent_to_listing;
@@ -96,11 +91,7 @@ function render() {
       el(
         "span",
         verified ? "verification verified" : "verification demo",
-        demo
-          ? "Demo · Unverified"
-          : verified
-            ? "Verified listing"
-            : "Unverified listing",
+        demo ? "Demo" : verified ? "Verified listing" : "Unverified listing",
       ),
     );
     if (verified && /^\+?[0-9 ()-]{7,25}$/.test(c.phone || "")) {
@@ -108,7 +99,7 @@ function render() {
       call.href = `tel:${c.phone.replace(/[^+0-9]/g, "")}`;
       call.setAttribute("aria-label", `Call ${c.name} at ${c.phone}`);
       footer.append(call);
-    } else footer.append(el("span", "contact-unavailable", "Contact not live"));
+    } else footer.append(el("span", "contact-unavailable", "Not live"));
     card.append(footer);
     if (
       c.section === "professional" &&
@@ -130,18 +121,15 @@ function render() {
         card.append(wa);
         if (demo)
           card.append(
-            el(
-              "small",
-              "pilot-contact-note",
-              "Pilot · Opens the shared test contact.",
-            ),
+            el("small", "pilot-contact-note", "Test WhatsApp number"),
           );
       }
     }
     const details = el("details", "contact-details");
     details.append(
-      el("summary", "", "Details"),
+      el("summary", "", "Good to know"),
       el("p", "contact-notes", c.notes),
+      el("p", "contact-area", c.service_area),
     );
     if (c.location) details.append(el("p", "", c.location));
     if (verified)
@@ -175,8 +163,8 @@ function selectSection(index, focus = false) {
   directory.setAttribute("aria-labelledby", tabs[index].id);
   document.querySelector("#section-note").textContent =
     index === 0
-      ? "Local first-aid and response contacts. Demo listings cannot provide emergency assistance."
-      : "People who can help with everyday care, recovery and legal needs. This is a directory, not a booking service.";
+      ? "Response contacts. Demo numbers aren’t live."
+      : "Care, recovery and advice—from people in your hood.";
   categories();
   render();
   if (focus) tabs[index].focus();

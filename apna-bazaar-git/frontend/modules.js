@@ -47,7 +47,36 @@
     });
     nav.append(link);
   }
+  async function refreshUpdates() {
+    if (document.hidden || !window.heyhoodResident?.()) return;
+    const link = nav.querySelector('[data-module="activity"]');
+    try {
+      const community =
+        document.querySelector("#community")?.value ||
+        sessionStorage.getItem("heyhood-community") ||
+        "tridasa";
+      const r = await fetch(`/api/${community}/resident/notifications`, {
+        headers: heyhoodResidentHeaders(),
+      });
+      if (!r.ok) return;
+      const rows = await r.json();
+      const unread = rows.filter((n) => !n.read_at).length;
+      link.querySelector(".module-unread")?.remove();
+      if (unread) {
+        const badge = document.createElement("span");
+        badge.className = "module-unread";
+        badge.textContent = unread > 9 ? "9+" : String(unread);
+        badge.setAttribute("aria-label", `${unread} unread updates`);
+        link.append(badge);
+        link.setAttribute("aria-label", `My stuff, ${unread} unread updates`);
+      } else link.setAttribute("aria-label", "My activity");
+    } catch {}
+  }
+  setInterval(refreshUpdates, 60000);
+  document.addEventListener("visibilitychange", refreshUpdates);
+  window.addEventListener("heyhood-profile-updated", refreshUpdates);
   document.addEventListener("DOMContentLoaded", () => {
+    refreshUpdates();
     if (current === "chatbot" && selected === "shops")
       document.querySelector(".mobile-explore").click();
   });

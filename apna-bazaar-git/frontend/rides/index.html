@@ -7,10 +7,12 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>Hood Rides · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
-    <link rel="stylesheet" href="../help/help.css?v=4" />
-    <link rel="stylesheet" href="rides.css?v=20261008-polish1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
+    <link rel="stylesheet" href="../help/help.css?v=20261008-compact1" />
+    <link rel="stylesheet" href="rides.css?v=20261008-matching1" />
     <script src="../resident.js?v=1"></script>
+    <link rel="stylesheet" href="../hood-actions.css?v=20261008-matching1" />
+    <script src="../hood-actions.js?v=20261008-matching1" defer></script>
   </head>
   <body class="rides-page">
     <header class="help-header">
@@ -22,7 +24,7 @@
       </select>
     </header>
     <nav class="hood-modules" aria-label="HeyHood modules"></nav>
-    <script src="../modules.js?v=3" defer></script>
+    <script src="../modules.js?v=20261008-matching1" defer></script>
     <main class="rides-main">
       <section class="rides-intro">
         <span class="help-kicker">YOUR HOOD, ON THE MOVE.</span>
@@ -78,7 +80,11 @@
         <p class="ride-filter-note">
           Times are in IST. Matches are within an hour of your chosen time.
         </p>
-        <button type="button" class="clear-filters" id="clear-filters">
+        <button
+          type="button"
+          class="clear-filters save-action"
+          id="clear-filters"
+        >
           Reset filters
         </button>
       </details>
@@ -241,6 +247,6 @@
     </dialog>
     <script src="../contact.js?v=20261007-professional1"></script>
     <script src="contact.js?v=1"></script>
-    <script src="rides.js?v=20261008-polish1"></script>
+    <script src="rides.js?v=20261008-matching1" defer></script>
   </body>
 </html>

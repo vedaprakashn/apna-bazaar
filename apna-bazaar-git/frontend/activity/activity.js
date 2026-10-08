@@ -72,13 +72,16 @@ async function load() {
       activity = await heyhoodResidentFetch("activity");
       renderActivity(activity);
       const p = activity.profile;
+      document.querySelector("#profile-signout").hidden = !p.phone_verified_at;
       document.querySelector("#name").value = p.name;
       document.querySelector("#flat").value = p.flat_number;
       document.querySelector("#share-name").checked = p.share_name;
       document.querySelector("#share-flat").checked = p.share_flat;
       document.querySelector("#verification").textContent =
         p.verification === "verified"
-          ? "Community operator approved ✓"
+          ? p.flat_verified_at
+            ? `Flat verified ✓${p.phone_verified_at ? " · Phone linked ✓" : " · Phone not linked yet"}`
+            : "Community operator approved ✓"
           : "Verification: " +
             p.verification +
             ". Your name and flat need operator review.";
@@ -173,6 +176,25 @@ function renderActivity(a) {
       root.append(grid);
     }
   }
+  section("Your hood updates", a.notifications || [], (n) => {
+    const c = card(n.title, n.body, n.read_at ? "Read" : "New");
+    const link = el("a", "", "Open update ↗");
+    const u = new URL(n.path, location.origin);
+    u.searchParams.set("community", community.value);
+    link.href = u.pathname + u.search;
+    link.onclick = () =>
+      heyhoodModuleApi(`resident/notifications/${n.id}/read`, {
+        method: "POST",
+      }).catch(() => {});
+    c.append(link);
+    return c;
+  });
+  root.append(el("h2", "", "Ride arrangements"));
+  const arrangements = el("div", "activity-grid");
+  root.append(arrangements);
+  heyhoodRideArrangements(arrangements, load).catch((e) => {
+    arrangements.textContent = e.message;
+  });
   section(
     "Did you connect?",
     [
@@ -285,10 +307,18 @@ function renderActivity(a) {
     const c = card(
       p.title,
       when(p.starts_at),
-      p.choice === "in" ? "I’m in" : "Passed",
+      p.status === "cancelled"
+        ? "Cancelled"
+        : p.choice === "in"
+          ? p.queue_state === "attending"
+            ? "Place confirmed"
+            : p.queue_state === "waitlisted"
+              ? "Waitlisted"
+              : "Interested"
+          : "Passed",
     );
     const link = el("a", "", "View plan ↗");
-    link.href = `../plans/index.html?community=${community.value}`;
+    link.href = `../plans/index.html?community=${community.value}&id=${p.id}`;
     c.append(link);
     return c;
   });
@@ -452,3 +482,55 @@ load().then(() => {
   if (params.get("compose") && heyhoodResident()) openNeed();
   if (params.get("request")) changeView("requests");
 });
+
+window.addEventListener("heyhood-profile-updated", load);
+document.querySelector("#flat-code-form").onsubmit = async (e) => {
+  e.preventDefault();
+  if (!heyhoodResident()) {
+    heyhoodNotice("Save your profile first, then verify your flat.");
+    return;
+  }
+  const b = e.submitter,
+    s = document.querySelector("#flat-code-status");
+  b.disabled = true;
+  try {
+    const p = await heyhoodModuleApi("resident/verify-flat", {
+      method: "POST",
+      body: JSON.stringify({
+        code: document.querySelector("#flat-code").value,
+      }),
+    });
+    heyhoodStoreResident({ ...p, token: heyhoodResident().token });
+    document.querySelector("#flat-code").value = "";
+    s.textContent = "Your flat is verified ✓";
+    await load();
+  } catch (err) {
+    s.textContent = err.message;
+  } finally {
+    b.disabled = false;
+  }
+};
+
+window.addEventListener("pageshow", (e) => {
+  if (e.persisted) load();
+});
+document.addEventListener("visibilitychange", () => {
+  if (
+    !document.hidden &&
+    view === "overview" &&
+    !document.querySelector("dialog[open]")
+  )
+    load();
+});
+
+document.querySelector("#profile-signout").onclick = async () => {
+  if (!confirm("Sign out of this device? Use your linked phone OTP to return."))
+    return;
+  try {
+    await heyhoodModuleApi("resident/auth/logout", { method: "POST" });
+    localStorage.removeItem(`heyhood-resident:${community.value}`);
+    location.href = `?community=${community.value}&view=profile`;
+  } catch (e) {
+    heyhoodNotice(e.message);
+  }
+};

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Resident review & availability · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
     <link rel="stylesheet" href="../activity/activity.css?v=1" />
   </head>
   <body>
@@ -32,6 +32,87 @@
         ><button>Load operator workspace</button>
       </form>
       <p id="status" role="status"></p>
+      <h2>Private flat invitations</h2>
+      <details class="activity-card">
+        <summary>Generate private flat codes</summary>
+        <p>
+          One code per flat, one use, up to 30 days. Generating a fresh code
+          replaces unused codes for that flat. Deliver each flat’s code
+          privately—never publish the list to a shared notice board.
+        </p>
+        <form id="invitation-form">
+          <label
+            >Flats (one per line, up to 100)<textarea
+              id="invite-flats"
+              rows="4"
+              required
+              placeholder="T1-101&#10;T1-102"
+            ></textarea></label
+          ><label
+            >Valid for days<input
+              id="invite-days"
+              type="number"
+              min="1"
+              max="30"
+              value="14"
+              required /></label
+          ><label class="check"
+            ><input id="invite-private" type="checkbox" required />I’ll deliver
+            each code privately to the corresponding flat.</label
+          ><button>Generate codes</button>
+        </form>
+        <div id="fresh-invitations"></div>
+      </details>
+      <div id="invitation-history" class="activity-grid"></div>
+      <h2>Hood Plans · organiser workspace</h2>
+      <details class="activity-card">
+        <summary>Create a real community plan</summary>
+        <form id="operator-plan-form">
+          <label
+            >Title<input id="op-plan-title" maxlength="180" required /></label
+          ><label
+            >Description<textarea
+              id="op-plan-description"
+              maxlength="1000"
+              required
+            ></textarea></label
+          ><label
+            >Category<input
+              id="op-plan-category"
+              maxlength="60"
+              required /></label
+          ><label
+            >Location<input
+              id="op-plan-location"
+              maxlength="160"
+              required /></label
+          ><label
+            >Start (IST)<input
+              id="op-plan-time"
+              type="datetime-local"
+              required /></label
+          ><label
+            >Minimum sign-ups<input
+              id="op-plan-minimum"
+              type="number"
+              min="2"
+              max="1000"
+              value="20"
+              required /></label
+          ><label
+            >Maximum places (optional)<input
+              id="op-plan-capacity"
+              type="number"
+              min="2"
+              max="1000" /></label
+          ><label class="check"
+            ><input id="op-plan-publish" type="checkbox" required />Publish to
+            this community. I’m responsible for confirming the organiser and
+            arrangements.</label
+          ><button>Create plan</button>
+        </form>
+      </details>
+      <div id="operator-plans" class="activity-grid"></div>
       <h2>Resident profiles</h2>
       <div id="residents" class="activity-grid"></div>
       <h2>Provider checks & reviews</h2>
@@ -54,6 +135,6 @@
       />
       <div id="stock" class="activity-grid"></div>
     </main>
-    <script src="residents.js?v=2"></script>
+    <script src="residents.js?v=20261008-matching1"></script>
   </body>
 </html>

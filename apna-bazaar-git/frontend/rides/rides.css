@@ -395,11 +395,15 @@
   margin-top: 6px;
 }
 .clear-filters {
-  background: none;
+  background: #f2ecfc;
   color: #6336f5;
-  font-size: 12px;
+  border: 1px solid #dfd1f6;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
   min-height: 44px;
-  padding: 8px 0;
+  padding: 10px 14px;
 }
 .ride-grid {
   gap: 14px;
