@@ -2136,3 +2136,69 @@ body {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Compact chrome leaves room for the conversation and module content. */
+.discovery-page .topbar {
+  min-height: 44px;
+  padding: 2px 12px;
+  gap: 8px;
+}
+.discovery-page .topbar .brand-logo {
+  width: 96px;
+  max-height: 36px;
+  object-fit: contain;
+}
+.discovery-page .app-menu summary {
+  height: 40px;
+  width: 36px;
+}
+.hood-modules {
+  padding: 4px 12px 6px;
+  gap: 6px;
+}
+.hood-module {
+  flex-direction: row;
+  gap: 5px;
+  min-height: 46px;
+  padding: 7px 8px;
+  border-radius: 14px 14px 10px 10px;
+  font-size: 12px;
+}
+.module-icon {
+  font-size: 22px;
+}
+.hood-module[aria-current="page"] {
+  box-shadow: 0 2px 0 #4520a0;
+}
+.discovery-page .compact-hero {
+  padding: 8px 0;
+  margin: 0;
+}
+.discovery-page .compact-hero h1 {
+  font-size: 22px;
+  margin: 0 0 4px;
+}
+.discovery-page .compact-hero .lead {
+  font-size: 13px;
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .discovery-page .topbar {
+    min-height: 44px;
+    padding: 0 10px;
+  }
+  .hood-modules {
+    padding: 3px 8px 5px;
+    gap: 5px;
+  }
+  .hood-module {
+    flex-basis: 64px;
+    min-height: 44px;
+    padding: 6px;
+    font-size: 11px;
+    gap: 4px;
+  }
+  .module-icon {
+    font-size: 20px;
+  }
+}
