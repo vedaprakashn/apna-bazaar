@@ -37,4 +37,29 @@ class SearchResultTest {
         assertEquals(id, results.getFirst().id());
         assertEquals("Idli ikkada dorukutundi", ReflectionTestUtils.invokeMethod(service, "extract", raw, "intro"));
     }
+    @Test void availabilityRequiresFreshConsistentEvidence() {
+        var service=new SearchService(null,null,null,null,null,null,new ObjectMapper(),null,null,null);
+        UUID providerId=UUID.randomUUID();
+        var a=com.apnabazaar.entity.Offering.builder().id(UUID.randomUUID()).name("Idli batter").isAvailable(true).liveStatus("available").availabilityUpdatedAt(java.time.Instant.now()).build();
+        var b=com.apnabazaar.entity.Offering.builder().id(UUID.randomUUID()).name("Dosa batter").isAvailable(true).liveStatus("available").availabilityUpdatedAt(java.time.Instant.now()).build();
+        var provider=Provider.builder().id(providerId).name("Batter shop").rating(java.math.BigDecimal.ZERO).reviewCount(0).offerings(List.of(a,b)).build();
+        String raw="{\"sellers\":[{\"id\":\""+providerId+"\",\"matchReason\":\"Batter\"}]}";
+        List<MatchedProvider> confirmed=ReflectionTestUtils.invokeMethod(service,"parseResponse",raw,List.of(provider),Map.of());
+        assertEquals("available",confirmed.getFirst().availabilityStatus());
+        b.setAvailabilityUpdatedAt(java.time.Instant.now().minusSeconds(2*86400));
+        List<MatchedProvider> stale=ReflectionTestUtils.invokeMethod(service,"parseResponse",raw,List.of(provider),Map.of());
+        assertEquals("unconfirmed",stale.getFirst().availabilityStatus());
+        b.setLiveStatus("preorder");b.setAvailabilityUpdatedAt(java.time.Instant.now());
+        List<MatchedProvider> mixed=ReflectionTestUtils.invokeMethod(service,"parseResponse",raw,List.of(provider),Map.of());
+        assertEquals("unconfirmed",mixed.getFirst().availabilityStatus());
+    }
+    @Test void soldOutOfferingCannotBeReturnedByItsIdentifier() {
+        var service=new SearchService(null,null,null,null,null,null,new ObjectMapper(),null,null,null);
+        UUID providerId=UUID.randomUUID(),offeringId=UUID.randomUUID();
+        var item=com.apnabazaar.entity.Offering.builder().id(offeringId).name("Idli").isAvailable(true).liveStatus("sold_out").build();
+        var provider=Provider.builder().id(providerId).rating(java.math.BigDecimal.ZERO).reviewCount(0).offerings(List.of(item)).build();
+        String raw="{\"sellers\":[{\"id\":\""+providerId+"\",\"offeringId\":\""+offeringId+"\",\"matchReason\":\"Idli\"}]}";
+        List<MatchedProvider> result=ReflectionTestUtils.invokeMethod(service,"parseResponse",raw,List.of(provider),Map.of());
+        assertTrue(result.isEmpty());
+    }
 }

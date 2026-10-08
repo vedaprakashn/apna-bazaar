@@ -8,7 +8,7 @@ import java.util.UUID;
 public record MatchedProvider(
     UUID id, String name, String shopName, String flatNumber, String whatsappNumber, String whatsappGroupUrl,
     String matchReason, BigDecimal rating, int reviewCount,
-    List<TodayItemDto> todayItems, String orderingStatus
+    List<TodayItemDto> todayItems, String orderingStatus, String availabilityStatus, java.time.Instant availabilityUpdatedAt
 ) {
     public static MatchedProvider from(Provider p, String matchReason) {
         return MatchedProvider.builder()

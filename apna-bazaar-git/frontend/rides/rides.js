@@ -6,7 +6,8 @@ const community = document.querySelector("#community"),
   around = document.querySelector("#around"),
   sheet = document.querySelector("#post-sheet"),
   form = document.querySelector("#post-form");
-let visitor = localStorage.getItem("heyhood-ride-visitor");
+let visitor =
+  heyhoodResident()?.id || localStorage.getItem("heyhood-ride-visitor");
 if (
   !visitor ||
   !/^([0-9a-f]{8}-)([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(visitor)
@@ -70,6 +71,27 @@ function render() {
     : "No match yet. Try another time, or post what you need.";
   for (const r of rides) {
     const card = el("article", "ride-card");
+    card.append(heyhoodSaveButton("ride", r.id));
+    card.append(
+      el(
+        "span",
+        "ride-kind",
+        r.arrangement === "shared_cab"
+          ? "SPLIT A CAB"
+          : r.arrangement === "school_run"
+            ? "SCHOOL RUN"
+            : "SHARE A LIFT",
+      ),
+    );
+    if (r.recurrence_until)
+      card.append(
+        el(
+          "p",
+          "ride-person",
+          `Repeats on weekdays ${r.weekdays} until ${r.recurrence_until}`,
+        ),
+      );
+    if (r.exchange_terms) card.append(el("p", "ride-person", r.exchange_terms));
     const route =
       r.direction === "outbound"
         ? `${community.selectedOptions[0].textContent} → ${r.destination}`
@@ -98,6 +120,17 @@ function render() {
         "p",
         "ride-person",
         `${r.name}${r.flat_number ? " · Flat " + r.flat_number : ""}`,
+      ),
+    );
+    card.append(
+      el(
+        "p",
+        "ride-person",
+        r.verification === "verified"
+          ? "Community operator approved ✓"
+          : r.verification === "demo"
+            ? "Fictional example"
+            : "Resident verification pending",
       ),
     );
     const badges = el("div", "ride-badges");
@@ -134,7 +167,7 @@ function render() {
             `/api/${community.value}/rides/${r.id}/close`,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: heyhoodResidentHeaders(),
               body: JSON.stringify({ visitorId: visitor }),
             },
           );
@@ -161,6 +194,7 @@ async function load() {
   controller?.abort();
   controller = new AbortController();
   const slug = community.value;
+  heyhoodSkeletons(grid);
   status.textContent = "Finding your way…";
   const q = new URLSearchParams({
     kind,
@@ -169,7 +203,12 @@ async function load() {
     visitorId: visitor,
     seats: String(minimumSeats),
   });
-  if (around.value) q.set("at", when(around.value));
+  if (around.value) {
+    q.set("at", when(around.value));
+    if (params.get("until")) q.set("until", params.get("until"));
+  }
+  if (document.querySelector("#arrangement-filter").value)
+    q.set("arrangement", document.querySelector("#arrangement-filter").value);
   document
     .querySelectorAll("[data-kind]")
     .forEach((b) =>
@@ -187,7 +226,10 @@ async function load() {
   } catch (e) {
     if (e.name !== "AbortError") {
       grid.replaceChildren();
-      status.textContent = "Couldn’t load rides. Try refreshing.";
+      status.textContent = "Couldn’t load rides. ";
+      const retry = el("button", "save-action", "Retry ↻");
+      retry.onclick = load;
+      status.append(retry);
     }
   }
 }
@@ -259,11 +301,30 @@ form.onsubmit = async (e) => {
     flatNumber: document.querySelector("#post-flat").value,
     notes: document.querySelector("#post-notes").value,
     publish: document.querySelector("#publish").checked,
+    arrangement: document.querySelector("#post-arrangement").value,
+    recurrenceUntil: document.querySelector("#repeat-enabled").checked
+      ? document.querySelector("#repeat-until").value
+      : null,
+    weekdays: document.querySelector("#repeat-enabled").checked
+      ? [...document.querySelectorAll("[name=repeat-day]:checked")].map((n) =>
+          Number(n.value),
+        )
+      : null,
+    exchangeTerms: document.querySelector("#exchange-terms").value,
   };
+  if (body.weekdays && !body.weekdays.length) {
+    document.querySelector("#post-status").textContent =
+      "Choose at least one repeat day.";
+    posting = false;
+    submit.disabled = false;
+    community.disabled = false;
+    document.querySelector("#close-sheet").disabled = false;
+    return;
+  }
   try {
     const response = await fetch(`/api/${slug}/rides`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: heyhoodResidentHeaders(),
       body: JSON.stringify(body),
     });
     const result = await response.json();
@@ -285,4 +346,13 @@ form.onsubmit = async (e) => {
     document.querySelector("#close-sheet").disabled = false;
   }
 };
+if (params.get("arrangement"))
+  document.querySelector("#arrangement-filter").value =
+    params.get("arrangement");
+document.querySelector("#arrangement-filter").onchange = load;
+document.querySelector("#repeat-enabled").onchange = (e) => {
+  document.querySelector("#repeat-fields").hidden = !e.target.checked;
+  document.querySelector("#repeat-until").required = e.target.checked;
+};
+
 load();

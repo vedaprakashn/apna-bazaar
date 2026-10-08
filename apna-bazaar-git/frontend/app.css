@@ -2202,3 +2202,106 @@ body {
     font-size: 20px;
   }
 }
+.save-action {
+  background: #f2ebff !important;
+  color: #6336f5 !important;
+  border: 1px solid #ded0f6 !important;
+  border-radius: 10px;
+  padding: 7px 10px;
+  margin: 8px 6px 0 0;
+  font: inherit;
+  font-size: 12px;
+  min-height: 40px;
+  cursor: pointer;
+}
+.save-action[aria-pressed="true"] {
+  background: #e3f5ee !important;
+  color: #14684d !important;
+}
+.save-action:disabled {
+  opacity: 0.55;
+}
+.resident-notice {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  background: #362053;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 14px;
+  max-width: 90vw;
+  font-size: 13px;
+  box-shadow: 0 5px 20px #0002;
+}
+.offline-banner {
+  background: #fff0cc;
+  color: #725211;
+  padding: 8px 14px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.offline-banner[hidden],
+.resident-notice[hidden] {
+  display: none;
+}
+.availability-status {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: #f0e8ff;
+  color: #6336f5;
+  font-weight: 800;
+  font-size: 12px;
+}
+.repeat-day {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin: 5px !important;
+}
+.repeat-day input {
+  width: 18px !important;
+  margin: 0 !important;
+}
+#repeat-fields fieldset {
+  border: 1px solid #e1d5f6;
+  border-radius: 12px;
+  padding: 8px;
+}
+.loading-skeleton {
+  background: linear-gradient(90deg, #f1ebf8, #fff, #f1ebf8);
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.2s linear infinite;
+  border-radius: 16px;
+  height: 86px;
+  margin: 10px 0;
+}
+@keyframes skeleton-pulse {
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-skeleton {
+    animation: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .activity-page input,
+  .activity-page textarea,
+  .rides-page input,
+  .rides-page textarea,
+  .help-page input {
+    font-size: 16px;
+  }
+  .activity-card p {
+    font-size: 14px;
+  }
+  .activity-tabs button {
+    min-height: 44px;
+  }
+}

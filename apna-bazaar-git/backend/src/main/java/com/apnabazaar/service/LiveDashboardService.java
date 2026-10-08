@@ -111,7 +111,7 @@ public class LiveDashboardService {
             """, providerId, communityId);
         if (providers.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found in this community");
         var offerings = jdbc.queryForList("""
-            SELECT o.id,o.name,o.description,o.base_price AS price,o.unit,o.is_available AS available,
+            SELECT o.id,o.name,o.description,o.base_price AS price,o.unit,o.is_available AS available,o.live_status,o.availability_updated_at,
                    c.name AS category,c.icon_emoji AS emoji
             FROM offering o LEFT JOIN category c ON c.id=o.category_id
             WHERE o.provider_id=? ORDER BY o.sort_order,o.name

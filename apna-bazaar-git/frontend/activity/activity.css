@@ -1,0 +1,192 @@
+.activity-page {
+  background: #faf7ff;
+}
+.activity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 16px;
+  background: #fff;
+  min-height: 44px;
+}
+.activity-header img {
+  width: 96px;
+  display: block;
+}
+.activity-header strong {
+  font-size: 13px;
+  color: #6336f5;
+}
+.activity-main {
+  max-width: 1080px;
+  margin: auto;
+  padding: 18px 16px 40px;
+}
+.activity-intro h1 {
+  font-size: 28px;
+  margin: 10px 0;
+}
+.activity-intro p {
+  color: #756981;
+  font-size: 14px;
+}
+.activity-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 20px 0;
+}
+.activity-tabs button {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #e3d7fa;
+  border-radius: 14px;
+  background: white;
+  color: #6336f5;
+  font-weight: 800;
+}
+.activity-tabs button[aria-pressed="true"] {
+  background: #6336f5;
+  color: white;
+}
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 14px;
+}
+.activity-card {
+  border: 1px solid #e5dafa;
+  border-radius: 20px;
+  padding: 20px;
+  background: #fff;
+  margin: 12px 0;
+}
+.activity-card h2 {
+  font-size: 18px;
+  margin: 5px 0 12px;
+}
+.activity-card h3 {
+  font-size: 16px;
+  margin: 10px 0;
+}
+.activity-card p {
+  font-size: 13px;
+  line-height: 1.55;
+}
+.activity-card button,
+#new-need,
+.activity-main form button[type="submit"],
+dialog button[type="submit"] {
+  padding: 11px 16px;
+  border: 0;
+  border-radius: 12px;
+  color: white;
+  background: #6336f5;
+  font-weight: 750;
+  min-height: 44px;
+  cursor: pointer;
+}
+.activity-card button + button {
+  margin-left: 6px;
+}
+.activity-card a {
+  color: #6336f5;
+  font-weight: 750;
+}
+.activity-main label,
+dialog label {
+  display: block;
+  font-size: 13px;
+  margin: 14px 0;
+}
+.activity-main input,
+dialog input,
+dialog textarea {
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid #daceee;
+  border-radius: 12px;
+  padding: 12px;
+  font: inherit;
+  min-width: 0;
+}
+.check {
+  display: flex !important;
+  gap: 10px;
+  align-items: center;
+}
+.check input {
+  width: 18px !important;
+  flex: 0 0 18px;
+  margin: 0;
+  min-height: 18px;
+}
+.muted {
+  color: #786b85;
+  font-size: 12px;
+  line-height: 1.5;
+}
+dialog {
+  border: 0;
+  border-radius: 24px;
+  padding: 22px;
+  width: min(100%, 540px);
+  max-height: 88dvh;
+  overflow: auto;
+}
+dialog::backdrop {
+  background: #24133880;
+}
+.sheet-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sheet-title h2 {
+  font-size: 20px;
+}
+.sheet-title button {
+  width: 44px;
+  height: 44px;
+  background: #eee5ff;
+  border: 0;
+  border-radius: 12px;
+  color: #6336f5;
+}
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.empty-card {
+  padding: 24px;
+  border: 1px dashed #d0bbed;
+  border-radius: 20px;
+  color: #716080;
+  background: #fff;
+}
+.status-pill {
+  display: inline-block;
+  background: #eee6ff;
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 11px;
+  color: #6336f5;
+}
+@media (max-width: 600px) {
+  .activity-main {
+    padding: 14px 12px;
+  }
+  .activity-intro h1 {
+    font-size: 23px;
+  }
+  .activity-grid {
+    grid-template-columns: 1fr;
+  }
+  dialog {
+    position: fixed;
+    inset: auto 0 0;
+    margin: 0;
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding-bottom: max(22px, env(safe-area-inset-bottom));
+  }
+}

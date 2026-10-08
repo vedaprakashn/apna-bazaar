@@ -7,7 +7,8 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-compact1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
+    <script src="../resident.js?v=1"></script>
   </head>
   <body class="discovery-page">
     <header class="topbar">
@@ -23,6 +24,9 @@
         ><a class="desktop-navigation" href="../admin/campaigns.html"
           >Campaigns ↗</a
         >
+        <a class="desktop-navigation" href="../admin/residents.html"
+          >Resident review ↗</a
+        >
       </nav>
       <select id="community" hidden aria-label="Community">
         <option value="tridasa">MyHome Tridasa</option>
@@ -30,7 +34,7 @@
       </select>
     </header>
     <nav class="hood-modules" aria-label="HeyHood modules"></nav>
-    <script src="../modules.js?v=2" defer></script>
+    <script src="../modules.js?v=3" defer></script>
     <main class="container">
       <section class="hero compact-hero">
         <div>
@@ -251,6 +255,7 @@
             moduleCard(entry.item, entry.module);
           else if (entry.kind === "ride") rideCard(entry.ride);
           else if (entry.kind === "ride-help") rideHelp(entry.query);
+          else if (entry.kind === "need-help") needHelp(entry.query);
           else if (entry.kind === "urgent-help") urgentHelpCard();
           else if (entry.kind === "promotion")
             renderPromotion(entry.provider, entry);
@@ -502,13 +507,33 @@
         stream.append(card);
         return card;
       }
+      function needHelp(query) {
+        const card = el("div", "result-card need-help");
+        card.append(el("h3", "", "Still looking? Put it in your hood."));
+        card.append(
+          el(
+            "p",
+            "contact-note",
+            "Let neighbours respond to a searchable request. Nothing is posted until you confirm.",
+          ),
+        );
+        const link = el("a", "contact", "Post this need ↗");
+        link.href = heyhoodActivityUrl({ view: "requests", compose: query });
+        card.append(link);
+        card.chatEntry = { kind: "need-help", query };
+        stream.append(card);
+      }
       function moduleCard(item, module) {
         const card = el("div", "result-card module-card");
         card.append(
           el(
             "span",
             "tag",
-            module === "plans" ? "Hood Plans · demo" : "From your hood · demo",
+            module === "plans"
+              ? "Hood Plans · demo"
+              : module === "requests"
+                ? "Hood request"
+                : "From your hood · demo",
           ),
         );
         card.append(el("h3", "", item.title));
@@ -536,15 +561,20 @@
         const link = el(
           "a",
           "contact",
-          module === "plans"
-            ? "Check the plan ↗"
-            : item.cta_text || "See the shop ↗",
+          module === "requests"
+            ? "I can help ↗"
+            : module === "plans"
+              ? "Check the plan ↗"
+              : item.cta_text || "See the shop ↗",
         );
         link.href =
-          module === "plans"
-            ? `../plans/index.html?community=${encodeURIComponent(community.value)}&plan=${encodeURIComponent(item.id)}`
-            : `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(item.provider_id)}`;
+          module === "requests"
+            ? heyhoodActivityUrl({ view: "requests", request: item.id })
+            : module === "plans"
+              ? `../plans/index.html?community=${encodeURIComponent(community.value)}&plan=${encodeURIComponent(item.id)}`
+              : `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(item.provider_id)}`;
         card.append(link);
+        if (module === "plans") card.append(heyhoodSaveButton("plan", item.id));
         card.chatEntry = { kind: "module", item, module };
         stream.append(card);
       }
@@ -552,7 +582,15 @@
         const card = el("div", "ride-chat-help");
         const link = el("a", "", "Open Hood Rides ↗");
         const params = new URLSearchParams({ community: community.value });
-        for (const key of ["kind", "direction", "destination", "at", "seats"])
+        for (const key of [
+          "kind",
+          "direction",
+          "destination",
+          "at",
+          "seats",
+          "arrangement",
+          "until",
+        ])
           if (query[key]) params.set(key, query[key]);
         link.href = `../rides/index.html?${params}`;
         card.append(
@@ -610,6 +648,15 @@
             "Pilot · shared test contact. Ride not confirmed.",
           ),
         );
+        card.append(heyhoodSaveButton("ride", r.id));
+        if (r.recurrence_until)
+          card.append(
+            el(
+              "p",
+              "contact-note",
+              `Repeats until ${r.recurrence_until} · ${r.exchange_terms || "Agree the routine together"}`,
+            ),
+          );
         card.chatEntry = { kind: "ride", ride: r };
         stream.append(card);
         return card;
@@ -744,6 +791,24 @@
           ),
         );
         if (item) card.append(el("p", "offering-summary", item.offering));
+        const fresh =
+          p.availabilityUpdatedAt &&
+          Date.now() - new Date(p.availabilityUpdatedAt) < 86400000;
+        const status =
+          fresh && p.availabilityStatus === "available"
+            ? "Available today"
+            : fresh && p.availabilityStatus === "preorder"
+              ? "Taking orders"
+              : "Check availability";
+        card.append(el("span", "availability-status", status));
+        if (p.availabilityUpdatedAt)
+          card.append(
+            el(
+              "p",
+              "contact-note",
+              `Last confirmed ${new Date(p.availabilityUpdatedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST`,
+            ),
+          );
         const footer = el("div", "seller-footer");
         footer.append(
           el(
@@ -778,6 +843,10 @@
               "Pilot · Messages reach the shared test contact.",
             ),
           );
+        card.append(
+          heyhoodSaveButton("provider", p.id),
+          heyhoodSaveButton("provider", p.id, true),
+        );
         card.chatEntry = { kind: "result", provider: p, eventId, item };
         stream.append(card);
         return card;
@@ -832,10 +901,25 @@
         delete pending.chatEntry;
         saveChat();
         try {
-          const r = await fetch(
-            `${API_BASE}/api/${community.value}/search?q=${encodeURIComponent(q)}&sessionId=${sessionId}`,
-            { signal: activeSearch.signal },
-          );
+          const r = await fetch(`${API_BASE}/api/${community.value}/search`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              q,
+              sessionId,
+              history: [...stream.children]
+                .map((n) => n.chatEntry)
+                .filter(
+                  (e) =>
+                    e?.kind === "message" &&
+                    e.type === "user" &&
+                    e.text !== "Message not sent",
+                )
+                .map((e) => e.text)
+                .slice(-7, -1),
+            }),
+            signal: activeSearch.signal,
+          });
           if (r.status === 429) {
             const seconds = Number(r.headers.get("Retry-After")) || 60;
             pending.textContent = `A little breather, neighbour — you’ve reached the 10-message limit. Try again in ${seconds} seconds.`;
@@ -870,6 +954,8 @@
             urgentHelpCard();
           }
           message(data.intro || "Here’s what I found in your community.");
+          if (data.totalResults === 0 && !data.urgentHelp)
+            needHelp(data.searchIntent || q);
           if (data.rides) {
             for (const ride of data.rides) rideCard(ride);
             rideHelp(data.rideQuery || {});
@@ -897,7 +983,13 @@
             err.name === "AbortError"
               ? "Search stopped. What are we finding next?"
               : "We couldn’t complete that search. Please try again shortly.";
-          if (err.name === "AbortError" && !input.value) input.value = q;
+          if (!input.value) input.value = q;
+          if (err.name !== "AbortError") {
+            const retry = el("button", "save-action", "Retry search ↻");
+            retry.type = "button";
+            retry.onclick = () => ask(q);
+            pending.append(retry);
+          }
         } finally {
           busy = false;
           activeSearch = null;

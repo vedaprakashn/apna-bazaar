@@ -1,7 +1,8 @@
 const community = document.querySelector("#community"),
   grid = document.querySelector("#plans"),
   status = document.querySelector("#status");
-let visitor = localStorage.getItem("heyhood-plan-visitor");
+let visitor =
+  heyhoodResident()?.id || localStorage.getItem("heyhood-plan-visitor");
 if (
   !visitor ||
   !/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
@@ -35,6 +36,7 @@ function render() {
   for (const p of shown) {
     const card = el("article", "plan-card");
     card.dataset.id = p.id;
+    card.append(heyhoodSaveButton("plan", p.id));
     const date = new Date(p.starts_at),
       day = new Intl.DateTimeFormat("en-IN", {
         timeZone: "Asia/Kolkata",
@@ -158,7 +160,7 @@ async function load() {
   controller = new AbortController();
   const slug = community.value;
   plans = [];
-  grid.replaceChildren();
+  heyhoodSkeletons(grid);
   status.textContent = "Loading hood plans…";
   history.replaceState(null, "", `?community=${slug}`);
   try {
@@ -171,8 +173,7 @@ async function load() {
     plans = data;
     render();
   } catch (e) {
-    if (e.name !== "AbortError")
-      status.textContent = "Couldn’t load plans. Refresh to try again.";
+    if(e.name!=="AbortError") { grid.replaceChildren();status.textContent="Couldn’t load plans. ";const retry=el("button","save-action","Retry ↻");retry.onclick=load;status.append(retry); }
   }
 }
 document.querySelectorAll("[data-filter]").forEach(

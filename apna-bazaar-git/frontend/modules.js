@@ -9,6 +9,7 @@
     ["rides", "Rides", "🚘", "Hood Rides"],
     ["plans", "Plans", "🎉", "Hood Plans"],
     ["help", "Help", "🛟", "Help and contacts"],
+    ["activity", "My stuff", "🫶", "My activity"],
   ];
   const selected =
     new URLSearchParams(location.search).get("explore") === "shops"
