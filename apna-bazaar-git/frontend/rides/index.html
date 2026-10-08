@@ -9,12 +9,13 @@
     <title>Hood Rides · HeyHood</title>
     <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
     <link rel="stylesheet" href="../help/help.css?v=4" />
-    <link rel="stylesheet" href="rides.css?v=1" />
+    <link rel="stylesheet" href="rides.css?v=20261008-polish1" />
     <script src="../resident.js?v=1"></script>
   </head>
   <body class="rides-page">
     <header class="help-header">
-      <strong>Hood Rides ↗</strong
+      <a class="module-brand" href="../chatbot/index.html"
+        ><img src="../assets/heyhood-logo.png" alt="HeyHood" /></a
       ><select id="community" hidden aria-label="Community">
         <option value="tridasa">MyHome Tridasa</option>
         <option value="sayuk">MyHome Sayuk</option>
@@ -24,9 +25,9 @@
     <script src="../modules.js?v=3" defer></script>
     <main class="rides-main">
       <section class="rides-intro">
-        <span class="help-kicker">SAME HOOD. SHARED JOURNEYS.</span>
-        <h1>Going somewhere?</h1>
-        <p>Find a neighbour heading your way.</p>
+        <span class="help-kicker">YOUR HOOD, ON THE MOVE.</span>
+        <h1>Hood Rides</h1>
+        <p>Same way? Go together.</p>
         <div class="ride-new-actions">
           <button data-new="request">Need a ride</button
           ><button data-new="offer">Offering a ride</button>
@@ -40,41 +41,49 @@
         <button data-kind="offer" aria-pressed="true">Rides offered</button
         ><button data-kind="request" aria-pressed="false">Ride requests</button>
       </div>
-      <div class="ride-filters">
+      <div class="ride-search">
         <label
           ><span class="sr-only">Destination</span
           ><input
             id="destination"
             type="search"
             maxlength="120"
-            placeholder="Airport, HITEC City…" /></label
-        ><label
-          ><span class="sr-only">Travel direction</span
-          ><select id="direction">
-            <option value="outbound">From my hood</option>
-            <option value="inbound">To my hood</option>
-          </select></label
-        ><label
-          ><span class="sr-only">Around departure time in IST</span
-          ><input
-            id="around"
-            type="datetime-local"
-            aria-label="Around departure time in IST"
+            placeholder="Where are you heading?"
         /></label>
       </div>
-      <label class="ride-filter-note"
-        >Trip type
-        <select id="arrangement-filter">
-          <option value="">Any trip</option>
-          <option value="lift">Share a lift</option>
-          <option value="shared_cab">Split a cab</option>
-          <option value="school_run">School runs</option>
-        </select></label
-      >
+      <details class="ride-filter-panel" id="ride-filter-panel">
+        <summary>Time & trip filters <span id="filter-count"></span></summary>
+        <div class="ride-filters">
+          <label
+            >Direction<select id="direction">
+              <option value="outbound">From my hood</option>
+              <option value="inbound">To my hood</option>
+            </select></label
+          >
+          <label
+            >Around this time (IST)<input
+              id="around"
+              type="datetime-local"
+              aria-label="Around departure time in IST"
+          /></label>
+          <label
+            >Trip type<select id="arrangement-filter">
+              <option value="">Any trip</option>
+              <option value="lift">Share a lift</option>
+              <option value="shared_cab">Split a cab</option>
+              <option value="school_run">School runs</option>
+            </select></label
+          >
+        </div>
+        <p class="ride-filter-note">
+          Times are in IST. Matches are within an hour of your chosen time.
+        </p>
+        <button type="button" class="clear-filters" id="clear-filters">
+          Reset filters
+        </button>
+      </details>
       <button id="seat-filter" hidden></button>
-      <p class="ride-filter-note">
-        Times are in IST. Picking a time finds departures within an hour.
-      </p>
+
       <p id="status" role="status">Loading rides…</p>
       <section
         id="rides"
@@ -232,6 +241,6 @@
     </dialog>
     <script src="../contact.js?v=20261007-professional1"></script>
     <script src="contact.js?v=1"></script>
-    <script src="rides.js?v=3"></script>
+    <script src="rides.js?v=20261008-polish1"></script>
   </body>
 </html>

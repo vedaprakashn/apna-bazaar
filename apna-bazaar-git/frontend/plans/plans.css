@@ -34,6 +34,7 @@
   margin: 22px 0;
 }
 .plans-filter button {
+  border: 0;
   background: #f0e9fa;
   color: #604b7a;
   border-radius: 12px;
@@ -134,6 +135,7 @@
   margin-top: 18px;
 }
 .plan-actions button {
+  border: 0;
   flex: 1;
   min-height: 48px;
   border-radius: 14px;
@@ -182,5 +184,171 @@
   }
   .plans-intro h1 {
     font-size: 27px;
+  }
+}
+
+/* Keep participation prominent, with saved plans as a quieter secondary action. */
+.module-brand img {
+  display: block;
+  width: 120px;
+  height: auto;
+}
+.plans-page .help-header {
+  padding: 10px max(16px, calc((100vw - 1120px) / 2));
+}
+.plans-main {
+  padding-top: 18px;
+}
+.plans-intro {
+  background: none;
+  padding: 8px 0 18px;
+  border-radius: 0;
+  border-bottom: 1px solid #e6dcf8;
+}
+.plans-intro .help-kicker {
+  color: #7859a2;
+  font-size: 10px;
+}
+.plans-intro h1 {
+  font-size: 28px;
+  letter-spacing: -1px;
+  margin: 8px 0;
+}
+.plans-intro p {
+  color: #766b85;
+}
+.plans-demo {
+  margin: 14px 0;
+  background: #fff6dc;
+  color: #7b6238;
+  padding: 10px 12px;
+  border-radius: 12px;
+  line-height: 1.5;
+}
+.plans-filter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: #ebe5f4;
+  padding: 4px;
+  border-radius: 14px;
+  margin: 18px 0 14px;
+}
+.plans-filter button {
+  border: 0;
+  background: transparent;
+  min-height: 44px;
+  font-weight: 700;
+}
+.plans-filter button[aria-pressed="true"] {
+  background: white;
+  color: #542dc0;
+  box-shadow: 0 2px 6px #32155010;
+}
+.plan-grid {
+  gap: 14px;
+}
+.plan-card {
+  padding: 20px;
+  border-radius: 20px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  box-shadow: 0 4px 18px #39215b05;
+}
+.plan-card h2 {
+  font-size: 21px;
+  line-height: 1.35;
+  letter-spacing: -0.5px;
+  margin: 14px 0 8px;
+}
+.plan-category {
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.plan-date {
+  padding: 8px 10px;
+  background: #f1eaff;
+  color: #6037aa;
+  border-radius: 10px;
+}
+.plan-description {
+  margin: 8px 0 14px;
+}
+.plan-location,
+.plan-time {
+  margin: 6px 0;
+  font-size: 12px;
+}
+.plan-count {
+  margin-top: 18px;
+  justify-content: space-between;
+}
+.plan-count strong {
+  font-size: 19px;
+}
+.plan-progress {
+  height: 6px;
+  margin-top: 8px;
+}
+.plan-state {
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 8px 0 0;
+}
+.plan-actions {
+  margin-top: 16px;
+  gap: 8px;
+}
+.plan-actions button {
+  border: 0;
+  min-height: 44px;
+  font-size: 13px;
+  border-radius: 12px;
+}
+.plan-pass {
+  background: white;
+  border: 1px solid #e3d8f2;
+}
+.plan-actions button[aria-pressed="true"] {
+  outline: none;
+  box-shadow: inset 0 0 0 2px #482085;
+}
+.plan-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #f0e9f7;
+  padding-top: 10px;
+  margin-top: 14px;
+}
+.plan-footer .save-action {
+  margin: 0;
+  min-height: 44px;
+  white-space: nowrap;
+}
+.plan-disclaimer {
+  margin: 0;
+  line-height: 1.5;
+  text-align: right;
+  max-width: 170px;
+}
+.plans-page button:focus-visible,
+.plans-page a:focus-visible {
+  outline: 3px solid #e6b83b;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .plans-main {
+    padding: 12px 14px 28px;
+  }
+  .plan-card {
+    padding: 18px;
+  }
+  .plans-intro h1 {
+    font-size: 26px;
+  }
+  .plans-filter {
+    margin-top: 14px;
   }
 }
