@@ -35,6 +35,43 @@
         ><button data-view="profile">My profile</button>
       </div>
       <p id="status" role="status"></p>
+      <section class="activity-card" id="push-preferences" hidden>
+        <h2>A little buzz from your hood 🔔</h2>
+        <p>
+          Shop promos, right on your phone. Your choice—up to three a day, at
+          least four hours apart, never between 10pm and 8am IST.
+        </p>
+        <p id="push-state" role="status"></p>
+        <a
+          class="promotion-link"
+          id="push-toggle"
+          href="heyhood://notifications/enable"
+          >Turn notifications on ↗</a
+        >
+        <a class="chip" href="heyhood://notifications/settings"
+          >Phone settings</a
+        >
+      </section>
+      <script>
+        function refreshPushPreferences() {
+          const s = window.heyhoodPushState;
+          if (!s?.supported) return;
+          document.getElementById("push-preferences").hidden = false;
+          document.getElementById("push-state").textContent = s.enabled
+            ? s.synced
+              ? "On for this phone. You’re in control."
+              : "On for this phone. Connecting—reopen the app if it doesn’t sync."
+            : "Off for this phone. Chat and browsing still work as usual.";
+          const toggle = document.getElementById("push-toggle");
+          toggle.href =
+            "heyhood://notifications/" + (s.enabled ? "disable" : "enable");
+          toggle.textContent = s.enabled
+            ? "Turn notifications off"
+            : "Turn notifications on ↗";
+        }
+        window.addEventListener("heyhood-push-state", refreshPushPreferences);
+        refreshPushPreferences();
+      </script>
       <section id="profile-view" hidden>
         <form id="profile-form" class="activity-card">
           <h2>Your resident profile</h2>

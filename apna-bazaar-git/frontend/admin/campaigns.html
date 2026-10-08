@@ -36,6 +36,21 @@
         </p>
       </section>
       <div id="status" class="demo-notice" role="status"></div>
+      <section class="panel" style="margin-bottom: 20px">
+        <h2>Phone notifications 🔔</h2>
+        <p>
+          Opt-in Android devices only. Enable push per campaign below. Up to
+          three notifications per phone per day, four hours apart, 8am–10pm IST.
+          Existing in-chat promotions keep their own timing.
+        </p>
+        <button class="chip" type="button" id="loadPushStats">
+          Check Firebase &amp; notification analytics
+        </button>
+        <p id="pushSummary" role="status">
+          Enter your admin key below to check sending and opens.
+        </p>
+        <div id="pushStats"></div>
+      </section>
       <div class="layout campaign-layout">
         <section class="panel">
           <div class="panel-head">
@@ -285,6 +300,52 @@
             }
           };
           actions.append(button, toggle);
+          const push = el(
+            "button",
+            "chip",
+            c.push_enabled ? "Disable phone push" : "Enable phone push",
+          );
+          push.type = "button";
+          push.onclick = async () => {
+            push.disabled = true;
+            try {
+              await pushRequest(`/campaigns/${c.id}`, "PATCH", {
+                enabled: !c.push_enabled,
+              });
+              await load();
+            } catch (e) {
+              status(e.message);
+            } finally {
+              push.disabled = false;
+            }
+          };
+          const send = el("button", "chip", "Send phone notification ↗");
+          send.type = "button";
+          send.disabled = !c.push_enabled || !c.active;
+          send.onclick = async () => {
+            if (
+              !confirm(
+                "Send this campaign to opted-in phones in the selected community? Quiet hours, campaign timing and daily limits still apply.",
+              )
+            )
+              return;
+            send.disabled = true;
+            try {
+              const result = await pushRequest(
+                `/campaigns/${c.id}/send`,
+                "POST",
+              );
+              status(
+                `${result.accepted} accepted by Firebase, ${result.failed} failed, ${result.unknown} uncertain. Zero may mean no opted-in devices, quiet hours or a timing/limit restriction.`,
+              );
+              await loadPushStats();
+            } catch (e) {
+              status(e.message);
+            } finally {
+              send.disabled = !c.push_enabled || !c.active;
+            }
+          };
+          actions.append(push, send);
           card.append(actions);
           field("campaigns").append(card);
         }
@@ -316,6 +377,54 @@
           status(e.message);
         }
       }
+      async function pushRequest(path, method = "GET", body) {
+        const key = field("adminKey").value.trim();
+        if (!key) throw Error("Enter your admin key first.");
+        const response = await fetch(
+          `${api}/api/${community.value}/admin/push${path}`,
+          {
+            method,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + key,
+            },
+            ...(body ? { body: JSON.stringify(body) } : {}),
+          },
+        );
+        if (!response.ok)
+          throw Error(
+            response.status === 503
+              ? "Configure FIREBASE_SERVICE_ACCOUNT_JSON and CAMPAIGN_ADMIN_TOKEN in Railway."
+              : "Could not complete that notification action. Check your key and campaign state.",
+          );
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
+      }
+      async function loadPushStats() {
+        try {
+          const result = await pushRequest("");
+          field("pushSummary").textContent =
+            `${result.configured ? "Firebase credentials loaded" : "Firebase sending not configured"} · ${result.optedInDevices} opted-in phones in this community. Accepted is not proof of delivery or reading.`;
+          field("pushStats").replaceChildren();
+          for (const row of result.campaigns.filter(
+            (x) =>
+              x.push_enabled ||
+              Number(x.accepted) ||
+              Number(x.failed) ||
+              Number(x.unknown),
+          ))
+            field("pushStats").append(
+              el(
+                "p",
+                "",
+                `${row.title}: ${row.accepted} accepted · ${row.opened} opened · ${row.foreground_received} received in foreground · ${row.failed} failed · ${row.unknown} uncertain`,
+              ),
+            );
+        } catch (e) {
+          field("pushSummary").textContent = e.message;
+        }
+      }
+      field("loadPushStats").onclick = loadPushStats;
       field("categoryFilter").onchange = () => options();
       field("newCampaign").onclick = reset;
       field("campaignForm").onsubmit = async (e) => {
