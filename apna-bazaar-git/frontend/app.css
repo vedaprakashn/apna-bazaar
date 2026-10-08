@@ -2086,3 +2086,53 @@ body {
     transition: none;
   }
 }
+
+/* Shops is a full module view beneath the shared navigation, not an overlay. */
+.discovery-page.shops-mode > .container {
+  display: none;
+}
+.discovery-page.shops-mode .explore-sheet {
+  position: static;
+  width: min(100%, 1100px);
+  max-height: none;
+  min-height: 0;
+  flex: 1;
+  margin: 0 auto;
+  padding: 24px;
+  border-radius: 20px;
+  overflow-y: auto;
+  box-shadow: none;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+.discovery-page .explore-sheet[hidden] {
+  display: none;
+}
+.shops-mode .sheet-handle {
+  display: none;
+}
+.shops-mode .sheet-heading h2 {
+  font-size: 24px;
+}
+.shops-mode .sheet-close {
+  width: auto;
+  padding: 8px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.shops-mode .explore-sheet .browse {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+@media (max-width: 760px) {
+  .discovery-page.shops-mode .explore-sheet {
+    width: 100%;
+    padding: 18px 14px;
+    border-radius: 20px 20px 0 0;
+  }
+  .shops-mode .sheet-heading h2 {
+    font-size: 21px;
+  }
+  .shops-mode .explore-sheet .browse {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
