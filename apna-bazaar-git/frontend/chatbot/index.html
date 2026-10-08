@@ -7,7 +7,7 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-modules1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-shops1" />
   </head>
   <body class="discovery-page">
     <header class="topbar">
@@ -70,7 +70,7 @@
       </select>
     </header>
     <nav class="hood-modules" aria-label="HeyHood modules"></nav>
-    <script src="../modules.js?v=1" defer></script>
+    <script src="../modules.js?v=2" defer></script>
     <main class="container">
       <section class="hero compact-hero">
         <div>
@@ -105,7 +105,6 @@
             <button
               type="button"
               class="mobile-explore"
-              aria-haspopup="dialog"
               aria-controls="explore-sheet"
             >
               Explore shops ✦
@@ -185,7 +184,8 @@
         ><span>Discover → connect → support a neighbour</span>
       </footer>
     </main>
-    <dialog
+    <section
+      hidden
       id="explore-sheet"
       class="explore-sheet"
       aria-labelledby="explore-title"
@@ -193,11 +193,11 @@
       <div class="sheet-handle" aria-hidden="true"></div>
       <div class="sheet-heading">
         <div>
-          <h2 id="explore-title">Explore shops & services ✦</h2>
-          <p>Pick a vibe. Aapta finds the people.</p>
+          <h2 id="explore-title">Shops & services ✦</h2>
+          <p>Find your next favourite, right in your hood.</p>
         </div>
-        <button type="button" class="sheet-close" aria-label="Close Explore">
-          ✕
+        <button type="button" class="sheet-close" aria-label="Return to chat">
+          ← Chat
         </button>
       </div>
       <label class="sr-only" for="category-search">Search categories</label>
@@ -212,7 +212,7 @@
         No categories match. Try another word, or ask Aapta.
       </p>
       <p class="sheet-note">Pilot catalog · Listings are demo examples.</p>
-    </dialog>
+    </section>
     <div id="toast" class="toast" role="status" hidden></div>
     <script src="../contact.js?v=20261007-professional1"></script>
     <script src="../rides/contact.js?v=1"></script>
@@ -367,33 +367,28 @@
         document.getElementById("category-empty").hidden =
           visible > 0 || !query;
       }
+      function setShopsView(open) {
+        exploreSheet.hidden = !open;
+        document.body.classList.toggle("shops-mode", open);
+        const url = new URL(location.href);
+        if (open) url.searchParams.set("explore", "shops");
+        else url.searchParams.delete("explore");
+        history.replaceState(null, "", url);
+        for (const link of document.querySelectorAll(".hood-module")) {
+          if (link.dataset.module === (open ? "shops" : "chatbot"))
+            link.setAttribute("aria-current", "page");
+          else link.removeAttribute("aria-current");
+        }
+        if (!open) requestAnimationFrame(scrollChatToEnd);
+      }
       document.querySelector(".mobile-explore").onclick = () => {
         document.querySelector(".operator-menu").open = false;
         document.getElementById("query").blur();
-        document.getElementById("category-search").value = "";
+        setShopsView(true);
         filterCategories();
-        exploreSheet.showModal();
-        document.querySelector(".sheet-close").focus();
       };
       document.querySelector(".sheet-close").onclick = () =>
-        exploreSheet.close();
-      exploreSheet.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          exploreSheet.close();
-        }
-      });
-      exploreSheet.addEventListener("click", (event) => {
-        if (event.target === exploreSheet) {
-          const rect = exploreSheet.getBoundingClientRect();
-          if (
-            event.clientY < rect.top ||
-            event.clientX < rect.left ||
-            event.clientX > rect.right
-          )
-            exploreSheet.close();
-        }
-      });
+        setShopsView(false);
       document
         .getElementById("category-search")
         .addEventListener("input", filterCategories);
@@ -847,7 +842,7 @@
       }
       async function ask(q) {
         if (busy) return;
-        if (exploreSheet.open) exploreSheet.close();
+        if (!exploreSheet.hidden) setShopsView(false);
         document.getElementById("query").value = q;
         document.getElementById("form").requestSubmit();
       }
@@ -1012,7 +1007,7 @@
           !document.hidden &&
           !busy &&
           !suppressPromotions &&
-          !exploreSheet.open &&
+          exploreSheet.hidden &&
           !document.querySelector(".operator-menu").open &&
           document.activeElement !== document.getElementById("query") &&
           !document.getElementById("query").value.trim() &&
