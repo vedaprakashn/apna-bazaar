@@ -403,3 +403,8 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 
 - User requested reducing wasted space at the top. Tightened the brand/header to 44px, changed module tiles to icon-and-label rows with 44px mobile targets, reduced gaps and padding, and aligned other resident headers to the compact height. Desktop hero text is smaller. At 390px the chat begins roughly 44px earlier than the prior stacked-icon module layout.
 - Validation: inspected the updated mobile screenshot; responsive module/category/chat navigation checks passed at 320/390/1440px, with the composer still within the viewport. Frontend package build passed. Prepared for main/Railway release; APK/notifications excluded.
+
+### Remove redundant hamburger menu
+
+- User noted the hamburger is redundant now that module tabs exist. Removed it and the duplicate desktop Discover link. Analytics and Campaigns remain direct desktop header links; resident modules remain in the shared tab row. Removed menu JavaScript references, including the promotion pause check, to avoid null-element errors.
+- Validation: package build and responsive Shops/module navigation checks passed at 320/390/1440px. Frontend-only change prepared for main/Railway release; APK/notifications excluded.
