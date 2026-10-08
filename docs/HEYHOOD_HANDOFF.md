@@ -458,3 +458,8 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 
 - User requested a slightly larger, clearer HeyHood logo. Increased homepage/inline Shops logo from 96px to 152px mobile and 176px desktop, with compact 44/50px image height and centred display. Bumped homepage CSS cache version. Original image asset and other module branding retained.
 - Validation: inspected 390px screenshot; responsive checks passed 320/390/760/761/1440px with loaded logo and no horizontal overflow. Frontend bundle build passed; backend unchanged, automated backend tests not rerun. Prepared for source push and Railway deployment.
+
+### Provider price copy — 8 October 2026
+
+- User requested “Starting from ₹80 / kg” in place of “Catalog from ₹80 / kg”. Updated the dynamic provider-card price prefix; currency, amount and unit remain data-driven, including restored cards.
+- Validation: rendered the ₹80/kg label at 390px with no page overflow and packaged the frontend successfully. Backend unchanged; no new automated tests for this copy change. Prepared for GitHub/Railway release.
