@@ -18,6 +18,7 @@ public class HoodPlanController {
   private final HoodPlanWorkflow workflow;
   private final MessageModerationService moderation;
   private final ChatRateLimiter limiter;
+  private final boolean proxy;
 
   public HoodPlanController(
       JdbcTemplate jdbc,
@@ -25,17 +26,26 @@ public class HoodPlanController {
       ResidentMatchingService matching,
       HoodPlanWorkflow workflow,
       MessageModerationService moderation,
-      ChatRateLimiter limiter) {
+      ChatRateLimiter limiter,
+      @org.springframework.beans.factory.annotation.Value("${RAILWAY_PROJECT_ID:}")
+          String project) {
     this.jdbc = jdbc;
     this.residents = residents;
     this.matching = matching;
     this.workflow = workflow;
     this.moderation = moderation;
     this.limiter = limiter;
+    this.proxy = !project.isBlank();
   }
 
   private void rate(HttpServletRequest req, UUID id) {
-    if (!limiter.acquire("plan-action:" + (id == null ? req.getRemoteAddr() : id)).allowed())
+    String ip = req.getRemoteAddr();
+    if (proxy && req.getHeader("X-Forwarded-For") != null) {
+      String[] parts = req.getHeader("X-Forwarded-For").split(",");
+      String last = parts[parts.length - 1].trim();
+      if (last.matches("[0-9a-fA-F:.]+")) ip = last;
+    }
+    if (!limiter.acquire("plan-action:" + (id == null ? ip : id)).allowed())
       throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Try again in a minute");
   }
 
