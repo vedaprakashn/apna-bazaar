@@ -175,8 +175,6 @@ async function load() {
     .forEach((b) =>
       b.setAttribute("aria-pressed", String(b.dataset.kind === kind)),
     );
-  document.querySelector("#back").href =
-    `../chatbot/index.html?community=${slug}`;
   try {
     const response = await fetch(`/api/${slug}/rides?${q}`, {
       signal: controller.signal,

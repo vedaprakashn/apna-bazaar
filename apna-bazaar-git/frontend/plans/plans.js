@@ -160,8 +160,6 @@ async function load() {
   plans = [];
   grid.replaceChildren();
   status.textContent = "Loading hood plans…";
-  document.querySelector("#back").href =
-    `../chatbot/index.html?community=${slug}`;
   history.replaceState(null, "", `?community=${slug}`);
   try {
     const r = await fetch(`/api/${slug}/plans?visitorId=${visitor}`, {

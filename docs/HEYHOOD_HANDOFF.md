@@ -393,3 +393,8 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 - User requested adapting the old Explore modal to its new Shops tab. Replaced the modal dialog with an inline, full module view beneath the shared header/module row. Removed the backdrop, bottom-sheet handle and overlay behavior; Shops uses a responsive searchable category grid with a Return to chat action.
 - Selecting Shops highlights its tile and updates the explore=shops URL state. Selecting a category switches back to the retained conversation and submits its provider discovery question. Chat composer is hidden while browsing Shops; category content can scroll without covering module navigation. Promotions pause while Shops is visible.
 - Validation: frontend package build passed; Playwright at 320/390/1440px passed no open modal, Shops active highlight, hidden chat composer during browsing, module navigation, retained community and mobile composer bounds on return. Backend unchanged, no new backend tests; APK and notification changes excluded. Prepared for main/Railway deployment.
+
+### Rides and Plans navigation cleanup
+
+- User removed redundant back-to-hood-chat links from Rides and Plans because the shared module tabs handle navigation. Removed the associated JavaScript link updates and versioned both scripts to avoid stale cached references to removed elements.
+- Validation: JavaScript syntax and package build passed; responsive browser module navigation passed at 320/390/1440px. Frontend-only release, backend tests not rerun. Prepared for main/Railway deployment.
