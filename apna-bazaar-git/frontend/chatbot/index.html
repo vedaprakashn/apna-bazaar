@@ -11,44 +11,6 @@
   </head>
   <body class="discovery-page">
     <header class="topbar">
-      <details class="operator-menu app-menu">
-        <summary role="button" aria-label="Open menu">
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            aria-hidden="true"
-          >
-            <path
-              d="M4 6h16M4 12h16M4 18h16"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-          </svg>
-        </summary>
-        <div>
-          <a href="index.html">Discover</a>
-          <a data-community-route="rides" href="../rides/index.html"
-            >Hood Rides ↗</a
-          >
-          <a data-community-route="plans" href="../plans/index.html"
-            >Hood Plans ✦</a
-          >
-          <a data-community-route="help" href="../help/index.html"
-            >Help & contacts</a
-          >
-          <small class="desktop-navigation">For community operators</small>
-          <a class="desktop-navigation" href="../admin/index.html"
-            >Analytics ↗</a
-          >
-          <a class="desktop-navigation" href="../admin/campaigns.html"
-            >Campaigns ↗</a
-          >
-        </div>
-      </details>
-
       <a class="brand" href="index.html" aria-label="HeyHood home"
         ><img
           class="brand-logo"
@@ -57,9 +19,7 @@
         /><span class="tag">pilot</span></a
       >
       <nav class="nav">
-        <a class="active desktop-navigation" href="index.html">Discover</a
-        ><a class="desktop-navigation" href="../admin/index.html"
-          >Analytics ↗</a
+        <a class="desktop-navigation" href="../admin/index.html">Analytics ↗</a
         ><a class="desktop-navigation" href="../admin/campaigns.html"
           >Campaigns ↗</a
         >
@@ -382,7 +342,6 @@
         if (!open) requestAnimationFrame(scrollChatToEnd);
       }
       document.querySelector(".mobile-explore").onclick = () => {
-        document.querySelector(".operator-menu").open = false;
         document.getElementById("query").blur();
         setShopsView(true);
         filterCategories();
@@ -392,23 +351,6 @@
       document
         .getElementById("category-search")
         .addEventListener("input", filterCategories);
-      document.querySelectorAll("[data-community-route]").forEach((link) =>
-        link.addEventListener("click", () => {
-          link.href = `../${link.dataset.communityRoute}/index.html?community=${encodeURIComponent(community.value)}`;
-        }),
-      );
-      document
-        .querySelector(".app-menu")
-        .addEventListener("keydown", (event) => {
-          if (event.key === "Escape") {
-            event.currentTarget.open = false;
-            event.currentTarget.querySelector("summary").focus();
-          }
-        });
-      document.addEventListener("click", (event) => {
-        const menu = document.querySelector(".operator-menu");
-        if (!menu.contains(event.target)) menu.open = false;
-      });
       mobileLayout.addEventListener("change", placeCategories);
       placeCategories();
       const categoryPrompts = {
@@ -1008,7 +950,6 @@
           !busy &&
           !suppressPromotions &&
           exploreSheet.hidden &&
-          !document.querySelector(".operator-menu").open &&
           document.activeElement !== document.getElementById("query") &&
           !document.getElementById("query").value.trim() &&
           Date.now() - lastTyping > 15000 &&
