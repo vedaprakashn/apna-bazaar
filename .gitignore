@@ -1,2 +1,9 @@
 **/target/
 **/.env
+android-shell/.gradle/
+android-shell/**/build/
+android-shell/local.properties
+android-shell/app/google-services.json
+**/*.keystore
+**/*.jks
+**/*.apk

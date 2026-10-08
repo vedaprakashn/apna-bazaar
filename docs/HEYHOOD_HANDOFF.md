@@ -162,7 +162,7 @@ In-chat campaign polling is approximately every three minutes when the page is v
 
 Impressions require at least 50% visibility. Delivery IDs deduplicate views/clicks. Distinct sessions are not verified unique residents. Campaign dismissal currently has no separate server analytics event.
 
-Native push notifications and automated WhatsApp delivery are future work. Existing digest/broadcast service endpoints should be reviewed before claiming operational delivery; their presence is not proof a messaging channel is configured.
+Android Firebase notifications are implemented in the current notification release; see `docs/FIREBASE_NOTIFICATIONS.md` for secure configuration, opt-in, per-campaign activation and device testing. Browser push, iOS/APNs and automated WhatsApp delivery remain future work. Existing digest/broadcast service endpoints should be reviewed before claiming operational delivery; their presence is not proof a messaging channel is configured.
 
 ## Analytics and API map
 
@@ -438,3 +438,12 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 - Public release verification: My stuff and resident requests API are live, health UP, and 390/1440px public browser checks passed. Protected resident review returns 503 until CAMPAIGN_ADMIN_TOKEN is configured. Live school-run search found the correct reciprocal pickup offer but included this week for “next week”; strengthened date-range instructions to require the requested calendar-week start and end, with targeted AI verification before publishing the correction.
 
 - Date-range correction validated: actual AI search for reciprocal Oakridge pickup next week now starts Monday 12 Oct and ends Sunday 18 Oct, returning the Monday occurrence; tomorrow airport 11pm still matches correctly. All 22 automated tests pass after correction.
+
+### Firebase notifications authorised — 8 October 2026
+
+- User lifted the notification deferral and supplied updated Android client JSON, matching japamala-8284d / com.heyhood.app. User confirmed adding Firebase credentials in Railway, then clarified CAMPAIGN_ADMIN_TOKEN may still be missing; explained the same service Variables screen and private operator password. No private credentials or client keys committed.
+- Android 1.1 adds Firebase Messaging, opt-in under My stuff, Android 13+ permission, off toggle, token refresh/community sync, foreground/background channel and validated shop deep links. Previous APK must be replaced. No browser push or iOS/APNs yet. APK/signing keys remain outside Git. Build migrated to checksum-pinned Gradle wrapper with maintained SDK dependencies.
+- V25 stores private installation capability hashes, FCM tokens and deduplicated delivery/open records. Operator-protected Campaigns controls enable push per campaign (off by default), request an explicit send and show Firebase acceptance/foreground receipt/opens/failure/uncertainty. Current campaign template becomes notification content; in-chat every-third-message nudges remain in chat.
+- Automatic dispatch every 15 minutes uses community/campaign/daypart/stock scope, 8am–10pm IST, maximum three per phone/day and four-hour spacing. Same campaign cannot repeat on the same phone/day; uncertain sends do not retry. Demo messages remain marked. Unregistered tokens disabled; pilot batch limit 100 installations/cycle, least-recently attempted first; a larger durable queue remains future scaling work.
+- Validation: 29 Maven tests passed, including consent/device capability, operator guards, missing credential fail-closed, IST boundaries, quota/cooldown/duplicate suppression. Local V25/API integration checked opt-in, token conflict/ownership, cross-community campaign rejection, opt-out and idempotent opened counts. Browser checks passed native-preference states at 390/1440px and protected campaign toggles/analytics. Firebase-enabled APK built and signature verified. Physical-device permission/delivery test still required; no device token or service-account credential is available in this workspace to claim end-to-end delivery.
+- Deployment/public Firebase-readiness verification follows. User requested US/UK competitive research after this deployment; report and prioritized gap analysis to be retained in docs.
