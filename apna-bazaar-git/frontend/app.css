@@ -2315,3 +2315,19 @@ body {
     min-height: 44px;
   }
 }
+
+.module-unread {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  background: #ffcc42;
+  color: #392450;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 800;
+  flex-shrink: 0;
+}

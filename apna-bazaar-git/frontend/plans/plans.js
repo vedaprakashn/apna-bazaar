@@ -27,7 +27,9 @@ function el(tag, cls, text) {
 }
 function render() {
   grid.replaceChildren();
-  const shown = plans.filter((p) => filter === "all" || p.my_vote === "in");
+  const shown = plans.filter(
+    (p) => filter === "all" || p.my_vote === "in" || p.mine,
+  );
   status.textContent = shown.length
     ? `${shown.length} plans · ${community.selectedOptions[0].textContent}`
     : filter === "mine"
@@ -80,7 +82,7 @@ function render() {
     progress.value = Math.min(count, minimum);
     progress.setAttribute("aria-label", `${count} of ${minimum} interested`);
     card.append(progress);
-    const closed = p.ended || p.status !== "gathering";
+    const closed = p.ended || p.status === "cancelled";
     card.append(
       el(
         "p",
@@ -98,7 +100,18 @@ function render() {
     );
     const actions = el("div", "plan-actions");
     for (const [choice, label] of [
-      ["in", p.my_vote === "in" ? "I’m in ✓" : "I’m in"],
+      [
+        "in",
+        p.my_vote === "in"
+          ? p.my_place === "waitlisted"
+            ? "Waitlisted ✓"
+            : "I’m in ✓"
+          : p.status === "confirmed" &&
+              p.capacity &&
+              Number(p.attending) >= p.capacity
+            ? "Join waitlist"
+            : "I’m in",
+      ],
       ["pass", p.my_vote === "pass" ? "Meh! ✓" : "Meh!"],
     ]) {
       const button = el(
@@ -107,12 +120,37 @@ function render() {
         label,
       );
       button.setAttribute("aria-pressed", String(p.my_vote === choice));
-      button.disabled = closed;
+      button.disabled = closed && p.my_vote !== choice;
       button.onclick = () =>
         vote(p, p.my_vote === choice ? "clear" : choice, card);
       actions.append(button);
     }
     card.append(actions);
+    if (p.confirmation_note)
+      card.append(el("p", "agreement-terms", p.confirmation_note));
+    if (p.status === "confirmed")
+      card.append(
+        el(
+          "p",
+          "plan-place",
+          `${p.attending || 0}${p.capacity ? " / " + p.capacity : ""} attending · ${p.waitlisted || 0} waitlisted${p.my_vote === "in" ? (p.my_place === "attending" ? " · Your place is confirmed ✓" : " · You’re on the waitlist") : ""}`,
+        ),
+      );
+    if (p.mine && !p.ended && p.status !== "cancelled") {
+      const manage = el("details", "plan-organiser");
+      manage.append(el("summary", "", "Your organiser controls"));
+      const group = el("div", "hood-inline-actions");
+      if (p.status === "gathering") {
+        const confirm = el("button", "", "Confirm this plan ✓");
+        confirm.onclick = () => heyhoodManagePlan(p, "confirm", load);
+        group.append(confirm);
+      }
+      const cancel = el("button", "", "Cancel plan");
+      cancel.onclick = () => heyhoodManagePlan(p, "cancel", load);
+      group.append(cancel);
+      manage.append(group);
+      card.append(manage);
+    }
     card.append(
       el(
         "small",
@@ -133,17 +171,47 @@ function render() {
       heyhoodSaveButton("plan", p.id),
       card.querySelector(".plan-disclaimer"),
     );
+    if (p.my_vote === "in" && heyhoodResident() && !closed && !p.is_demo) {
+      const remind = el(
+        "button",
+        "plan-reminder",
+        p.reminder_enabled ? "Reminder on ✓" : "Remind me 🔔",
+      );
+      remind.setAttribute("aria-pressed", String(p.reminder_enabled));
+      remind.onclick = async () => {
+        remind.disabled = true;
+        try {
+          await heyhoodModuleApi(`plans/${p.id}/reminder`, {
+            method: "POST",
+            body: JSON.stringify({ enabled: !p.reminder_enabled }),
+          });
+          await load();
+          heyhoodNotice(
+            "Reminders show up in My stuff, within two hours of a confirmed plan.",
+          );
+        } catch (e) {
+          heyhoodNotice(e.message);
+          remind.disabled = false;
+        }
+      };
+      footer.append(remind);
+    }
     card.append(footer);
     grid.append(card);
   }
 }
 async function vote(p, choice, card) {
+  if (!p.is_demo && choice !== "clear" && !heyhoodRequireMember()) return;
+  if (!p.is_demo && choice === "clear" && !heyhoodResident()) {
+    heyhoodRequireMember();
+    return;
+  }
   const slug = community.value;
   card.querySelectorAll("button").forEach((b) => (b.disabled = true));
   try {
     const r = await fetch(`/api/${slug}/plans/${p.id}/vote`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: heyhoodResidentHeaders(),
       body: JSON.stringify({ visitorId: visitor, choice }),
     });
     if (!r.ok) {
@@ -156,7 +224,7 @@ async function vote(p, choice, card) {
     render();
     status.textContent =
       choice === "in"
-        ? "You’re in! Interest saved. This isn’t a confirmed booking."
+        ? "Saved. Check your card for interest, attendance or waitlist status."
         : choice === "pass"
           ? "No worries. You can change your mind anytime."
           : "Vote removed.";
@@ -174,16 +242,24 @@ async function load() {
   plans = [];
   heyhoodSkeletons(grid);
   status.textContent = "Loading hood plans…";
-  history.replaceState(null, "", `?community=${slug}`);
+  const q = new URLSearchParams(location.search);
+  q.set("community", slug);
+  history.replaceState(null, "", `?${q}`);
   try {
     const r = await fetch(`/api/${slug}/plans?visitorId=${visitor}`, {
       signal: controller.signal,
+      headers: heyhoodResidentHeaders(),
     });
     if (!r.ok) throw Error();
     const data = await r.json();
     if (slug !== community.value) return;
     plans = data;
     render();
+    const target = new URLSearchParams(location.search).get("id");
+    if (target)
+      [...grid.querySelectorAll(".plan-card")]
+        .find((c) => c.dataset.id === target)
+        ?.scrollIntoView({ block: "start" });
   } catch (e) {
     if (e.name !== "AbortError") {
       grid.replaceChildren();
@@ -204,5 +280,6 @@ document.querySelectorAll("[data-filter]").forEach(
       render();
     }),
 );
+document.querySelector("#new-plan").onclick = () => heyhoodCreatePlan(load);
 community.onchange = load;
 load();

@@ -7,10 +7,12 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>HeyHood · Good things. Close by.</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-brand2" />
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
     <script src="../resident.js?v=1"></script>
     <script src="../reputation.js?v=1"></script>
     <link rel="stylesheet" href="../reputation.css?v=1" />
+    <link rel="stylesheet" href="../hood-actions.css?v=20261008-matching1" />
+    <script src="../hood-actions.js?v=20261008-matching1" defer></script>
   </head>
   <body class="discovery-page">
     <header class="topbar">
@@ -36,7 +38,7 @@
       </select>
     </header>
     <nav class="hood-modules" aria-label="HeyHood modules"></nav>
-    <script src="../modules.js?v=3" defer></script>
+    <script src="../modules.js?v=20261008-matching1" defer></script>
     <main class="container">
       <section class="hero compact-hero">
         <div>
@@ -533,7 +535,9 @@
             "span",
             "tag",
             module === "plans"
-              ? "Hood Plans · demo"
+              ? item.is_demo
+                ? "Hood Plans · demo"
+                : "Hood Plans"
               : module === "requests"
                 ? "Hood request"
                 : "From your hood · demo",
@@ -557,7 +561,7 @@
             el(
               "p",
               "",
-              `${item.interested} interested · needs ${item.minimum_interested}. ${item.status === "confirmed" ? "Organiser confirmed" : "Awaiting organiser confirmation"}`,
+              `${item.interested} interested · target ${item.minimum_interested}. ${item.status === "confirmed" ? `${item.attending || 0} attending · ${item.waitlisted || 0} waitlisted · Organiser confirmed` : "Organiser confirmation pending"}`,
             ),
           );
         }
@@ -574,7 +578,7 @@
           module === "requests"
             ? heyhoodActivityUrl({ view: "requests", request: item.id })
             : module === "plans"
-              ? `../plans/index.html?community=${encodeURIComponent(community.value)}&plan=${encodeURIComponent(item.id)}`
+              ? `../plans/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(item.id)}`
               : `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(item.provider_id)}`;
         card.append(link);
         if (module === "plans") card.append(heyhoodSaveButton("plan", item.id));
@@ -635,7 +639,7 @@
           null,
           heyhoodRideEnquiry(r, community.selectedOptions[0].textContent),
         );
-        if (contact) {
+        if (contact && r.is_demo) {
           const link = el(
             "a",
             "professional-whatsapp",
@@ -644,11 +648,22 @@
           link.href = contact.url;
           card.append(link);
         }
+        if (!r.is_demo) {
+          const arrange = el(
+            "button",
+            "professional-whatsapp",
+            r.kind === "offer" ? "Go together ↗" : "I can help ↗",
+          );
+          arrange.onclick = () => heyhoodRequestRide(r);
+          card.append(arrange);
+        }
         card.append(
           el(
             "small",
             "pilot-contact-note",
-            "Pilot · shared test contact. Ride not confirmed.",
+            r.is_demo
+              ? "Demo · shared test contact. Not a real ride."
+              : "Both neighbours agree the details in HeyHood. Not a transport booking.",
           ),
         );
         card.append(heyhoodSaveButton("ride", r.id));

@@ -55,7 +55,7 @@ public class SearchService {
             String result = callJson(AAPTA_VOICE + " Reply in " + interpreted.responseLanguage()
                 + ". Search only these community " + module + " entries. Current India datetime: " + LocalDateTime.now(ZoneId.of("Asia/Kolkata"))
                 + ". Match the requested subject and date/time; do not invent or use expired entries. For a broad question return all relevant entries."
-                + " Return JSON {intro: string, ids: [exact catalog UUIDs]}. If no match say so warmly. Plans require interest and organiser confirmation, not booked events. Promotions are pilot catalog messages, not guaranteed discounts. Catalog: " + catalog, interpreted.intent());
+                + " Return JSON {intro: string, ids: [exact catalog UUIDs]}. If no match say so warmly. Plans marked gathering are interest only; confirmed live plans have organiser confirmation and may have a waitlist. Never turn interest or demo plans into a confirmed place for the user. Read capacity and confirmation_note when present. No payments are collected. Promotions are catalog messages, not guaranteed discounts. Catalog: " + catalog, interpreted.intent());
             Set<String> ids = new HashSet<>();
             try { objectMapper.readTree(result).path("ids").forEach(n -> ids.add(n.asText())); } catch (Exception ignored) {}
             var matches = catalog.stream().filter(i -> ids.contains(i.get("id").toString())).toList();
@@ -76,7 +76,7 @@ public class SearchService {
             String facts = past ? "The requested departure time is already past. Ask the resident for a future date/time."
                 : badTime ? "The requested time could not be understood. Ask for the date and time."
                 : rides.isEmpty() ? "No matching upcoming rides. The resident can open Hood Rides to post a request explicitly; their search has not been published."
-                : "Found " + rides.size() + " upcoming pilot ride posts, matching direction, destination and (when supplied) within one hour of the requested departure. These are not confirmed rides. Invite the resident to discuss exact timing and seats through WhatsApp.";
+                : "Found " + rides.size() + " upcoming community ride posts, matching direction, destination and (when supplied) within one hour of the requested departure. Available seats exclude active holds and confirmed arrangements. Matches are not confirmed for this resident. For live posts invite the resident to request an arrangement in HeyHood; the organiser proposes details and the resident confirms. Demo posts remain fictional with a shared pilot WhatsApp contact. Never claim a cab or driver is booked.";
             String introJson=callJson(AAPTA_VOICE + " Reply in " + interpreted.responseLanguage() + ". Return JSON with intro only. Explain these facts without inventing posts, transport bookings or availability: " + facts,query);
             var event=analyticsService.recordSearchEvent(community,query,QueryNormalizer.normalize(query),rides.size(),sessionId,interpreted.intent());
             if(rides.isEmpty())analyticsService.recordZeroResult(community,query,QueryNormalizer.normalize(query));

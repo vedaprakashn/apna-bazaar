@@ -1,0 +1,164 @@
+.hood-action-sheet {
+  width: min(520px, calc(100vw - 24px));
+  max-height: 90dvh;
+  box-sizing: border-box;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+  border: 1px solid #e4d9f7;
+  border-radius: 24px;
+  color: #322043;
+  background: #fff;
+  font: inherit;
+}
+.hood-action-sheet::backdrop {
+  background: #21103580;
+  backdrop-filter: blur(3px);
+}
+.hood-sheet-head {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+.hood-sheet-head h2 {
+  margin: 0;
+  font-size: 21px;
+}
+.hood-sheet-head button {
+  background: #f2ecfc;
+  color: #654b80;
+  border: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+.hood-action-sheet label {
+  display: block;
+  margin: 14px 0;
+  font-size: 13px;
+  font-weight: 700;
+}
+.hood-action-sheet input:not([type="checkbox"]),
+.hood-action-sheet textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 6px;
+  padding: 12px;
+  min-height: 48px;
+  border: 1px solid #ddd0f6;
+  background: #faf7ff;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 16px;
+}
+.hood-action-sheet textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+.hood-action-sheet .check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-weight: 500;
+  line-height: 1.6;
+}
+.hood-primary {
+  min-height: 46px;
+  padding: 12px 16px;
+  background: #6336f5;
+  color: white;
+  border: 0;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 750;
+}
+.hood-action-sheet .hood-primary {
+  width: 100%;
+}
+.hood-action-status {
+  font-size: 13px;
+  color: #954337;
+}
+.hood-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.hood-inline-actions button,
+.trust-card button {
+  border: 1px solid #dfd1f6;
+  border-radius: 12px;
+  background: #f1eaff;
+  color: #6336f5;
+  padding: 10px 14px;
+  min-height: 44px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+.agreement-terms {
+  padding: 12px;
+  background: #f5f0ff;
+  border-radius: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.plan-place {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6336f5;
+  background: #f3ecff;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+.plan-organiser {
+  margin-top: 14px;
+  border-top: 1px solid #eee6fa;
+  padding-top: 12px;
+}
+.plan-organiser summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  min-height: 40px;
+}
+.plan-reminder {
+  border: 0;
+  background: #f4effc;
+  color: #6336f5;
+  padding: 9px 12px;
+  border-radius: 10px;
+  min-height: 44px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.trust-card {
+  margin-top: 16px;
+}
+.trust-card .muted {
+  font-size: 12px;
+  line-height: 1.6;
+}
+#phone-code-form[hidden],
+#flat-code-form[hidden] {
+  display: none;
+}
+@media (max-width: 600px) {
+  .hood-action-sheet {
+    margin: auto 0 0;
+    width: 100%;
+    max-width: none;
+    border-radius: 24px 24px 0 0;
+    padding: 20px 16px max(20px, env(safe-area-inset-bottom));
+  }
+  .hood-action-sheet h2 {
+    font-size: 20px;
+  }
+  .hood-action-sheet label {
+    margin: 12px 0;
+  }
+}

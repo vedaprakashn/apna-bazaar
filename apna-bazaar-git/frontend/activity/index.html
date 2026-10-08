@@ -7,8 +7,10 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>My activity · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
     <link rel="stylesheet" href="activity.css?v=1" />
+    <link rel="stylesheet" href="../hood-actions.css?v=20261008-matching1" />
+    <script src="../hood-actions.js?v=20261008-matching1" defer></script>
   </head>
   <body class="activity-page">
     <header class="activity-header">
@@ -21,7 +23,7 @@
       </select>
     </header>
     <nav class="hood-modules" aria-label="HeyHood modules"></nav>
-    <script src="../modules.js?v=3" defer></script>
+    <script src="../modules.js?v=20261008-matching1" defer></script>
     <script src="../resident.js?v=1"></script>
     <script src="../reputation.js?v=1"></script>
     <link rel="stylesheet" href="../reputation.css?v=1" />
@@ -109,8 +111,64 @@
             or flat requires another review.
           </p>
           <button type="submit">Save profile ↗</button>
+          <button type="button" id="profile-signout" hidden>
+            Sign out of this device
+          </button>
           <p id="profile-status" role="status"></p>
         </form>
+        <section class="activity-card trust-card">
+          <h2>Your flat, verified 🔑</h2>
+          <p class="muted">
+            Get a private code from your RWA. It belongs to your flat and works
+            once—keep it to yourself.
+          </p>
+          <form id="flat-code-form">
+            <label
+              >Private flat code<input
+                id="flat-code"
+                maxlength="6"
+                minlength="6"
+                required
+                autocomplete="off"
+                autocapitalize="characters"
+                placeholder="ABC7K2"
+            /></label>
+            <button>Verify my flat ✓</button>
+            <p id="flat-code-status" role="status"></p>
+          </form>
+        </section>
+        <section class="activity-card trust-card">
+          <h2>Your number. Your sign-in.</h2>
+          <p class="muted">
+            Link your phone after verifying your flat. Returning? Verify the
+            same phone to restore your profile. Your number isn’t listed
+            publicly. Signing in here replaces your previous device session.
+          </p>
+          <form id="phone-start-form">
+            <label
+              >Phone with country code<input
+                id="phone-number"
+                type="tel"
+                autocomplete="tel"
+                placeholder="+91…"
+                required
+            /></label>
+            <div id="phone-recaptcha"></div>
+            <button id="phone-start">Send OTP ↗</button>
+          </form>
+          <form id="phone-code-form" hidden>
+            <label
+              >OTP<input
+                id="phone-code"
+                inputmode="numeric"
+                pattern="[0-9]{6}"
+                maxlength="6"
+                autocomplete="one-time-code"
+                required /></label
+            ><button>Verify phone ✓</button>
+          </form>
+          <p id="phone-status" role="status"></p>
+        </section>
       </section>
       <section id="overview-view"><div id="overview"></div></section>
       <section id="requests-view" hidden>
@@ -186,6 +244,7 @@
         <button type="submit">Send response ↗</button>
       </form>
     </dialog>
-    <script src="activity.js?v=1"></script>
+    <script src="activity.js?v=20261008-matching1" defer></script>
+    <script type="module" src="../phone-login.js?v=20261008-matching1"></script>
   </body>
 </html>

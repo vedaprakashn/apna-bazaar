@@ -19,14 +19,17 @@ async function api(path, method = "GET", body, reputation = false) {
       body: body ? JSON.stringify(body) : undefined,
     },
   );
-  if (!r.ok)
+  if (!r.ok) {
+    const error = await r.json().catch(() => ({}));
     throw Error(
-      r.status === 503
-        ? "Configure CAMPAIGN_ADMIN_TOKEN in Railway to enable operator approval and stock updates."
-        : r.status === 401
-          ? "Check the operator key."
-          : "Could not complete that action.",
+      error.error ||
+        (r.status === 503
+          ? "Configure CAMPAIGN_ADMIN_TOKEN in Railway to enable the operator workspace."
+          : r.status === 401
+            ? "Check the operator key."
+            : "Could not complete that action."),
     );
+  }
   const text = await r.text();
   return text ? JSON.parse(text) : null;
 }
@@ -65,12 +68,16 @@ function controls(card, id, path, options, current) {
 async function load() {
   status.textContent = "Loading…";
   try {
-    const [people, stock, reputation] = await Promise.all([
+    const [people, stock, reputation, invitations, plans] = await Promise.all([
       api(""),
       api("/availability"),
       api("", "GET", undefined, true),
+      api("/invitations"),
+      api("/plans"),
     ]);
     renderReputation(reputation);
+    renderInvitations(invitations);
+    renderPlans(plans);
     const grid = document.querySelector("#residents");
     grid.replaceChildren();
     people.forEach((p) => {
@@ -284,3 +291,181 @@ function renderReputation(data) {
     feedback.append(c);
   }
 }
+
+function renderInvitations(rows) {
+  const root = document.querySelector("#invitation-history");
+  root.replaceChildren();
+  for (const inv of rows) {
+    const c = el("article");
+    c.className = "activity-card";
+    c.append(
+      el("h3", inv.flat_number),
+      el(
+        "p",
+        inv.revoked_at
+          ? "Revoked"
+          : inv.consumed_at
+            ? "Used"
+            : new Date(inv.expires_at) < new Date()
+              ? "Expired"
+              : "Ready · expires " +
+                new Date(inv.expires_at).toLocaleDateString("en-IN", {
+                  timeZone: "Asia/Kolkata",
+                }),
+      ),
+    );
+    if (!inv.consumed_at && !inv.revoked_at) {
+      const b = el("button", "Revoke unused code");
+      b.onclick = async () => {
+        b.disabled = true;
+        try {
+          await api(`/invitations/${inv.id}/revoke`, "POST");
+          await load();
+        } catch (e) {
+          status.textContent = e.message;
+          b.disabled = false;
+        }
+      };
+      c.append(b);
+    }
+    root.append(c);
+  }
+}
+document.querySelector("#invitation-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const b = e.submitter;
+  b.disabled = true;
+  try {
+    const rows = await api("/invitations", "POST", {
+      flats: document
+        .querySelector("#invite-flats")
+        .value.split(/\r?\n/)
+        .filter((x) => x.trim()),
+      validDays: Number(document.querySelector("#invite-days").value),
+      privateDelivery: document.querySelector("#invite-private").checked,
+    });
+    const root = document.querySelector("#fresh-invitations");
+    root.replaceChildren(
+      el("p", "Shown once. Save privately; the server retains only hashes."),
+    );
+    for (const inv of rows) {
+      const line = el(
+        "p",
+        inv.flat +
+          " · " +
+          inv.code +
+          " · expires " +
+          new Date(inv.expiresAt).toLocaleDateString("en-IN", {
+            timeZone: "Asia/Kolkata",
+          }),
+      );
+      root.append(line);
+    }
+    const download = el("button", "Download private operator CSV");
+    download.type = "button";
+    download.onclick = () => {
+      const quote = (x) =>
+        '"' +
+        String(x)
+          .replace(/^[=+@-]/, "'$&")
+          .replaceAll('"', '""') +
+        '"';
+      const text =
+        "flat,code,expires_at\r\n" +
+        rows
+          .map((x) => [x.flat, x.code, x.expiresAt].map(quote).join(","))
+          .join("\r\n");
+      const url = URL.createObjectURL(
+        new Blob([text], { type: "text/csv;charset=utf-8" }),
+      );
+      const a = el("a");
+      a.href = url;
+      a.download = "heyhood-private-flat-invitations.csv";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    root.append(download);
+    const clear = el("button", "Clear codes from this screen");
+    clear.type = "button";
+    clear.onclick = () => root.replaceChildren();
+    root.append(clear);
+    await load();
+  } catch (err) {
+    status.textContent = err.message;
+  } finally {
+    b.disabled = false;
+  }
+};
+function renderPlans(plans) {
+  const root = document.querySelector("#operator-plans");
+  root.replaceChildren();
+  for (const p of plans) {
+    const c = el("article");
+    c.className = "activity-card";
+    c.append(
+      el("h3", p.title),
+      el(
+        "p",
+        `${p.is_demo ? "Demo · " : ""}${p.status} · ${p.interested}/${p.minimum_interested} interested · ${p.attending} attending · ${p.waitlisted} waitlisted`,
+      ),
+    );
+    if (!p.is_demo && !p.ended && p.status !== "cancelled") {
+      const label = el("label", "Confirmation details / cancellation reason"),
+        note = el("textarea");
+      note.maxLength = 500;
+      label.append(note);
+      c.append(label);
+      for (const action of p.status === "gathering"
+        ? ["confirm", "cancel"]
+        : ["cancel"]) {
+        const b = el(
+          "button",
+          action === "confirm" ? "Confirm plan" : "Cancel plan",
+        );
+        b.onclick = async () => {
+          b.disabled = true;
+          try {
+            await api(`/plans/${p.id}/manage`, "POST", {
+              action,
+              note: note.value,
+            });
+            await load();
+          } catch (e) {
+            status.textContent = e.message;
+          } finally {
+            b.disabled = false;
+          }
+        };
+        c.append(b);
+      }
+    }
+    root.append(c);
+  }
+}
+document.querySelector("#operator-plan-form").onsubmit = async (e) => {
+  e.preventDefault();
+  const b = e.submitter;
+  b.disabled = true;
+  try {
+    await api("/plans", "POST", {
+      title: document.querySelector("#op-plan-title").value,
+      description: document.querySelector("#op-plan-description").value,
+      category: document.querySelector("#op-plan-category").value,
+      location: document.querySelector("#op-plan-location").value,
+      startsAt: new Date(
+        document.querySelector("#op-plan-time").value + "+05:30",
+      ).toISOString(),
+      minimum: Number(document.querySelector("#op-plan-minimum").value),
+      capacity: document.querySelector("#op-plan-capacity").value
+        ? Number(document.querySelector("#op-plan-capacity").value)
+        : null,
+      publish: document.querySelector("#op-plan-publish").checked,
+    });
+    e.target.reset();
+    await load();
+  } catch (err) {
+    status.textContent = err.message;
+  } finally {
+    b.disabled = false;
+  }
+};

@@ -7,10 +7,12 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>Hood Plans · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
-    <link rel="stylesheet" href="../help/help.css?v=4" />
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
+    <link rel="stylesheet" href="../help/help.css?v=20261008-compact1" />
     <link rel="stylesheet" href="plans.css?v=20261008-polish1" />
     <script src="../resident.js?v=1"></script>
+    <link rel="stylesheet" href="../hood-actions.css?v=20261008-matching1" />
+    <script src="../hood-actions.js?v=20261008-matching1" defer></script>
   </head>
   <body class="plans-page">
     <header class="help-header">
@@ -22,16 +24,18 @@
       </select>
     </header>
     <nav class="hood-modules" aria-label="HeyHood modules"></nav>
-    <script src="../modules.js?v=3" defer></script>
+    <script src="../modules.js?v=20261008-matching1" defer></script>
     <main class="plans-main">
       <section class="plans-intro">
         <span class="help-kicker">GOOD PLANS. YOUR PEOPLE.</span>
         <h1>Hood Plans</h1>
         <p>Find your people. Make a plan happen.</p>
+        <button id="new-plan" class="save-action" type="button">
+          Make a plan +
+        </button>
       </section>
       <p class="plans-demo">
-        🧪 Demo activities. Interest is not a booking. Dates, prices and
-        organisers still need confirmation.
+        🧪 Demo plans are labelled. Real plans need organiser confirmation.
       </p>
       <div class="plans-filter" role="group" aria-label="Filter plans">
         <button data-filter="all" aria-pressed="true">All plans</button
@@ -44,10 +48,10 @@
         aria-label="Community plans"
       ></section>
       <p class="plans-note">
-        Votes are remembered on this browser. Counts reflect anonymous interest,
-        not verified attendees. No payment or appointment is made.
+        Live sign-ups use verified resident profiles. A target is interest; the
+        organiser confirms the plan. No payment is collected.
       </p>
     </main>
-    <script src="plans.js?v=20261008-polish1"></script>
+    <script src="plans.js?v=20261008-matching1" defer></script>
   </body>
 </html>

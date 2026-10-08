@@ -119,7 +119,7 @@ function render() {
         "p",
         "ride-person",
         r.verification === "verified"
-          ? "Community operator approved ✓"
+          ? "Community membership checked ✓"
           : r.verification === "demo"
             ? "Fictional example"
             : "Resident verification pending",
@@ -151,12 +151,23 @@ function render() {
       card.append(detail);
     }
     if (r.notes && !r.is_demo) card.append(el("p", "ride-notes", r.notes));
+    if (!r.is_demo && !r.mine) {
+      const actions = el("div", "ride-actions");
+      const arrange = el(
+        "button",
+        "ride-connect",
+        r.kind === "offer" ? "Go together ↗" : "I can help ↗",
+      );
+      arrange.onclick = () => heyhoodRequestRide(r, load);
+      actions.append(arrange, heyhoodSaveButton("ride", r.id));
+      card.append(actions);
+    }
     const contact = heyhoodWhatsAppContact(
       r.whatsapp_number,
       null,
       heyhoodRideEnquiry(r, community.selectedOptions[0].textContent),
     );
-    if (contact) {
+    if (contact && (r.is_demo || r.mine)) {
       const link = el(
         "a",
         "ride-connect",
@@ -193,7 +204,9 @@ function render() {
       el(
         "small",
         "ride-disclaimer",
-        "Pilot · discuss first, ride not confirmed",
+        r.is_demo
+          ? "Demo trip · not a real ride"
+          : "Arrange in HeyHood · track it in My stuff",
       ),
     );
     grid.append(card);
@@ -268,9 +281,12 @@ community.onchange = () => {
   load();
 };
 function openPost(type) {
+  if (!heyhoodRequireMember()) return;
   postKind = type;
   postId = crypto.randomUUID();
   form.reset();
+  document.querySelector("#post-name").value = heyhoodResident().name;
+  document.querySelector("#post-flat").value = heyhoodResident().flat_number;
   document.querySelector("#post-title").textContent =
     type === "offer" ? "Got a spare seat?" : "Need a ride?";
   document.querySelector("#post-submit").textContent =
