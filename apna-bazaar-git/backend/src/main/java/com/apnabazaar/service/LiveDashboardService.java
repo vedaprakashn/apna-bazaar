@@ -90,7 +90,7 @@ public class LiveDashboardService {
 
     public List<Map<String, Object>> catalog(String slug) {
         return jdbc.queryForList("""
-            SELECT p.id, p.name, p.shop_name AS shop, p.whatsapp_number AS whatsapp, p.whatsapp_group_url, o.name AS offering, o.description,
+            SELECT p.id, p.name, p.rating,p.review_count,p.is_verified AS verified,p.verification_checked_at, p.shop_name AS shop, p.whatsapp_number AS whatsapp, p.whatsapp_group_url, o.name AS offering, o.description,
                    o.base_price AS price, o.unit, c.name AS category, c.icon_emoji AS emoji
             FROM provider p JOIN offering o ON o.provider_id=p.id JOIN category c ON c.id=o.category_id
             WHERE p.community_id=? AND p.status='active' AND o.is_available=true
@@ -105,7 +105,7 @@ public class LiveDashboardService {
         UUID communityId = community(slug);
         var providers = jdbc.queryForList("""
             SELECT p.id,p.name,p.shop_name AS shop,p.flat_number AS flat,p.whatsapp_number AS whatsapp,p.whatsapp_group_url,
-                   p.is_verified AS verified,c.name AS community,p.provider_type::text AS type
+                   p.is_verified AS verified,p.verification_checked_at,p.rating,p.review_count,c.name AS community,p.provider_type::text AS type
             FROM provider p JOIN community c ON c.id=p.community_id
             WHERE p.id=? AND p.community_id=? AND p.status='active'
             """, providerId, communityId);
