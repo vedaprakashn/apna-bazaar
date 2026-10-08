@@ -398,3 +398,8 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 
 - User removed redundant back-to-hood-chat links from Rides and Plans because the shared module tabs handle navigation. Removed the associated JavaScript link updates and versioned both scripts to avoid stale cached references to removed elements.
 - Validation: JavaScript syntax and package build passed; responsive browser module navigation passed at 320/390/1440px. Frontend-only release, backend tests not rerun. Prepared for main/Railway deployment.
+
+### Compact top chrome
+
+- User requested reducing wasted space at the top. Tightened the brand/header to 44px, changed module tiles to icon-and-label rows with 44px mobile targets, reduced gaps and padding, and aligned other resident headers to the compact height. Desktop hero text is smaller. At 390px the chat begins roughly 44px earlier than the prior stacked-icon module layout.
+- Validation: inspected the updated mobile screenshot; responsive module/category/chat navigation checks passed at 320/390/1440px, with the composer still within the viewport. Frontend package build passed. Prepared for main/Railway release; APK/notifications excluded.

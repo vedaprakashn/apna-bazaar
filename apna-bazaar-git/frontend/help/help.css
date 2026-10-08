@@ -61,3 +61,7 @@
  .help-page[data-section=professional] .help-kicker { font-size:9px; }
  .help-page[data-section=professional] .call-112 { padding:12px; font-size:12px; }
 }
+
+/* Match the compact shared module chrome. */
+.help-header { min-height:44px; padding:8px max(12px,calc((100vw - 1120px)/2)); gap:8px; }
+@media(max-width:600px) { .help-header { padding:8px 12px; } }
