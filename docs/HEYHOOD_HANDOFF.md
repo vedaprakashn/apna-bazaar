@@ -503,3 +503,7 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 - Shareable document export and claim/arithmetic checks are being completed; this entry does not claim new app deployment, outreach or a funding conversation.
 
 - Final document validation: primary-source links and internal document paths checked; illustrative revenue/milestone arithmetic independently verified. Exported 28-page strategy and 11-page investor PDFs with searchable text/bookmarks, self-contained HTML, editable Markdown and a ZIP pack outside Git. Inspected cover/competition layout; checked non-empty pages, rupee glyph and page bounds. Application code is unchanged; no backend tests or Railway feature deployment needed for this documentation task.
+
+### Browser-download document delivery — 8 October 2026
+
+- User reported that workspace file links could not be downloaded. Added the existing two PDFs and documentation ZIP under `docs/exports` for delivery through normal GitHub browser URLs. Public repository visibility confirmed. Exports match the reviewed source artifacts; ZIP integrity checked, with no APK, JSON credentials or signing files included. No application code changes. Editable Markdown remains the living source; exported PDFs/ZIP are dated snapshots.
