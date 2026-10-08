@@ -28,6 +28,8 @@ Proposed revenue: free listings; seller subscriptions (Starter ₹99/month, Grow
 - Font: self-hosted **Plus Jakarta Sans** variable Latin font; system fallback for Indic scripts. OFL license included alongside the font.
 - Logo: generated HeyHood violet/yellow logo in `frontend/assets/heyhood-logo.png`; Aapta also has a small CSS face avatar.
 
+Homepage branding uses a larger HeyHood logo: 152×44px on mobile and 176×50px on desktop. The display uses the asset’s transparent padding to keep the visible logo clear in compact header space.
+
 ## URLs and deployment
 
 Base: https://heyhood-production-b1b8.up.railway.app
@@ -451,3 +453,8 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 - Firebase release deployed through PR #27, main `eb1dc0b2964305d124d7cf39cde3ac655d7e0403`. Railway reports success; public health is UP and notification controls/status endpoint are live. Public `/api/push/status` reports configured=false; protected push/resident operator endpoints return 503 (missing operator key). Asked user to inspect/apply service-account variable using type service_account and project japamala-8284d, without sharing secrets. APK 1.1 ZIP built outside Git at `/workspace/output/heyhood-firebase/HeyHood-Firebase-Android.zip`; end-to-end phone delivery is not claimed.
 - Competitive research completed from official US/UK product/help pages and dated announcements; full report `docs/US_UK_COMPETITIVE_RESEARCH.md`. Benchmarks: Nextdoor, Cobu, Front Porch Forum, BuildingLink, Olio, Buy Nothing; adjacent Liftshare and Taskrabbit. Nextdoor already offers AI discovery (September improved search specifically US), verified recommendations and paid opportunity alerts, and announced neighborhood advertising intelligence on 7 Oct 2026. Do not claim conversational AI or demand collection alone is exclusive.
 - Recommended roadmap from research: real catalog/provider contacts first; recoverable community identity, enquiry outcomes/reputation/reporting; complete ride agreements and plan organiser/calendar workflows; then Give/Borrow/Lost & found and preference-based targeted updates. Existing profiles, saves, requests, stock, matching and analytics are recognised as present. Provider self-service remains deferred. This is research/proposed scope, not authorization or a claim that these additional features were implemented. Full property-management/news-feed expansion is not recommended for the immediate pilot.
+
+### Homepage logo readability — 8 October 2026
+
+- User requested a slightly larger, clearer HeyHood logo. Increased homepage/inline Shops logo from 96px to 152px mobile and 176px desktop, with compact 44/50px image height and centred display. Bumped homepage CSS cache version. Original image asset and other module branding retained.
+- Validation: inspected 390px screenshot; responsive checks passed 320/390/760/761/1440px with loaded logo and no horizontal overflow. Frontend bundle build passed; backend unchanged, automated backend tests not rerun. Prepared for source push and Railway deployment.
