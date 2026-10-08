@@ -30,6 +30,8 @@ Proposed revenue: free listings; seller subscriptions (Starter ₹99/month, Grow
 
 Homepage branding uses a larger HeyHood logo: 152×44px on mobile and 176×50px on desktop. The display uses the asset’s transparent padding to keep the visible logo clear in compact header space.
 
+Rides and Plans now use compact HeyHood headers, segmented filters and consistent cards. Ride destination search stays prominent; optional time/trip filters and recurring sharing details are expandable. Plans highlights the participation target, progress and confirmation status; saving is secondary to voting. Reached targets still require organiser confirmation.
+
 ## URLs and deployment
 
 Base: https://heyhood-production-b1b8.up.railway.app
@@ -507,3 +509,10 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 ### Browser-download document delivery — 8 October 2026
 
 - User reported that workspace file links could not be downloaded. Added the existing two PDFs and documentation ZIP under `docs/exports` for delivery through normal GitHub browser URLs. Public repository visibility confirmed. Exports match the reviewed source artifacts; ZIP integrity checked, with no APK, JSON credentials or signing files included. No application code changes. Editable Markdown remains the living source; exported PDFs/ZIP are dated snapshots.
+
+### Hood Rides and Hood Plans polish — 8 October 2026
+
+- User requested elegant mobile/desktop layouts and recommendations for the next functional tightening. Simplified both headers and notices, aligned card spacing and actions, moved Save to card footers, and made advanced ride filters collapsible with an active count/reset. Recurring ride details render API comma-separated weekday strings as readable weekday names.
+- Plan cards retain toggle-to-clear voting, show readable target progress, and distinguish organiser-confirmed, cancelled, ended and interest-only status. No new booking, seat reservation, organiser confirmation workflow or notification delivery is implied.
+- Validation: browser tests at 320, 390, 760 and 1440px passed card rendering, overflow checks, advanced filter/reset, recurring request form, weekday rendering and plan vote toggle/participation filters using actual public API-shaped fixtures. Java package build passed; backend code unchanged. Source deployment and live checks follow.
+- Next priorities are explicit ride agreement/seat availability/cancellation, plan organiser confirmation/waitlist/reminders, and real resident onboarding (private flat invitation plus future phone OTP). These remain proposals, not part of this visual update.

@@ -48,6 +48,7 @@
   margin: 22px 0 14px;
 }
 .ride-tabs button {
+  border: 0;
   padding: 12px 18px;
   border-radius: 12px;
   background: #f0e8fb;
@@ -280,4 +281,261 @@
   background: #eee6ff;
   color: #80549c;
   margin-top: 10px;
+}
+
+/* Quiet hierarchy: destination, time, resident, then one contact action. */
+.module-brand img {
+  display: block;
+  width: 120px;
+  height: auto;
+}
+.rides-page .help-header {
+  padding: 10px max(16px, calc((100vw - 1120px) / 2));
+}
+.rides-main {
+  padding-top: 18px;
+}
+.rides-intro {
+  background: none;
+  padding: 8px 0 18px;
+  border-bottom: 1px solid #e6dcf8;
+  border-radius: 0;
+}
+.rides-intro .help-kicker {
+  color: #7859a2;
+  font-size: 10px;
+}
+.rides-intro h1 {
+  font-size: 28px;
+  letter-spacing: -1px;
+  margin: 8px 0;
+}
+.rides-intro p {
+  color: #766b85;
+  margin: 0;
+}
+.ride-new-actions {
+  margin-top: 16px;
+}
+.ride-new-actions button {
+  border: 1px solid #dacef1;
+  font-size: 13px;
+  font-weight: 700;
+  min-height: 44px;
+}
+.rides-pilot {
+  background: #fff6dc;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 14px 0;
+  line-height: 1.5;
+  color: #7b6238;
+}
+.ride-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: #ebe5f4;
+  padding: 4px;
+  border-radius: 14px;
+  margin: 18px 0 12px;
+}
+.ride-tabs button {
+  border: 0;
+  background: transparent;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.ride-tabs button[aria-pressed="true"] {
+  background: white;
+  color: #542dc0;
+  box-shadow: 0 2px 6px #32155010;
+}
+.ride-search input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #e1d7ee;
+  border-radius: 14px;
+  padding: 12px 16px;
+  background: white;
+  font-size: 16px;
+}
+.ride-filter-panel {
+  margin: 10px 0;
+  background: white;
+  border: 1px solid #e8dfef;
+  border-radius: 14px;
+  padding: 0 14px;
+}
+.ride-filter-panel summary {
+  cursor: pointer;
+  padding: 14px 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6e5c83;
+}
+#filter-count {
+  float: right;
+  color: #6336f5;
+  font-weight: 700;
+}
+.ride-filters {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+}
+.ride-filters label {
+  min-width: 0;
+  font-size: 11px;
+  color: #776887;
+}
+.ride-filters input,
+.ride-filters select {
+  font-size: 16px;
+  margin-top: 6px;
+}
+.clear-filters {
+  background: none;
+  color: #6336f5;
+  font-size: 12px;
+  min-height: 44px;
+  padding: 8px 0;
+}
+.ride-grid {
+  gap: 14px;
+  align-items: start;
+}
+.ride-card {
+  padding: 20px;
+  border-radius: 20px;
+  min-width: 0;
+  box-shadow: 0 4px 18px #39215b05;
+  overflow-wrap: anywhere;
+}
+.ride-kind {
+  display: inline-block;
+  background: #f0eaff;
+  padding: 5px 8px;
+  border-radius: 7px;
+  margin-right: 5px;
+  letter-spacing: 0.02em;
+}
+.ride-card h2 {
+  font-size: 23px;
+  letter-spacing: -0.6px;
+  margin: 14px 0 4px;
+}
+.ride-route {
+  color: #786b88;
+  font-size: 12px;
+  margin: 0 0 14px;
+}
+.ride-when {
+  background: #faf7ff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+.ride-person {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 7px 0;
+}
+.ride-badges {
+  margin: 12px 0;
+  gap: 6px;
+}
+.ride-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+.ride-actions .ride-connect {
+  flex: 1;
+  min-height: 44px;
+  padding: 12px 10px;
+  font-size: 12px;
+}
+.ride-actions .save-action {
+  min-height: 44px;
+  margin: 0;
+  white-space: nowrap;
+}
+.ride-disclaimer {
+  line-height: 1.5;
+}
+#post-form input:not([type="checkbox"]),
+#post-form select,
+#post-form textarea {
+  font-size: 16px;
+}
+#repeat-fields fieldset {
+  border: 1px solid #e3d8f2;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#post-form label.repeat-day {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 8px;
+  background: #f4effa;
+  border-radius: 8px;
+}
+#post-sheet {
+  overscroll-behavior: contain;
+}
+.rides-page button:focus-visible,
+.rides-page a:focus-visible,
+.rides-page summary:focus-visible {
+  outline: 3px solid #e6b83b;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .rides-main {
+    padding: 12px 14px 28px;
+  }
+  .ride-card {
+    padding: 18px;
+  }
+  .ride-filters {
+    grid-template-columns: 1fr;
+  }
+  .ride-new-actions {
+    gap: 8px;
+  }
+  .ride-new-actions button {
+    font-size: 12px;
+  }
+  .rides-intro h1 {
+    font-size: 26px;
+  }
+  .ride-tabs {
+    margin-top: 14px;
+  }
+  #post-sheet {
+    max-height: 90dvh;
+  }
+  .post-row {
+    flex-wrap: wrap;
+  }
+  .post-row label {
+    flex: 1 1 120px;
+  }
+}
+.ride-details {
+  border-top: 1px solid #f0e9f7;
+  margin-top: 12px;
+}
+.ride-details summary {
+  padding: 12px 0 4px;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #715483;
 }

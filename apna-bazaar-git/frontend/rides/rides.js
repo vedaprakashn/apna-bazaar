@@ -71,7 +71,7 @@ function render() {
     : "No match yet. Try another time, or post what you need.";
   for (const r of rides) {
     const card = el("article", "ride-card");
-    card.append(heyhoodSaveButton("ride", r.id));
+
     card.append(
       el(
         "span",
@@ -83,26 +83,18 @@ function render() {
             : "SHARE A LIFT",
       ),
     );
-    if (r.recurrence_until)
-      card.append(
-        el(
-          "p",
-          "ride-person",
-          `Repeats on weekdays ${r.weekdays} until ${r.recurrence_until}`,
-        ),
-      );
-    if (r.exchange_terms) card.append(el("p", "ride-person", r.exchange_terms));
-    const route =
-      r.direction === "outbound"
-        ? `${community.selectedOptions[0].textContent} → ${r.destination}`
-        : `${r.destination} → ${community.selectedOptions[0].textContent}`;
     card.append(
       el(
         "span",
         "ride-kind",
         r.kind === "offer" ? "RIDE OFFER" : "NEEDS A RIDE",
       ),
-      el("h2", "", route),
+      el("h2", "", r.destination),
+      el(
+        "p",
+        "ride-route",
+        `${r.direction === "outbound" ? "From" : "To"} ${community.selectedOptions[0].textContent}`,
+      ),
     );
     card.append(
       el(
@@ -143,6 +135,21 @@ function render() {
       el("span", "", `Meet: ${r.pickup}`),
     );
     card.append(badges);
+    if (r.recurrence_until || r.exchange_terms) {
+      const detail = el("details", "ride-details");
+      detail.append(el("summary", "", "Schedule & sharing details"));
+      if (r.recurrence_until)
+        detail.append(
+          el(
+            "p",
+            "ride-person",
+            `Every ${(Array.isArray(r.weekdays) ? r.weekdays : String(r.weekdays || "").split(",")).map((d) => ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][Number(d) - 1]).join(", ")} · until ${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(r.recurrence_until + "T12:00:00+05:30"))}`,
+          ),
+        );
+      if (r.exchange_terms)
+        detail.append(el("p", "ride-person", r.exchange_terms));
+      card.append(detail);
+    }
     if (r.notes && !r.is_demo) card.append(el("p", "ride-notes", r.notes));
     const contact = heyhoodWhatsAppContact(
       r.whatsapp_number,
@@ -156,7 +163,9 @@ function render() {
         r.kind === "offer" ? "Connect on WhatsApp ↗" : "I can help ↗",
       );
       link.href = contact.url;
-      card.append(link);
+      const actions = el("div", "ride-actions");
+      actions.append(link, heyhoodSaveButton("ride", r.id));
+      card.append(actions);
     }
     if (r.mine) {
       const close = el("button", "ride-close", "Close my post");
@@ -191,6 +200,14 @@ function render() {
   }
 }
 async function load() {
+  const active =
+    Number(direction.value === "inbound") +
+    Number(Boolean(around.value)) +
+    Number(Boolean(document.querySelector("#arrangement-filter").value)) +
+    Number(minimumSeats > 1);
+  document.querySelector("#filter-count").textContent = active
+    ? `${active} active`
+    : "";
   controller?.abort();
   controller = new AbortController();
   const slug = community.value;
@@ -355,4 +372,20 @@ document.querySelector("#repeat-enabled").onchange = (e) => {
   document.querySelector("#repeat-until").required = e.target.checked;
 };
 
+if (
+  around.value ||
+  direction.value === "inbound" ||
+  document.querySelector("#arrangement-filter").value ||
+  minimumSeats > 1
+)
+  document.querySelector("#ride-filter-panel").open = true;
+document.querySelector("#clear-filters").onclick = () => {
+  direction.value = "outbound";
+  around.value = "";
+  document.querySelector("#arrangement-filter").value = "";
+  minimumSeats = 1;
+  seatFilter.hidden = true;
+  params.delete("until");
+  load();
+};
 load();

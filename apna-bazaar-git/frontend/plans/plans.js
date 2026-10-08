@@ -36,7 +36,7 @@ function render() {
   for (const p of shown) {
     const card = el("article", "plan-card");
     card.dataset.id = p.id;
-    card.append(heyhoodSaveButton("plan", p.id));
+
     const date = new Date(p.starts_at),
       day = new Intl.DateTimeFormat("en-IN", {
         timeZone: "Asia/Kolkata",
@@ -92,8 +92,8 @@ function render() {
             : p.status === "confirmed"
               ? "Organiser confirmed"
               : reached
-                ? "Interest goal reached · Awaiting organiser confirmation"
-                : `${minimum - count} more needed to reach the interest goal`,
+                ? "Goal reached · Organiser confirmation pending"
+                : `${minimum - count} more neighbours to reach the goal`,
       ),
     );
     const actions = el("div", "plan-actions");
@@ -119,9 +119,21 @@ function render() {
         "plan-disclaimer",
         p.is_demo
           ? "Demo plan · not a confirmed event"
-          : "Interest only · confirmation pending",
+          : p.status === "confirmed"
+            ? "Organiser confirmed"
+            : p.status === "cancelled"
+              ? "Plan cancelled"
+              : p.ended
+                ? "Interest closed"
+                : "Interest only · not a booking",
       ),
     );
+    const footer = el("div", "plan-footer");
+    footer.append(
+      heyhoodSaveButton("plan", p.id),
+      card.querySelector(".plan-disclaimer"),
+    );
+    card.append(footer);
     grid.append(card);
   }
 }
@@ -173,7 +185,13 @@ async function load() {
     plans = data;
     render();
   } catch (e) {
-    if(e.name!=="AbortError") { grid.replaceChildren();status.textContent="Couldn’t load plans. ";const retry=el("button","save-action","Retry ↻");retry.onclick=load;status.append(retry); }
+    if (e.name !== "AbortError") {
+      grid.replaceChildren();
+      status.textContent = "Couldn’t load plans. ";
+      const retry = el("button", "save-action", "Retry ↻");
+      retry.onclick = load;
+      status.append(retry);
+    }
   }
 }
 document.querySelectorAll("[data-filter]").forEach(
