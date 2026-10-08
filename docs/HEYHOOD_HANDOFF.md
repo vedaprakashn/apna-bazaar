@@ -434,3 +434,7 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 - Final release validation: all 22 automated tests pass. Resident API and browser flows passed, including acceptance, privacy, save/follow, recurring rides and stock confirmation. Release is being published to main for Railway auto-deployment; public deployment verification follows. Provider self-service and notifications remain deferred.
 
 - Release merged through PR #24 as `c42507a5bb12c71226a9023d9f5206635098b82f` on 8 Oct 2026. Final bundled browser response/acceptance and save/follow flows and real-AI sold-out/fresh-stock checks passed. Railway auto-deployment is pending public verification; the prior production version remains healthy. Operator review/stock requires the private Railway token noted above.
+
+- Public release verification: My stuff and resident requests API are live, health UP, and 390/1440px public browser checks passed. Protected resident review returns 503 until CAMPAIGN_ADMIN_TOKEN is configured. Live school-run search found the correct reciprocal pickup offer but included this week for “next week”; strengthened date-range instructions to require the requested calendar-week start and end, with targeted AI verification before publishing the correction.
+
+- Date-range correction validated: actual AI search for reciprocal Oakridge pickup next week now starts Monday 12 Oct and ends Sunday 18 Oct, returning the Monday occurrence; tomorrow airport 11pm still matches correctly. All 22 automated tests pass after correction.
