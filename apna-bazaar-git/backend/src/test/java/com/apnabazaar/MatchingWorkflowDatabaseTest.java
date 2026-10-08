@@ -527,4 +527,20 @@ class MatchingWorkflowDatabaseTest {
             .andReturn();
     assertTrue(response.getResponse().getContentAsString().contains("\"state\":\"past\""));
   }
+
+  @Test
+  void expiredDeviceSessionStillReadsPublicPlansWithoutPrivateParticipation() throws Exception {
+    UUID plan = plan();
+    vote(plan, a, "in");
+    var response =
+        mvc.perform(
+                get("/api/" + slug + "/plans")
+                    .param("visitorId", a.toString())
+                    .header("Authorization", "Bearer expired-device-session"))
+            .andReturn();
+    assertEquals(200, response.getResponse().getStatus());
+    assertTrue(
+        json.readTree(response.getResponse().getContentAsString()).get(0).get("my_vote").isNull());
+    call("plans/" + plan + "/vote", Map.of("visitorId", a, "choice", "clear"), null, 401);
+  }
 }

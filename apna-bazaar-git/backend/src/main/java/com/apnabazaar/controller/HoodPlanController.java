@@ -50,7 +50,14 @@ public class HoodPlanController {
   }
 
   private UUID viewer(String slug, UUID visitor, String auth) {
-    if (auth != null) return residents.authorize(slug, auth);
+    if (auth != null) {
+      try {
+        return residents.authorize(slug, auth);
+      } catch (ResponseStatusException e) {
+        if (e.getStatusCode().value() == 401) return null;
+        throw e;
+      }
+    }
     if (visitor != null
         && Boolean.TRUE.equals(
             jdbc.queryForObject(
