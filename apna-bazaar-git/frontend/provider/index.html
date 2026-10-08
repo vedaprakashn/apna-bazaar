@@ -4,7 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Provider storefront · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261007-help1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
+    <script src="../resident.js?v=1"></script>
   </head>
   <body>
     <header class="topbar">
@@ -131,6 +132,27 @@
           const visual = el("div", "product-visual", item.emoji || "🛍");
           card.append(visual);
           const body = el("div", "product-body");
+          const fresh =
+            item.availability_updated_at &&
+            Date.now() - new Date(item.availability_updated_at) < 86400000;
+          const status =
+            item.live_status === "sold_out"
+              ? "Sold out"
+              : fresh && item.live_status === "available"
+                ? "Available today"
+                : fresh && item.live_status === "preorder"
+                  ? "Taking orders"
+                  : "Check availability";
+          body.append(el("span", "availability-status", status));
+          body.append(
+            el(
+              "p",
+              "contact-note",
+              item.availability_updated_at
+                ? `Last confirmed ${new Date(item.availability_updated_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST${fresh ? "" : " · update is older than a day"}`
+                : "No live stock update yet. Confirm with the provider.",
+            ),
+          );
           body.append(
             el("span", "tag", item.category || "Community offering"),
             el("h3", "", item.name),
@@ -209,6 +231,12 @@
             b.onclick = () => renderProducts(c);
             document.getElementById("filters").append(b);
           }
+          document
+            .getElementById("shop")
+            .after(
+              heyhoodSaveButton("provider", p.id),
+              heyhoodSaveButton("provider", p.id, true),
+            );
           renderProducts();
           for (const m of data.todayMenu) {
             const card = el("article", "product-card"),

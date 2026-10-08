@@ -7,9 +7,10 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <title>Hood Rides · HeyHood</title>
-    <link rel="stylesheet" href="../app.css?v=20261008-compact1" />
+    <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
     <link rel="stylesheet" href="../help/help.css?v=4" />
     <link rel="stylesheet" href="rides.css?v=1" />
+    <script src="../resident.js?v=1"></script>
   </head>
   <body class="rides-page">
     <header class="help-header">
@@ -20,7 +21,7 @@
       </select>
     </header>
     <nav class="hood-modules" aria-label="HeyHood modules"></nav>
-    <script src="../modules.js?v=1" defer></script>
+    <script src="../modules.js?v=3" defer></script>
     <main class="rides-main">
       <section class="rides-intro">
         <span class="help-kicker">SAME HOOD. SHARED JOURNEYS.</span>
@@ -61,6 +62,15 @@
             aria-label="Around departure time in IST"
         /></label>
       </div>
+      <label class="ride-filter-note"
+        >Trip type
+        <select id="arrangement-filter">
+          <option value="">Any trip</option>
+          <option value="lift">Share a lift</option>
+          <option value="shared_cab">Split a cab</option>
+          <option value="school_run">School runs</option>
+        </select></label
+      >
       <button id="seat-filter" hidden></button>
       <p class="ride-filter-note">
         Times are in IST. Picking a time finds departures within an hour.
@@ -113,8 +123,76 @@
           >
         </div>
         <label
+          >Trip type<select id="post-arrangement">
+            <option value="lift">Share a lift</option>
+            <option value="shared_cab">Split an Uber / cab</option>
+            <option value="school_run">School pickup / drop</option>
+          </select></label
+        >
+        <label
           >When? (IST)<input id="post-time" type="datetime-local" required
         /></label>
+        <label class="publish-check"
+          ><input id="repeat-enabled" type="checkbox" />Repeat this
+          journey</label
+        >
+        <div id="repeat-fields" hidden>
+          <label>Repeat until<input id="repeat-until" type="date" /></label>
+          <fieldset>
+            <legend>Days</legend>
+            <label class="repeat-day"
+              ><input
+                type="checkbox"
+                name="repeat-day"
+                value="1"
+                checked
+              />Mon</label
+            ><label class="repeat-day"
+              ><input
+                type="checkbox"
+                name="repeat-day"
+                value="2"
+                checked
+              />Tue</label
+            ><label class="repeat-day"
+              ><input
+                type="checkbox"
+                name="repeat-day"
+                value="3"
+                checked
+              />Wed</label
+            ><label class="repeat-day"
+              ><input
+                type="checkbox"
+                name="repeat-day"
+                value="4"
+                checked
+              />Thu</label
+            ><label class="repeat-day"
+              ><input
+                type="checkbox"
+                name="repeat-day"
+                value="5"
+                checked
+              />Fri</label
+            ><label class="repeat-day"
+              ><input type="checkbox" name="repeat-day" value="6" />Sat</label
+            ><label class="repeat-day"
+              ><input type="checkbox" name="repeat-day" value="7" />Sun</label
+            >
+          </fieldset>
+        </div>
+        <label
+          >Exchange or cost-sharing details<textarea
+            id="exchange-terms"
+            maxlength="240"
+            placeholder="I can do morning drops if you handle afternoons…"
+          ></textarea>
+        </label>
+        <p class="ride-filter-note">
+          For school runs, parents must agree the driver, children, schedule and
+          handover. Interest is not a booking.
+        </p>
         <details class="ride-extra">
           <summary>Add your name & pickup details</summary>
           <label
@@ -154,6 +232,6 @@
     </dialog>
     <script src="../contact.js?v=20261007-professional1"></script>
     <script src="contact.js?v=1"></script>
-    <script src="rides.js?v=2"></script>
+    <script src="rides.js?v=3"></script>
   </body>
 </html>

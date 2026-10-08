@@ -22,6 +22,8 @@ public class Offering {
     private BigDecimal basePrice;
     private String unit;
     private Boolean isAvailable = true;
+    private String liveStatus = "unconfirmed";
+    private Instant availabilityUpdatedAt;
     private Integer sortOrder = 0;
     private Instant createdAt = Instant.now();
     @OneToMany(mappedBy = "offering", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

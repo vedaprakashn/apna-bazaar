@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Resident review & availability · HeyHood</title>
+    <link rel="stylesheet" href="../app.css?v=20261008-resident1" />
+    <link rel="stylesheet" href="../activity/activity.css?v=1" />
+  </head>
+  <body>
+    <main class="activity-main">
+      <a href="index.html">Analytics ↗</a> ·
+      <a href="campaigns.html">Campaigns ↗</a>
+      <h1>Resident review & availability</h1>
+      <p>
+        Verify name and flat against your community records before approving. A
+        badge records your review; it is not a background check.
+      </p>
+      <form id="operator-form" class="activity-card">
+        <label
+          >Community<select id="community">
+            <option value="tridasa">MyHome Tridasa</option>
+            <option value="sayuk">MyHome Sayuk</option>
+          </select></label
+        ><label
+          >Operator key<input
+            id="operator-key"
+            type="password"
+            required
+            autocomplete="off"
+            placeholder="CAMPAIGN_ADMIN_TOKEN configured in Railway" /></label
+        ><button>Load operator workspace</button>
+      </form>
+      <p id="status" role="status"></p>
+      <h2>Resident profiles</h2>
+      <div id="residents" class="activity-grid"></div>
+      <h2>Availability updates</h2>
+      <input
+        id="stock-search"
+        type="search"
+        placeholder="Filter shop or offering"
+        aria-label="Filter offerings"
+      />
+      <div id="stock" class="activity-grid"></div>
+    </main>
+    <script src="residents.js?v=1"></script>
+  </body>
+</html>

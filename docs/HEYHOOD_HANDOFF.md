@@ -1,6 +1,6 @@
 # HeyHood — living product and engineering handoff
 
-Updated: 7 October 2026 (Asia/Kolkata).
+Updated: 8 October 2026 (Asia/Kolkata).
 Repository: https://github.com/vedaprakashn/apna-bazaar
 
 This is the functional context, implementation guide, and conversation decision record for a new collaborator. It describes the current implementation, including the changes accompanying this document. It is not a verbatim export of every chat turn: some earlier turns are only available as contextual summaries. Do not treat reconstructed history as exact quotations. The original chat remains the source for exact wording.
@@ -35,6 +35,12 @@ Base: https://heyhood-production-b1b8.up.railway.app
 | Page | Path |
 | --- | --- |
 | Resident chat | `/chatbot/index.html` |
+| Shops | `/chatbot/index.html?explore=shops` |
+| Hood Rides | `/rides/index.html` |
+| Hood Plans | `/plans/index.html` |
+| Help | `/help/index.html` |
+| My stuff | `/activity/index.html` |
+| Resident review / stock | `/admin/residents.html` |
 | Analytics | `/admin/index.html` |
 | Campaign studio | `/admin/campaigns.html` |
 | Provider storefront | `/provider/index.html?community=tridasa&id=PROVIDER_UUID` |
@@ -53,7 +59,7 @@ Environment variable names (never copy secret values into this document):
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` configure the application datasource.
 - Railway Postgres exposes `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`. Reference those into the app's DB variables; they are different services' variable names.
 - `APNA_OPENAI_API_KEY`; `OPENAI_MODEL` defaults to `gpt-4.1-mini`.
-- `CAMPAIGN_ADMIN_TOKEN` is a separate token for campaign writes. The last explicit production write-auth check found it unset; confirm its current Railway value securely before editing campaigns.
+- `CAMPAIGN_ADMIN_TOKEN` protects campaign writes, resident approvals and offering availability updates. The last explicit production write-auth check found it unset; confirm its current Railway value securely before editing campaigns.
 - `CHAT_MESSAGES_PER_MINUTE` defaults to 10.
 - Railway injects `PORT`.
 
@@ -120,7 +126,7 @@ Earlier bugs stripped Indic characters and confused the user's language with the
 
 ## Catalog and ingestion
 
-30 demo providers, 120 offerings, 21 categories per pilot community. Fictional names/flats/prices remain clearly marked Demo. Categories include food/tiffin, batter, juices/shakes, snacks, groceries, dairy, classes, fitness, repairs/cleaning, and added Meat & Seafood, Biryani, Flowers, Ice Creams, Gifts & Crafts.
+51 demo providers, 184 offerings, 23 categories per pilot community. Fictional names/flats/prices remain clearly marked Demo. Categories include food/tiffin, batter, juices/shakes, snacks, groceries, dairy, classes, fitness, repairs/cleaning, and added Meat & Seafood, Biryani, Flowers, Ice Creams, Gifts & Crafts.
 
 Flyway migration progression:
 
@@ -144,13 +150,13 @@ Chat and storefront messages include shop, community and flat so the shared test
 
 Click analytics are best effort and must not block the contact action. Existing session cards refresh phone data from the catalog. Future production contacts should be per-provider.
 
-Group support is implemented through provider.whatsappGroupUrl / database whatsapp_group_url. V13 assigns the user-authorized shared group link to all existing providers. A configured group takes precedence over the retained individual number. frontend/contact.js validates HTTPS, the exact chat.whatsapp.com host and invite path; otherwise it builds a personal wa.me link. Invalid configured group URLs disable contact rather than silently sending users elsewhere. Group links do not accept the personal prefilled-message flow; a click does not prove a group join. The user supplies the destination; future per-provider group editing and backend registration validation still need an operator UI/API.
+Current routing is individual WhatsApp only, using the shared pilot number. V17 removed configured group destinations and the Copy enquiry action at the user’s request. Earlier group support remains historical context; provider self-service and per-provider routing are deferred.
 
 ## Promotions and campaigns
 
 21 active category campaigns per pilot community: 6 broadcast, 15 promoted; four older generic campaigns remain paused for history. Each campaign has title, body, CTA text, offering/provider destination, active flag and optional schedule.
 
-Campaign studio creates/edits/enables/pauses campaigns and selects an offering. Writes require `CAMPAIGN_ADMIN_TOKEN`; the token is entered into the studio, not persisted in browser storage. Operator links live in the mobile menu; this visual separation is not access-control enforcement.
+Campaign studio creates/edits/enables/pauses campaigns and selects an offering. Writes require `CAMPAIGN_ADMIN_TOKEN`; the token is entered into the studio, not persisted in browser storage. Operator links are desktop-only; this visual separation is not access-control enforcement.
 
 In-chat campaign polling is approximately every three minutes when the page is visible and not busy. This release additionally pauses insertion while the user has a draft, focuses the composer, recently typed, reads older chat, or opens Explore/operator menu. Compact cards have one storefront CTA and a dismissal control. Dismissed campaigns stay dismissed for that community/browser session; no new impression is created on restoration.
 
@@ -408,3 +414,21 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 
 - User noted the hamburger is redundant now that module tabs exist. Removed it and the duplicate desktop Discover link. Analytics and Campaigns remain direct desktop header links; resident modules remain in the shared tab row. Removed menu JavaScript references, including the promotion pause check, to avoid null-element errors.
 - Validation: package build and responsive Shops/module navigation checks passed at 320/390/1440px. Frontend-only change prepared for main/Railway release; APK/notifications excluded.
+
+### Resident improvements — all except provider self-service
+
+- User authorised the seven resident improvements and everyday UX refinements; provider self-service stays deferred. APK and Firebase notification work remain excluded.
+- Conversational follow-ups: POST `/api/{slug}/search` accepts q, sessionId and at most six previous resident messages (500 characters each). Context is bounded, screened with the latest message and treated as untrusted conversation data. Aapta resolves a standalone intent, preserves relevant route/time/seats or service constraints and recognises a new topic. Existing GET search remains compatible. Chat saves history per community and provides retry without re-opening the keyboard.
+- Live availability: offerings have available/sold_out/preorder/unconfirmed state and a confirmation timestamp. Protected operators update stock at `/admin/residents.html`. Available/taking-order labels require a confirmation within 24 hours; older or missing updates say check availability. Sold-out listings are excluded from discovery. Exact provider/offering IDs from structured AI responses are validated against current catalog entries. Storefront and chat show confirmation timestamps. No seller self-service was added.
+- Unmet needs: empty non-emergency searches offer an explicit Post this need action. Requests are community-scoped, moderated, rate-limited, expiring (up to 30 days) and never automatically broadcast. Optional profile and publication consent are required. Neighbours can respond; the requester explicitly accepts a response or closes a request. Accepted requests stop collecting public responses. My activity exposes responses only to their requester/responder; parent/driver/service arrangements still require agreement, not an automatic booking.
+- Rides: added shared-cab/lift/school-run types, chosen repeat weekdays, an inclusive end date (within 30 days) and reciprocal/cost-sharing terms. Search matches future occurrences rather than only the original departure. School pickups are inbound; drops outbound. A need for afternoon pickup plus an offer of morning drops matches afternoon ride offers. Cards show repeat terms and verification state. V23 adds clearly fictional shared-cab and recurring school-run examples. All WhatsApp contact still uses the authorised shared pilot number; no personal contact-routing or fare payment integration.
+- Save/follow: residents can save providers, rides and plans, or follow shop availability changes. My activity shows followed-shop updates after following, not push notifications. Save/follow controls stay in sync. Saved entities are validated within the selected community.
+- Optional resident profiles: name, flat and separate public name/flat visibility choices. A cryptographically random device capability is stored on the resident's browser; only its SHA-256 hash is stored server-side. Private profile/activity/saved writes require that capability. Browsing remains open. Profiles start pending; a protected operator must review community records to mark verified/rejected. Editing name/flat resets review; privacy-only changes keep it. V24 records review time. This is an operator review, not an OTP/account-recovery service or a background check. Clearing device storage loses that device access; cross-device sign-in/recovery remains future work.
+- Creating a profile imports that device's legacy anonymous plan votes and ride ownership within the community, without doubling plan counts. Import from an existing registered profile requires its capability. Registered-profile ride posting/closure requires the corresponding profile authorization; fictional seeded rows never appear verified.
+- My activity: new module (`/activity/index.html`, label My stuff) covers saved/followed finds, updates, own needs, offered/accepted responses, own ride posts and plan choices, plus Profile and Hood requests views. Expired requests/rides are labelled rather than presented as current matches. New shared resident APIs are under `/api/{slug}/resident`: profile, activity, saved, requests and response/accept/close actions.
+- UX: offline status with retained drafts, loading placeholders in module lists, inline retries, clear empty states, reduced-motion support, mobile input sizes and accessible pressed states. Request publication and acceptance require explicit resident actions.
+- Operator prerequisite: protected resident review and stock updates reuse `CAMPAIGN_ADMIN_TOKEN`. A no-credential production probe confirmed it was not configured on 8 Oct; asked the user to add it securely in Railway without sharing its value. Resident browsing/profile/request/save/ride features work while operator functions remain locked. No secret was committed. Operator UI: `/admin/residents.html`; desktop discovery header has Resident review link.
+- Validation before release: 20 Maven tests passed, including six new checks for explicit consent, bounded/screened history, private activity auth, moderation failure and protected operator access. Local PostgreSQL migrations V23/V24 and app health passed. Actual API flows tested privacy masking, operator review/re-review/audit, idempotent needs, response ownership/acceptance, follows and updates, recurring/cab matching, authenticated ride closure, repeat-day validation, and legacy vote import without double counting. Browser checks at 320/390/1440px passed Profile/My activity/request forms, recurring ride fields, saved plan actions and stock labels. Actual browser flows created a profile/request, sent and accepted a neighbour response and kept save/follow controls aligned. Real AI tests passed route/time/seat follow-ups, new-topic replacement, shared cabs and reciprocal school pickups. Stock tests exposed missing offering references; strict structured provider responses were added and are being rechecked before release.
+- Final stock validation correction: the initial integration assertion changed the cooked-food seller but queried batter, so its failure was in the fixture/query pairing. Corrected the query to steamed idli; verified that sold-out stock excludes that seller and fresh confirmations produce an available badge. Strict provider/offer references remain as a robustness improvement. Older response formats use conservative availability only for a sole eligible offering or uniformly fresh confirmed eligible offerings; stale/mixed evidence stays unconfirmed. New unit checks cover stale/mixed stock and rejection of a sold-out offering identifier. The final build includes 22 tests.
+
+- Final release validation: all 22 automated tests pass. Resident API and browser flows passed, including acceptance, privacy, save/follow, recurring rides and stock confirmation. Release is being published to main for Railway auto-deployment; public deployment verification follows. Provider self-service and notifications remain deferred.
