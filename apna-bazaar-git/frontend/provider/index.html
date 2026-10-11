@@ -11,16 +11,13 @@
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="../chatbot/index.html"
-        ><img
+      <div class="brand">
+        <img
           class="brand-logo"
           src="../assets/heyhood-logo.png"
           alt="HeyHood — Good things. Close by."
-        /><span class="tag">local storefront</span></a
-      >
-      <nav class="nav">
-        <a href="../chatbot/index.html">← Back to your hood</a>
-      </nav>
+        /><span class="tag">local storefront</span>
+      </div>
     </header>
     <main class="container">
       <div id="error" class="error" role="alert" hidden></div>
@@ -93,8 +90,7 @@
         ></section>
       </div>
       <footer class="footer">
-        <span>HeyHood · Support a neighbour</span
-        ><a href="../chatbot/index.html">Explore your community →</a>
+        <span>HeyHood · Support a neighbour</span>
       </footer>
     </main>
     <div id="toast" class="toast" role="status" hidden></div>
@@ -226,7 +222,7 @@
         try {
           if (!id)
             throw Error(
-              "No provider selected. Open a provider’s name from chatbot search results.",
+              "No shop selected. Open the shop link shared by your provider.",
             );
           const r = await fetch(
             `${API_BASE}/api/${encodeURIComponent(slug)}/providers/${encodeURIComponent(id)}/storefront${eventId ? `?searchEventId=${encodeURIComponent(eventId)}` : ""}`,
