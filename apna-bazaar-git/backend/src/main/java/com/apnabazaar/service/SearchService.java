@@ -123,7 +123,7 @@ public class SearchService {
         else analyticsService.recordImpressions(event, matched);
 
         return SearchResponse.builder()
-            .intro(Optional.ofNullable(extract(aiResponse, "intro")).orElse(matched.isEmpty() ? aiResponse : matched.getFirst().matchReason()))
+            .intro(providerIntro(aiResponse, matched))
             .providers(matched)
             .sessionId(event.getId())
             .totalResults(matched.size())
@@ -365,7 +365,9 @@ public class SearchService {
                Use the storefront for schedules. Live status available/preorder confirmed within 24 hours may be described as available today/taking orders.
                An older or absent confirmation means ask the provider. SOLD OUT overrides any old TODAY'S MENU and must never be recommended.
                Return offeringId as the exact relevant non-sold-out catalog offering UUID for every matched seller.
-            4. Return a JSON object with intro and sellers fields:
+            4. Return at most SIX distinct sellers, choosing the best matching offering per seller.
+               Keep each matchReason to one short sentence.
+               Return a JSON object with intro and sellers fields:
                {"intro":"Specific answer in the mandatory response language",
                 "sellers":[{"id":"seller UUID","offeringId":"offering UUID","matchReason":"specific matching offering and why it fits the request"}]}
                Every matching seller needs a card. If none match, use sellers:[] and explain
@@ -383,11 +385,11 @@ public class SearchService {
     private String callJson(String system, String user) { return callJson(system,user,false); }
     private String callJson(String system,String user,boolean providerSchema) {
         String schema="""
-          {"type":"object","properties":{"intro":{"type":"string"},"sellers":{"type":"array","items":{"type":"object","properties":{"id":{"type":"string"},"offeringId":{"type":"string"},"matchReason":{"type":"string"}},"required":["id","offeringId","matchReason"],"additionalProperties":false}}},"required":["intro","sellers"],"additionalProperties":false}
+          {"type":"object","properties":{"intro":{"type":"string"},"sellers":{"type":"array","maxItems":6,"items":{"type":"object","properties":{"id":{"type":"string"},"offeringId":{"type":"string"},"matchReason":{"type":"string"}},"required":["id","offeringId","matchReason"],"additionalProperties":false}}},"required":["intro","sellers"],"additionalProperties":false}
           """;
         ResponseFormat format=providerSchema?ResponseFormat.builder().type(ResponseFormat.Type.JSON_SCHEMA).jsonSchema(ResponseFormat.JsonSchema.builder().name("provider_matches").schema(schema).strict(true).build()).build():new ResponseFormat(ResponseFormat.Type.JSON_OBJECT,null);
         var options = OpenAiChatOptions.builder().temperature(0.1)
-            .responseFormat(format).build();
+            .responseFormat(format).maxTokens(providerSchema ? 2500 : 1500).build();
         return chatModel.call(new Prompt(List.of(new SystemMessage(system), new UserMessage(user)), options))
             .getResult().getOutput().getText();
     }
@@ -452,6 +454,15 @@ public class SearchService {
             return new TodayItemDto(li.getItemName(), li.getPrice(), li.getPickupTime(),
                 li.getPickupLocation(), li.getDeliveryType() != null ? li.getDeliveryType().name() : null, status);
         }).toList();
+    }
+
+    private String providerIntro(String raw, List<MatchedProvider> matched) {
+        String intro = extract(raw, "intro");
+        if (intro != null) return intro;
+        if (!matched.isEmpty() && matched.getFirst().matchReason() != null)
+            return matched.getFirst().matchReason();
+        // A truncated or malformed model response is never resident-facing text.
+        return "That reply didn’t come through properly. Give it another try?";
     }
 
     private String extract(String raw, String tag) {
