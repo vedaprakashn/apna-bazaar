@@ -13,6 +13,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class SearchResultTest {
     @Test
+    void truncatedJsonIsNeverShownAsResidentCopy() {
+        var service = new SearchService(null, null, null, null, null, null, new ObjectMapper(), null, null, null);
+        String truncated = "{\"intro\":\"Snack picks in your hood\",\"sellers\":[{\"id\":\"unfinished";
+        String intro = ReflectionTestUtils.invokeMethod(service, "providerIntro", truncated, List.of());
+        assertEquals("That reply didn’t come through properly. Give it another try?", intro);
+        assertFalse(intro.contains("sellers"));
+    }
+    @Test
+    void validNoMatchStillUsesReadableIntro() {
+        var service = new SearchService(null, null, null, null, null, null, new ObjectMapper(), null, null, null);
+        assertEquals("No snack picks yet", ReflectionTestUtils.invokeMethod(service, "providerIntro",
+            "{\"intro\":\"No snack picks yet\",\"sellers\":[]}", List.of()));
+    }
+
+    @Test
     void multipleMatchingOfferingsProduceOneSellerCard() {
         var service = new SearchService(null, null, null, null, null, null, new ObjectMapper(), null, null, null);
         UUID id = UUID.randomUUID();
