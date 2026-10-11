@@ -22,6 +22,9 @@ public class Offering {
     private BigDecimal basePrice;
     private String unit;
     private Boolean isAvailable = true;
+    @org.hibernate.annotations.Formula("provider_item_available(id, (now() AT TIME ZONE 'Asia/Kolkata')::date)")
+    private Boolean effectiveAvailable;
+    public Boolean getIsAvailable() { return effectiveAvailable == null ? isAvailable : effectiveAvailable; }
     private String liveStatus = "unconfirmed";
     private Instant availabilityUpdatedAt;
     private Integer sortOrder = 0;

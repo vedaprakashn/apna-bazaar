@@ -141,6 +141,14 @@ Important regression phrases:
 
 Earlier bugs stripped Indic characters and confused the user's language with the language being taught. Guards also separate cooked idli from batter and teaching requests from unrelated providers. Do not invent prices, stock, availability, hours or provider IDs.
 
+## Provider shop studio
+
+- Private workspace: `/seller/index.html?community={slug}&id={providerId}`; the operator-issued link includes a 256-bit capability in a URL fragment. The editor moves it into session storage and removes the fragment; API calls carry it as a bearer header. Hash only at rest; expires after 90 days, replacement revokes the old link. Not phone OTP login or proof of identity. Operator provisioning requires `CAMPAIGN_ADMIN_TOKEN` at `/admin/providers.html`, linked from Analytics and the resident operator workspace. New providers have no verification badge.
+- Public sharing: `/provider/index.html?community={slug}&id={providerId}`; stable across edits, contains no edit credential or search context. Share buttons use native share where supported, otherwise clipboard. Never share a private editor link with a public group.
+- Editors add/remove up to 100 items; choose an existing category, offering type, description, price/unit, same-day serving window and weekly serving days. Save drafts privately; explicit Publish commits all items atomically to the existing discovery/storefront catalog. Removed items are archived, preserving foreign-key history. Concurrent stale draft saves/publishes return 409. IDs cannot update another shop's offerings.
+- Item-specific date overrides (IST, within 90 days) turn individual days on/off without changing default availability. Public Shops and storefront availability plus AI catalog eligibility use today's effective date flag. Future-date switches are stored until their date; this is not a real-time stock count, automated daily menu import or booking guarantee. Publishing resets obsolete stock confirmation labels; serving schedules are descriptive, not proof of currently open stock.
+- Pilot access is operator-approved, not anonymous claiming by public provider ID. Phone-account recovery and self-registration/identity ownership binding remain future work. Providers choose existing categories; creation of new global taxonomy categories remains operator/developer managed.
+
 ## Catalog and ingestion
 
 57 demo providers, 208 offerings, 25 categories per pilot community after V28. Dedicated Snacks and Chaat categories each have three demo storefronts with four items per shop (24 new offerings per community), daily example serving hours 16:00–20:30 IST and the existing pilot WhatsApp contact. Existing Sweets & Snacks remains available. Fictional names/flats/prices remain clearly marked Demo. Categories include food/tiffin, batter, juices/shakes, snacks, groceries, dairy, classes, fitness, repairs/cleaning, and added Meat & Seafood, Biryani, Flowers, Ice Creams, Gifts & Crafts.
@@ -167,7 +175,7 @@ Chat and storefront messages include shop, community and flat so the shared test
 
 Click analytics are best effort and must not block the contact action. Existing session cards refresh phone data from the catalog. Future production contacts should be per-provider.
 
-Current routing is individual WhatsApp only, using the shared pilot number. V17 removed configured group destinations and the Copy enquiry action at the user’s request. Earlier group support remains historical context; provider self-service and per-provider routing are deferred.
+Current routing is individual WhatsApp only, using the shared pilot number. V17 removed configured group destinations and the Copy enquiry action at the user’s request. Earlier group support remains historical context. Provider self-service is implemented with operator-issued private edit links; operators can register real provider WhatsApp numbers. Existing demo contacts retain the shared pilot number.
 
 ## Promotions and campaigns
 
@@ -551,3 +559,8 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 
 - User screenshot showed structured seller JSON exposed as chat text on a broad snacks search. Provider responses previously fell back to the entire raw model output when JSON parsing failed (including truncation). Removed that fallback: invalid replies now show a short retry message, never raw JSON. Provider answers request at most six distinct sellers, one short reason each, with a schema array limit and a 2500-token response budget. Valid no-match explanations and existing provider/catalog validation remain.
 - Validation: package build and 40 automated tests passed, including truncated-output and valid empty-match intro regressions; 13 opt-in database tests were skipped. Local live-model smoke request stopped at the moderation prerequisite with HTTP 503, so it does not establish model success. Production verification follows source release.
+
+### Provider self-service authorised — 11 October 2026
+
+- User requested item/category/price/time management, per-day switches, publishing and separate shareable provider URLs. Implemented the Shop studio draft/publish workflow, scoped private capability editing, operator onboarding/link replacement and public storefront sharing described above. This supersedes earlier deferral of provider self-service; public resident tabs remain unchanged. V29 adds workspaces, archived offerings and date overrides.
+- Validation: 61 automated tests passed, including eight new real local PostgreSQL tests for private access, cross-shop/community rejection, unpublished draft isolation, price/schedule publication, today-vs-tomorrow switches, optimistic revisions, token rotation, archiving, foreign item rejection and protected operator creation without verification badges. Responsive browser checks passed at 320, 390, 760 and 1440px using real local APIs: add item, draft isolation, publish, day-off exclusion, public storefront status, sharing without credentials, no overflow or uncaught page errors. Operator onboarding UI also loaded successfully. Eight provider database tests were rerun after schedule-import refinement and passed. Browser fixtures were removed. Source release follows; production operator access still returns 503 until CAMPAIGN_ADMIN_TOKEN is configured.

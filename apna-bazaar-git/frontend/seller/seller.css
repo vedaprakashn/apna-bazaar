@@ -1,0 +1,208 @@
+.seller-main {
+  max-width: 1050px;
+  margin: 24px auto;
+  padding: 0 20px 110px;
+}
+.seller-heading,
+.share-card,
+.items-heading,
+.item-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.seller-heading h1 {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  margin: 10px 0;
+}
+.share-card,
+.item-card {
+  background: #fff;
+  border: 1px solid #e5def1;
+  border-radius: 24px;
+  padding: 22px;
+  margin: 20px 0;
+  box-shadow: 0 5px 0 #ece6f7;
+}
+.share-card {
+  background: #f4edff;
+}
+.share-card h2,
+.items-heading h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.public-url {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+}
+.studio-note {
+  padding: 16px 20px;
+  border-radius: 18px;
+  background: #faf7ff;
+  margin: 20px 0;
+}
+.studio-note p {
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+.item-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.seller-main label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.seller-main input,
+.seller-main textarea,
+.seller-main select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  padding: 12px;
+  border: 1px solid #ded5ec;
+  border-radius: 12px;
+  background: #fff;
+  color: #292139;
+}
+.seller-main button {
+  font: inherit;
+  border: 1px solid #cfc1e9;
+  border-radius: 14px;
+  padding: 11px 16px;
+  cursor: pointer;
+  background: #eee6ff;
+  color: #572acb;
+  white-space: nowrap;
+}
+.seller-main button.primary {
+  background: #6b28ef;
+  color: white;
+}
+.seller-main button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.item-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+.seller-main .check {
+  flex-direction: row;
+  align-items: center;
+}
+.check input {
+  width: 20px;
+  height: 20px;
+}
+.day-buttons {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.day-buttons button {
+  padding: 7px 10px;
+  font-size: 0.8rem;
+}
+.day-buttons button[aria-pressed="true"] {
+  background: #6b28ef;
+  color: #fff;
+}
+.date-editor {
+  margin-top: 20px;
+  border-top: 1px solid #eee;
+  padding-top: 14px;
+}
+.date-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+}
+.date-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.date-chips button {
+  font-size: 0.85rem;
+  white-space: normal;
+}
+.studio-footer {
+  position: sticky;
+  bottom: 8px;
+  background: #fff;
+  border: 1px solid #e5def1;
+  box-shadow: 0 0 25px #30205015;
+  border-radius: 20px;
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+.studio-footer p {
+  font-size: 0.85rem;
+  margin: 0;
+}
+.studio-footer > div {
+  display: flex;
+  gap: 8px;
+}
+#status {
+  overflow-wrap: anywhere;
+}
+#status.error {
+  color: #a11840;
+}
+.seller-main :focus-visible {
+  outline: 3px solid #facb35;
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .seller-main {
+    padding: 0 14px 80px;
+    margin: 16px auto;
+  }
+  .seller-heading,
+  .share-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .item-grid {
+    grid-template-columns: 1fr;
+  }
+  .item-card {
+    padding: 16px;
+  }
+  .date-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  .date-controls button {
+    grid-column: 1/-1;
+  }
+  .studio-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .studio-footer > div button {
+    flex: 1;
+    padding: 12px 8px;
+  }
+  .share-card button {
+    width: 100%;
+  }
+  .item-title {
+    align-items: flex-start;
+  }
+}
