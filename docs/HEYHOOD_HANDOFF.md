@@ -143,7 +143,7 @@ Earlier bugs stripped Indic characters and confused the user's language with the
 
 ## Catalog and ingestion
 
-51 demo providers, 184 offerings, 23 categories per pilot community. Fictional names/flats/prices remain clearly marked Demo. Categories include food/tiffin, batter, juices/shakes, snacks, groceries, dairy, classes, fitness, repairs/cleaning, and added Meat & Seafood, Biryani, Flowers, Ice Creams, Gifts & Crafts.
+57 demo providers, 208 offerings, 25 categories per pilot community after V28. Dedicated Snacks and Chaat categories each have three demo storefronts with four items per shop (24 new offerings per community), daily example serving hours 16:00–20:30 IST and the existing pilot WhatsApp contact. Existing Sweets & Snacks remains available. Fictional names/flats/prices remain clearly marked Demo. Categories include food/tiffin, batter, juices/shakes, snacks, groceries, dairy, classes, fitness, repairs/cleaning, and added Meat & Seafood, Biryani, Flowers, Ice Creams, Gifts & Crafts.
 
 Flyway migration progression:
 
@@ -541,3 +541,8 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 
 - Production release: PR #37 merged as `534348302f2fbfd440e5a96ed52eb1023f999e6e`; Railway deployment 6943178657 succeeded. Live Rides, Plans, Help and identity/profile UI checks passed at 390/1440px with no overflow or page errors. Health is UP; agreement/inbox endpoints reject anonymous access with 401. Actual phone config reports configured=false and operator resident endpoint reports 503, so the app service still needs FIREBASE_WEB_API_KEY plus Firebase Phone setup and CAMPAIGN_ADMIN_TOKEN before real OTP and private invitation generation can be used. No real phone messages, votes, ride agreements or invitation records were created in production validation.
 - Follow-up session refinement: public Plans remain readable when a device session expires, with private participation hidden; joining/withdrawing still requires the valid resident capability. All 13 local database regression tests passed after adding this case. The earlier full 50-test suite passed; this is one additional regression, not a claim of a new full-suite run.
+
+### Snacks and Chaat demo menus — 11 October 2026
+
+- User requested snacks and “chats”; interpreted the latter as Chaat. V28 adds Crispy Corner, Chai Side Bites, Crunch Club, Chaat Street, Tikki Talk and Chatpata Adda in both Tridasa and Sayuk, with fictional resident names/flats, four menu items each, prices and daily example serving schedules. No verified badges or confirmed live stock are claimed. Categories feed existing shop filters, storefronts and chat catalog; category tiles use tailored prompts.
+- Validation: Java package build passed; Flyway V28 applied successfully to local PostgreSQL. Both community catalog APIs show three shops and twelve items per new category; all six storefronts per community expose daily serving schedules, positive prices and the pilot WhatsApp number, with verification false. Catalog totals checked: 57 shops, 208 offerings, 25 categories per community. Railway release follows.
