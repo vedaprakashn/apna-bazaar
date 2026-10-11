@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Provider onboarding · HeyHood</title>
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
+    <link rel="stylesheet" href="../seller/seller.css?v=1" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="index.html"
+        ><img
+          class="brand-logo"
+          src="../assets/heyhood-logo.png"
+          alt="HeyHood" /></a
+      ><a href="residents.html">Resident workspace ↗</a>
+    </header>
+    <main class="seller-main">
+      <h1>Bring a shop into the hood</h1>
+      <p>
+        Create an approved provider or issue a private edit link for an existing
+        shop. Share edit links privately with the owner; public shop links can
+        go into groups.
+      </p>
+      <form id="operator" class="item-card">
+        <div class="item-grid">
+          <label
+            >Community<select id="community">
+              <option value="tridasa">MyHome Tridasa</option>
+              <option value="sayuk">MyHome Sayuk</option>
+            </select></label
+          ><label
+            >Operator key<input
+              id="key"
+              type="password"
+              autocomplete="off"
+              required
+              placeholder="CAMPAIGN_ADMIN_TOKEN"
+          /></label>
+        </div>
+        <button>Load providers</button>
+      </form>
+      <p id="status" role="status"></p>
+      <section id="tools" hidden>
+        <form id="existing" class="item-card">
+          <h2>Existing shop</h2>
+          <label>Provider<select id="provider"></select></label>
+          <p>
+            A fresh edit link immediately replaces the old one. Saved drafts
+            stay intact.
+          </p>
+          <button>Issue / replace edit link</button>
+        </form>
+        <form id="new" class="item-card">
+          <h2>New provider</h2>
+          <div class="item-grid">
+            <label
+              >Resident name<input
+                name="name"
+                required
+                maxlength="200" /></label
+            ><label
+              >Shop name<input name="shop" required maxlength="200" /></label
+            ><label
+              >Flat number<input name="flat" required maxlength="50" /></label
+            ><label
+              >WhatsApp · country code + digits<input
+                name="whatsapp"
+                required
+                pattern="[1-9][0-9]{7,14}"
+                placeholder="919740893534" /></label
+            ><label
+              >Provider type<select name="type">
+                <option value="food_seller">Food seller</option>
+                <option value="grocery">Grocery</option>
+                <option value="service">Service</option>
+                <option value="tuition">Classes</option>
+                <option value="other">Other</option>
+              </select></label
+            >
+          </div>
+          <p>
+            No verified badge is granted here. Complete identity, flat and
+            contact checks separately.
+          </p>
+          <button>Create provider & edit link</button>
+        </form>
+      </section>
+      <section id="links" class="share-card" hidden>
+        <div>
+          <h2>Private edit link · valid 90 days</h2>
+          <p>
+            Anyone holding this link can edit this one shop. Deliver it
+            privately to the provider. It will not appear in their public
+            storefront.
+          </p>
+          <a id="private-link" class="public-url" rel="noreferrer"></a>
+          <h3>Public shop link</h3>
+          <a id="public-link" class="public-url"></a>
+        </div>
+        <button id="copy">Copy private edit link</button>
+      </section>
+    </main>
+    <script src="providers.js?v=1"></script>
+  </body>
+</html>

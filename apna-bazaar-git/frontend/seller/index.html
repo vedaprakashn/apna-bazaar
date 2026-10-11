@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Your shop · HeyHood</title>
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
+    <link rel="stylesheet" href="seller.css?v=1" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../chatbot/index.html"
+        ><img
+          class="brand-logo"
+          src="../assets/heyhood-logo.png"
+          alt="HeyHood" /></a
+      ><span class="tag">Your shop, your way</span>
+    </header>
+    <main class="seller-main">
+      <p id="status" role="status" aria-live="polite">
+        Opening your workspace…
+      </p>
+      <section id="workspace" hidden>
+        <div class="seller-heading">
+          <div>
+            <div class="eyebrow">Shop studio</div>
+            <h1 id="shop"></h1>
+            <p id="owner"></p>
+          </div>
+          <a id="preview" target="_blank" rel="noopener">View live shop ↗</a>
+        </div>
+        <section class="share-card">
+          <div>
+            <h2>Drop your shop link</h2>
+            <p>
+              Share this public link with your groups. Your private edit link
+              stays private.
+            </p>
+            <a id="public-url" class="public-url"></a>
+          </div>
+          <button id="share" type="button">Share shop ↗</button>
+        </section>
+        <div class="studio-note">
+          <strong>Draft first. Live when you’re ready.</strong>
+          <p>
+            Save your changes, then publish to update your shop and Aapta’s
+            discovery. All dates and times are India time. Serving hours
+            describe pickup or service windows; they don’t promise stock.
+          </p>
+        </div>
+        <div class="items-heading">
+          <h2>Your offerings <span id="count" class="tag"></span></h2>
+          <button id="add" type="button">+ Add item</button>
+        </div>
+        <div id="items"></div>
+        <div id="empty" class="studio-note" hidden>
+          Your shop starts here. Add your first item ✨
+        </div>
+        <div class="studio-footer">
+          <p id="saved"></p>
+          <div>
+            <button id="save" type="button">Save draft</button
+            ><button id="publish" class="primary" type="button">
+              Publish changes ↗
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="seller.js?v=1"></script>
+  </body>
+</html>

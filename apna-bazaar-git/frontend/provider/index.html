@@ -32,6 +32,10 @@
             <div>
               <span class="store-avatar" id="avatar">🛍</span>
               <h1 id="shop"></h1>
+              <button id="share-shop" type="button" class="chip">
+                Share shop ↗
+              </button>
+              <p id="share-status" role="status"></p>
               <div class="store-owner" id="owner"></div>
               <p id="location"></p>
             </div>
@@ -48,7 +52,7 @@
         <section class="store-layout">
           <div>
             <div class="section-title">
-              <h2>Explore the catalog</h2>
+              <h2>What’s on offer</h2>
               <span class="tag" id="itemCount"></span>
             </div>
             <div
@@ -105,6 +109,25 @@
         id = params.get("id"),
         eventId = params.get("searchEventId");
       let data;
+      document.getElementById("share-shop").onclick = async () => {
+        const url = new URL("index.html", location.href);
+        url.search = new URLSearchParams({ community: slug, id }).toString();
+        try {
+          if (navigator.share)
+            await navigator.share({
+              title: `${data.provider.shop || data.provider.name} · HeyHood`,
+              url: url.href,
+            });
+          else {
+            await navigator.clipboard.writeText(url.href);
+            document.getElementById("share-status").textContent =
+              "Shop link copied ✨";
+          }
+        } catch (e) {
+          if (e.name !== "AbortError")
+            document.getElementById("share-status").textContent = url.href;
+        }
+      };
       function el(tag, cls, text) {
         const n = document.createElement(tag);
         if (cls) n.className = cls;
@@ -141,8 +164,9 @@
           const fresh =
             item.availability_updated_at &&
             Date.now() - new Date(item.availability_updated_at) < 86400000;
-          const status =
-            item.live_status === "sold_out"
+          const status = !item.available
+            ? "Unavailable today"
+            : item.live_status === "sold_out"
               ? "Sold out"
               : fresh && item.live_status === "available"
                 ? "Available today"
@@ -174,7 +198,7 @@
             el(
               "span",
               item.available ? "badge" : "badge miss",
-              item.available ? "In the catalog" : "Currently unavailable",
+              item.available ? "On the menu" : "Unavailable today",
             ),
           );
           for (const s of item.schedules || []) {

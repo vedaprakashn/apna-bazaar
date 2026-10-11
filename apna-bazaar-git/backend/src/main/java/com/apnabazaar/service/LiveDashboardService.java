@@ -81,7 +81,7 @@ public class LiveDashboardService {
             """, id, from, today));
         result.put("categories", jdbc.queryForList("""
             SELECT c.name, c.icon_emoji AS emoji, count(o.id) AS offerings
-            FROM category c LEFT JOIN offering o ON o.category_id=c.id AND o.is_available=true
+            FROM category c LEFT JOIN offering o ON o.category_id=c.id AND provider_item_available(o.id,(now() AT TIME ZONE 'Asia/Kolkata')::date)=true
               AND o.provider_id IN (SELECT id FROM provider WHERE community_id=? AND status='active')
             GROUP BY c.id ORDER BY c.sort_order
             """, id));
@@ -93,7 +93,7 @@ public class LiveDashboardService {
             SELECT p.id, p.name, p.rating,p.review_count,p.is_verified AS verified,p.verification_checked_at, p.shop_name AS shop, p.whatsapp_number AS whatsapp, p.whatsapp_group_url, o.name AS offering, o.description,
                    o.base_price AS price, o.unit, c.name AS category, c.icon_emoji AS emoji
             FROM provider p JOIN offering o ON o.provider_id=p.id JOIN category c ON c.id=o.category_id
-            WHERE p.community_id=? AND p.status='active' AND o.is_available=true
+            WHERE p.community_id=? AND p.status='active' AND provider_item_available(o.id,(now() AT TIME ZONE 'Asia/Kolkata')::date)=true
             ORDER BY c.sort_order, p.name
             """, community(slug));
     }
@@ -111,10 +111,10 @@ public class LiveDashboardService {
             """, providerId, communityId);
         if (providers.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Provider not found in this community");
         var offerings = jdbc.queryForList("""
-            SELECT o.id,o.name,o.description,o.base_price AS price,o.unit,o.is_available AS available,o.live_status,o.availability_updated_at,
+            SELECT o.id,o.name,o.description,o.base_price AS price,o.unit,provider_item_available(o.id,(now() AT TIME ZONE 'Asia/Kolkata')::date) AS available,o.live_status,o.availability_updated_at,
                    c.name AS category,c.icon_emoji AS emoji
             FROM offering o LEFT JOIN category c ON c.id=o.category_id
-            WHERE o.provider_id=? ORDER BY o.sort_order,o.name
+            WHERE o.provider_id=? AND NOT o.archived ORDER BY o.sort_order,o.name
             """, providerId);
         for (var offering : offerings) {
             offering.put("schedules", jdbc.queryForList("""
