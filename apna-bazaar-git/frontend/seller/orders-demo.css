@@ -1278,24 +1278,6 @@ select:focus-visible {
   gap: 10px;
   flex-shrink: 0;
 }
-.source-filter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 10px;
-  color: #9983a7;
-  margin: 0 0 12px;
-}
-.source-filter select {
-  flex: 1;
-  min-width: 0;
-  padding: 9px;
-  border: 1px solid #e3d7ef;
-  border-radius: 10px;
-  background: #fff;
-  font: inherit;
-  color: #75578f;
-}
 .source-badge {
   display: inline-block;
   font-size: 9px;

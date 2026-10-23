@@ -695,8 +695,6 @@
           (appView === "history"
             ? bucket(o) === "history" && historyMatches(o)
             : bucket(o) === tab && bucket(o) !== "history") &&
-          ($("order-source").value === "all" ||
-            sourceOf(o) === $("order-source").value) &&
           `${o.name} ${o.flat} ${o.id}`.toLowerCase().includes(search),
       );
     list.sort(
@@ -839,7 +837,6 @@
     events = [];
     attempts = {};
     $("search").value = "";
-    $("order-source").value = "all";
     render();
     toast("Fresh start. All demo orders reset.");
   };
@@ -918,7 +915,6 @@
     appView = bucket(o) === "history" ? "history" : "orders";
     tab = bucket(o);
     selected = o.id;
-    $("order-source").value = "all";
     $("search").value = "";
     if (appView === "history") {
       $("history-range").value = "all";
@@ -1352,7 +1348,6 @@
     tab = "active";
     selected = o.id;
     $("search").value = "";
-    $("order-source").value = "all";
     $("manual-dialog").close();
     render();
     toast(
@@ -1361,7 +1356,6 @@
     if (matchMedia("(max-width:1100px)").matches)
       $("mobile-detail").showModal();
   };
-  $("order-source").onchange = render;
   $("history-date").value = today();
   seedAlerts();
   fillProfile();
