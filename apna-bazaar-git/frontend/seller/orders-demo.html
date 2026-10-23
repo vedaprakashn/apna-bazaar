@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#6336f5" />
+    <title>Order room · HeyHood preview</title>
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
+    <link rel="stylesheet" href="orders-demo.css?v=1" />
+  </head>
+  <body>
+    <header class="orders-header">
+      <img
+        src="../assets/heyhood-logo.png"
+        alt="HeyHood — Good things. Close by."
+      /><span class="mode">PROVIDER MODE</span>
+      <div class="shop-switch">
+        <span class="shop-emoji">🥨</span>
+        <div>
+          <strong>Crispy Corner</strong><small>MyHome Tridasa · T1-416</small>
+        </div>
+      </div>
+    </header>
+    <div class="demo-strip">
+      <span>✦ Interactive UX preview · fictional orders</span>
+      <div>
+        <button id="consumer-preview">Consumer preview ↗</button
+        ><button id="reset">Reset demo ↻</button>
+      </div>
+    </div>
+    <main class="order-room">
+      <section class="room-heading">
+        <div>
+          <p class="eyebrow">YOUR SHOP. ALL THE ACTION.</p>
+          <h1>Good food. Happy hood.</h1>
+          <p class="subhead">
+            A little less juggling. Every order, right here.
+          </p>
+        </div>
+        <div class="open-chip"><i></i> Taking orders <span>· demo</span></div>
+      </section>
+      <section class="pulse" aria-label="Sample order overview">
+        <div class="pulse-lead">
+          <span class="pulse-icon">✳</span>
+          <div>
+            <strong id="incoming-count">3</strong
+            ><span>waiting for your nod</span>
+          </div>
+        </div>
+        <div>
+          <strong id="active-count">4</strong><span>in the making</span>
+        </div>
+        <div>
+          <strong id="completed-count">1</strong><span>handed over</span>
+        </div>
+        <p>From your kitchen<br /><b>to someone’s happy place.</b> 💛</p>
+      </section>
+      <section class="orders-workspace">
+        <div class="list-pane">
+          <div class="list-tools">
+            <div class="order-tabs" role="tablist" aria-label="Order status">
+              <button role="tab" aria-selected="true" data-tab="incoming">
+                Incoming <span></span></button
+              ><button role="tab" aria-selected="false" data-tab="active">
+                In motion <span></span></button
+              ><button role="tab" aria-selected="false" data-tab="history">
+                Past orders <span></span>
+              </button>
+            </div>
+            <label class="search"
+              ><span aria-hidden="true">⌕</span
+              ><input
+                id="search"
+                type="search"
+                aria-label="Search orders by name, flat or reference"
+                placeholder="Name, flat or order ID"
+            /></label>
+          </div>
+          <div id="order-list" class="order-list"></div>
+          <p class="list-footnote">
+            Payment is arranged directly. These totals aren’t payment receipts.
+          </p>
+        </div>
+        <aside
+          id="desktop-detail"
+          class="detail-pane"
+          aria-label="Selected order"
+        ></aside>
+      </section>
+      <footer class="preview-footer">
+        Made for your hood. Built around you.
+        <span>Sample experience · no real orders or notifications</span>
+      </footer>
+    </main>
+    <dialog id="mobile-detail" class="detail-dialog">
+      <div class="dialog-top">
+        <strong>Order details</strong
+        ><button
+          class="icon-button"
+          data-close="mobile-detail"
+          aria-label="Close order details"
+        >
+          ×
+        </button>
+      </div>
+      <div id="mobile-body"></div>
+    </dialog>
+    <dialog id="action-dialog" class="action-dialog">
+      <button
+        class="icon-button dialog-close"
+        data-close="action-dialog"
+        aria-label="Close"
+      >
+        ×
+      </button>
+      <div id="action-content"></div>
+    </dialog>
+    <dialog id="consumer-dialog" class="consumer-dialog">
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">CONSUMER VIEW · DEMO</span>
+          <h2>A little update from your shop</h2>
+        </div>
+        <button
+          class="icon-button"
+          data-close="consumer-dialog"
+          aria-label="Close consumer preview"
+        >
+          ×
+        </button>
+      </div>
+      <p>
+        This separate preview shows what the consumer would see. Handover codes
+        never appear in the provider’s real order data.
+      </p>
+      <div id="consumer-feed"></div>
+    </dialog>
+    <div id="order-toast" role="status" aria-live="polite" hidden></div>
+    <script src="orders-demo.js?v=1"></script>
+  </body>
+</html>
