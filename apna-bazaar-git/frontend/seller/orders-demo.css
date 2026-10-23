@@ -1479,3 +1479,25 @@ select:focus-visible {
     font-size: 9px;
   }
 }
+.live-status {
+  max-width: 1000px;
+  margin: 18px auto;
+  padding: 0 20px;
+  color: #906ba2;
+  font-size: 13px;
+}
+.live-menu-frame {
+  border: 0;
+  width: 100%;
+  min-height: 800px;
+  background: transparent;
+}
+.live-status:empty {
+  display: none;
+}
+body[data-mode="live"] .order-room .list-footnote:after {
+  content: " Showing up to 200 orders per view. Use History dates to find older orders.";
+}
+body[data-mode="live"] .sidebar-note p {
+  font-size: 10px;
+}

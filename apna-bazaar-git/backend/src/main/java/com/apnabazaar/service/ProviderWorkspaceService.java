@@ -61,6 +61,11 @@ public class ProviderWorkspaceService {
     return rows.getFirst();
   }
 
+  @Transactional
+  public void authorize(String slug, UUID id, String auth) {
+    access(slug, id, auth);
+  }
+
   public List<Map<String, Object>> categories() {
     return jdbc.queryForList(
         "SELECT id,name,icon_emoji AS emoji,domain::text FROM category ORDER BY sort_order,name");

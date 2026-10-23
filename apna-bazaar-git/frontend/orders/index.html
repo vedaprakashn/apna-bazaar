@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>My orders · HeyHood</title>
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
+    <link rel="stylesheet" href="orders.css?v=1" />
+    <script src="../resident.js?v=1"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="../chatbot/index.html"
+        ><img
+          class="brand-logo"
+          src="../assets/heyhood-logo.png"
+          alt="HeyHood" /></a
+      ><a href="../activity/index.html">My stuff ↗</a>
+    </header>
+    <main class="consumer-orders">
+      <p class="eyebrow">YOUR HOOD. YOUR ORDERS.</p>
+      <h1>Good things, on their way.</h1>
+      <p class="cart-note">
+        Track requests and handovers here. Payments stay directly between you
+        and the provider. Requests expire after 30 minutes if the provider
+        hasn’t accepted.
+      </p>
+      <p id="orders-status" role="status"></p>
+      <div id="consumer-order-list"></div>
+    </main>
+    <script src="consumer.js?v=1"></script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 # HeyHood — living product and engineering handoff
 
-Updated: 8 October 2026 (Asia/Kolkata).
+Updated: 23 October 2026 (Asia/Kolkata).
 Repository: https://github.com/vedaprakashn/apna-bazaar
 
 This is the functional context, implementation guide, and conversation decision record for a new collaborator. It describes the current implementation, including the changes accompanying this document. It is not a verbatim export of every chat turn: some earlier turns are only available as contextual summaries. Do not treat reconstructed history as exact quotations. The original chat remains the source for exact wording.
@@ -9,7 +9,7 @@ This is the functional context, implementation guide, and conversation decision 
 
 HeyHood began as Apna Bazaar. It makes the informal economy inside large Indian gated communities discoverable: home kitchens, batter sellers, bakers, groceries, classes, workshops, fitness, and home services currently scattered across WhatsApp groups and word of mouth.
 
-A resident asks a natural-language question; Aapta finds relevant providers within the selected community and links to their storefront and WhatsApp. Sellers should register a persistent catalog once, then update daily/weekly availability. HeyHood connects neighbours; it does not currently handle payments, delivery, order fulfilment, or verified bookings.
+A resident asks a natural-language question; Aapta finds relevant providers within the selected community and links to their storefront. Native checkout now collects an order request there, with provider acceptance, preparation, readiness and handover tracking. Sellers register offerings once and update availability. Payments and physical fulfilment stay directly between neighbours; HeyHood does not collect payments or provide delivery. Transitional external orders can be recorded by providers without inventing a consumer account. See the current native ordering status below; earlier WhatsApp decisions are historical.
 
 Pilot communities: MyHome Tridasa (~2,700 flats) and MyHome Sayuk (~3,800 flats), Hyderabad. Founder access to both communities helps onboarding. Search demand and zero-result queries identify missing supply. Lean canvas milestones: 50 daily searches for the next stage; 30 WhatsApp taps per seller per week to validate seller value. These are targets, not achieved production metrics.
 
@@ -60,6 +60,9 @@ Base: https://heyhood-production-b1b8.up.railway.app
 | Resident review / stock | `/admin/residents.html` |
 | Analytics | `/admin/index.html` |
 | Campaign studio | `/admin/campaigns.html` |
+| Consumer orders | `/orders/index.html?community=tridasa` |
+| Private provider console | `/seller/console.html?community=tridasa&id=PROVIDER_UUID#key=PRIVATE_CAPABILITY` (never publish a real key) |
+| Provider onboarding | `/admin/providers.html` (operator key required) |
 | Provider storefront | `/provider/index.html?community=tridasa&id=PROVIDER_UUID` |
 | Android ZIP | `/downloads/HeyHood-Android.zip` |
 | Health | `/actuator/health` |
@@ -77,6 +80,8 @@ Environment variable names (never copy secret values into this document):
 - Railway Postgres exposes `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, `PGPASSWORD`. Reference those into the app's DB variables; they are different services' variable names.
 - `APNA_OPENAI_API_KEY`; `OPENAI_MODEL` defaults to `gpt-4.1-mini`.
 - `CAMPAIGN_ADMIN_TOKEN` protects campaign writes, resident approvals and offering availability updates. The last explicit production write-auth check found it unset; confirm its current Railway value securely before editing campaigns.
+- `ORDER_OTP_SECRET`: stable random secret of at least 32 characters, required for native consumer checkout/acceptance and encrypted handover codes. Never rotate blindly: active codes depend on it. Manual orders do not need it.
+- `ORDER_PROVIDER_WRITES_PER_MINUTE` defaults to 60; separate provider order-action limit.
 - `CHAT_MESSAGES_PER_MINUTE` defaults to 10.
 - Railway injects `PORT`.
 
@@ -605,3 +610,15 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 ### Remove order source filter — 23 October 2026
 
 - User asked to remove the source dropdown. Removed the list-level source filter from the Orders/History preview, including dependent JS/styles. Source badges and the source choice during manual entry remain for origin attribution; daily/date/outcome/search filtering remains. Bumped assets to v5 to prevent stale scripts referencing the removed element. This is a preview-only UI change. Package build passed; manual entry/handover and source badges passed at 390/1440px, and native console/date/history/search/OTP/reset checks passed at 320/390/760/900/1440px without page errors or overflow. Source release/live checks follow.
+
+
+### Real provider console and native ordering — 23 October 2026
+
+- User approved the console and requested deployment into the real app. The new `/seller/console.html` connects the approved layout to PostgreSQL-backed orders, private order notifications, profile editing and the existing authenticated draft/publish menu editor. Legacy private `/seller/index.html` entry links redirect to the console; embedded menu editing stays in that editor. Operator-issued private links now target the console. The public `/seller/orders-demo.html` remains a separate, explicitly fictional, resettable UX sample.
+- V30 introduces immutable order snapshots, states/revisions, source and completion attribution, audit events and provider inbox records. Native orders start Requested; confirmed external orders start Accepted. Provider action/cancel/history APIs enforce the existing private shop capability on every request. This is **pilot capability access**, not implemented phone-account provider ownership or a self-selected provider role. Only an operator may provision/replace links; possession grants shop management, so share privately. Capabilities expire after 90 days, are hashed at rest, and are kept in the URL fragment until moved into tab session storage. Unified consumer/provider phone login and ownership migration remain planned.
+- Storefronts now offer Add to cart / View cart. Chat commerce buttons open the shop instead of WhatsApp. A single-shop cart persists locally; checkout requires an authenticated, flat-verified resident profile, explicit consent to share name/flat, valid current prices, date-specific availability and serving time, and provider opt-in for delivery. Native buyer identity is read from the server profile. Submissions use stable idempotency keys and priced item snapshots. Payments stay outside HeyHood. Professional-directory and ride contact actions are separate and retain their existing contact behaviour.
+- Consumers track their own orders at `/orders/index.html` (also linked from My stuff), cancel only before acceptance and privately reveal/renew a six-digit handover code after acceptance. Provider APIs never expose that code. AES-GCM encrypts code material with per-order authenticated data and `ORDER_OTP_SECRET`; correct Ready-order verification is required for linked completion. Five failed attempts persist a 15-minute lock; renewal invalidates the previous code. Codes expire after seven days and are removed on cancellation/completion. Pending requests expire after 30 minutes. Keep the encryption secret stable across releases; coordinated rotation/recovery is future work.
+- External WhatsApp/phone/paper/Excel/in-person records remain unlinked to a consumer account. They have no invented app alert or code; explicit handover is labelled provider-recorded, not OTP-verified. No phone identity, resident association or native conversion is inferred from a typed name/flat. Source entry remains during Add order, while the removed queue source dropdown stays removed.
+- State, event and recipient-specific inbox rows commit together. Consumer and provider inboxes are private; read state survives refresh. Foreground views poll every 15 seconds and refresh on focus, recovering changes from the database. **Transactional background FCM notifications, reliable wake-up delivery, SMS, device-account binding, and order push retries are not implemented here**; existing promotional Firebase setup is not proof of order delivery. No code is included in an alert body. Views return at most 200 newest matching records; use dated history to narrow the pilot queue. Pagination/export remains future work.
+- Local validation: all 72 backend tests passed against local PostgreSQL, including 11 new order integration tests for private access, idempotency, expected prices/date availability, immutable snapshots, native/manual transitions, code lockouts, read state, expiry and delivery opt-in. Existing demo console regressions passed at 320/390/760/900/1440px. Real storefront → checkout → provider → consumer code → verified completion, manual entry/handover, profile persistence and console layout passed at 390/1440px in isolated local communities; no production orders or provider credentials are created for testing. Release and live verification status follows after deployment.
+- Deployment prerequisite requested from user: configure `ORDER_OTP_SECRET` on the Railway app service without sharing its value. No confirmation received yet. Native checkout returns an explicit setup-unavailable response without it; provider-recorded manual orders remain usable. `CAMPAIGN_ADMIN_TOKEN` remains required to issue private provider links. Browsing stays public; managing orders never uses public provider IDs as credentials.

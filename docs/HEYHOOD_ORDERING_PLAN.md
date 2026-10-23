@@ -1,7 +1,7 @@
 # HeyHood native ordering: consumer and provider modes
 
 Decision date: 23 October 2026 (India time).
-Status: implementation plan, not a deployed order-management feature. The app currently has public storefronts, private provider editing, resident identity scaffolding and an in-app notification inbox. It does not yet implement the cart, native orders or handover codes described below.
+Status: core persistence implementation is built and under release validation as of 23 October 2026. The real storefront cart, order APIs, private provider console, consumer order tracking and handover codes now exist; see HEYHOOD_HANDOFF.md for exact release evidence. The design below also includes future work: account-bound provider ownership, reliable background order push, pagination and coordinated key rotation. Pilot provider access currently uses the existing operator-issued private capability, not full two-persona phone login. Consumer checkout requires a verified resident profile and ORDER_OTP_SECRET.
 
 ## Interactive provider UX preview
 
@@ -140,3 +140,10 @@ Progression: external order → provider records and manages it → consumer vol
 Release gates include: no private order access by guessing IDs; provider cannot read the code; unpublished/disabled items cannot be ordered for the requested date; price changes require fresh review; duplicate submission creates one request; unsupported fulfilment types are rejected; pending requests never auto-confirm; alerts deduplicate; wrong-code lockouts persist; completion requires Ready and a valid code; no payment/WhatsApp dependency.
 
 Measure storefront → cart → submitted request → accepted → ready → completed, plus rejection/expiry/cancellation reasons and response times, by provider and originating search/campaign. These are in-app events, so traffic attribution no longer depends on someone sending a WhatsApp enquiry. Separate test traffic from real usage and never count acceptance as completed revenue.
+
+
+## First persistent implementation boundaries — 23 October 2026
+
+Implemented in V30: order snapshots, optimistic revisions with row locks, request deduplication, own-buyer and private-capability shop APIs, explicit transitions, manual unlinked records, private durable inbox/read state, consumer cancellation before acceptance, provider cancellation with reason, 30-minute request expiry and encrypted consumer-only handover codes. Codes require stable `ORDER_OTP_SECRET` (32+ characters), five-attempt lockout, expiry and consumer renewal; provider data/alerts never contain the code. Payments remain external. Public shop CTAs and chat commerce route through the cart. Real console embeds the existing menu editor and persists profile changes. The demo remains a separate browser-memory sample.
+
+Not delivered by this increment: phone-linked provider membership/mode switching, transactional background push/outbox sending, stock reservation, general multi-day scheduling/recurrences, order export/pagination, consumer claiming of external orders, payment handling, SMS and code-key rotation tooling. Server access uses private shop capabilities during the pilot and verified resident tokens for consumers. Consumer request/code writes use the existing 10/minute credential limit. Provider order actions have a separate 60/minute credential limit, configurable through ORDER_PROVIDER_WRITES_PER_MINUTE; the chat limit does not impose a ten-order business capacity limit. Foreground polling is 15 seconds; it is not a background notification guarantee. Lists cap at 200 matching records and dated history is available.

@@ -105,7 +105,7 @@ public class LiveDashboardService {
         UUID communityId = community(slug);
         var providers = jdbc.queryForList("""
             SELECT p.id,p.name,p.shop_name AS shop,p.flat_number AS flat,p.whatsapp_number AS whatsapp,p.whatsapp_group_url,
-                   p.is_verified AS verified,p.verification_checked_at,p.rating,p.review_count,c.name AS community,p.provider_type::text AS type
+                   p.is_verified AS verified,p.verification_checked_at,p.rating,p.review_count,p.public_bio,p.delivery_enabled,c.name AS community,p.provider_type::text AS type
             FROM provider p JOIN community c ON c.id=p.community_id
             WHERE p.id=? AND p.community_id=? AND p.status='active'
             """, providerId, communityId);

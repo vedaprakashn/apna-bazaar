@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#6336f5" />
+    <title>Your provider console · HeyHood</title>
+    <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
+    <link rel="stylesheet" href="orders-demo.css?v=live1" />
+  </head>
+  <body data-mode="live">
+    <header class="orders-header">
+      <img
+        src="../assets/heyhood-logo.png"
+        alt="HeyHood — Good things. Close by."
+      /><span class="mode">PROVIDER MODE</span>
+      <div class="shop-switch">
+        <span class="shop-emoji">🥨</span>
+        <div>
+          <strong>Your shop</strong><small>Private provider console</small>
+        </div>
+      </div>
+    </header>
+    <div class="demo-strip" hidden>
+      <span>✦ Interactive UX preview · fictional orders</span>
+      <div>
+        <button id="consumer-preview">Consumer preview ↗</button
+        ><button id="reset">Reset demo ↻</button>
+      </div>
+    </div>
+    <p id="live-status" role="status" class="live-status">
+      Opening your private workspace…
+    </p>
+    <div class="console-shell" hidden>
+      <aside class="console-sidebar">
+        <p class="eyebrow">YOUR SHOP SPACE</p>
+        <nav aria-label="Provider console">
+          <button data-console="orders" aria-current="page">
+            <span aria-hidden="true">▤</span> Orders
+            <b id="nav-orders-count"></b>
+          </button>
+          <button data-console="menu">
+            <span aria-hidden="true">◈</span> Menu
+          </button>
+          <button data-console="history">
+            <span aria-hidden="true">◷</span> History
+          </button>
+          <button data-console="notifications">
+            <span aria-hidden="true">♧</span> Notifications
+            <b id="nav-alert-count"></b>
+          </button>
+          <button data-console="profile">
+            <span aria-hidden="true">☺</span> Shop profile
+          </button>
+        </nav>
+        <div class="sidebar-note">
+          A little shop.<br /><strong>A whole lot of heart. 💛</strong>
+          <p>One console. Less juggling.</p>
+        </div>
+      </aside>
+      <main class="order-room">
+        <section id="orders-panel">
+          <section class="room-heading">
+            <div>
+              <p class="eyebrow" id="page-kicker">TODAY + ALL OPEN ORDERS</p>
+              <h1 id="page-title">Your hood is hungry.</h1>
+              <p class="subhead" id="page-description">
+                New requests and unfinished orders. Nothing slips through.
+              </p>
+            </div>
+            <div class="queue-header-actions">
+              <button id="add-manual-order" class="order-btn primary">
+                + Add order
+              </button>
+            </div>
+          </section>
+          <section class="orders-workspace">
+            <div class="list-pane">
+              <div class="list-tools">
+                <div
+                  class="order-tabs"
+                  role="tablist"
+                  aria-label="Order status"
+                >
+                  <button role="tab" aria-selected="true" data-tab="incoming">
+                    New <span></span></button
+                  ><button role="tab" aria-selected="false" data-tab="active">
+                    Active <span></span>
+                  </button>
+                </div>
+                <div id="history-tools" class="history-tools" hidden>
+                  <label
+                    >Fulfilment date<select
+                      id="history-range"
+                      aria-label="Fulfilment date"
+                    >
+                      <option value="today">Today</option>
+                      <option value="yesterday">Yesterday</option>
+                      <option value="week">Last 7 days</option>
+                      <option value="all">All dates</option>
+                      <option value="custom">Pick a date</option>
+                    </select></label
+                  ><label id="custom-date-label" hidden
+                    >Date<input
+                      id="history-date"
+                      aria-label="History date"
+                      type="date" /></label
+                  ><label
+                    >Outcome<select id="history-status" aria-label="Outcome">
+                      <option value="all">All outcomes</option>
+                      <option value="completed">Completed</option>
+                      <option value="rejected">Declined</option>
+                    </select></label
+                  >
+                </div>
+                <label class="search"
+                  ><span aria-hidden="true">⌕</span
+                  ><input
+                    id="search"
+                    type="search"
+                    aria-label="Search orders by name, flat or reference"
+                    placeholder="Name, flat or order ID"
+                /></label>
+              </div>
+              <div id="order-list" class="order-list"></div>
+              <p class="list-footnote">
+                Payment is arranged directly. These totals aren’t payment
+                receipts.
+              </p>
+            </div>
+            <aside
+              id="desktop-detail"
+              class="detail-pane"
+              aria-label="Selected order"
+            ></aside>
+          </section>
+        </section>
+        <section id="menu-panel" class="console-panel" hidden>
+          <p class="eyebrow">YOUR REAL SHOP MENU</p>
+          <h1>What’s on offer?</h1>
+          <p class="panel-intro">
+            Save a draft, then publish to update your public shop and discovery.
+          </p>
+          <iframe
+            id="live-menu-editor"
+            title="Menu management"
+            class="live-menu-frame"
+          ></iframe>
+          <div hidden>
+            <span id="menu-summary"></span><button id="add-demo-item"></button
+            ><button id="publish-demo-menu"></button>
+            <p id="menu-state"></p>
+            <div id="console-menu"></div>
+          </div>
+        </section>
+        <section id="notifications-panel" class="console-panel" hidden>
+          <p class="eyebrow">THE LITTLE HEADS-UP HUB</p>
+          <h1>Your shop, in the loop.</h1>
+          <p class="panel-intro">
+            Order updates live here, even if a phone alert gets missed. Tap an
+            update to open its order.
+          </p>
+          <div class="panel-toolbar">
+            <button id="simulate-order" hidden class="order-btn primary">
+              Try a new order alert ✦</button
+            ><button id="read-alerts" class="order-btn">Mark all read</button>
+          </div>
+          <div class="notification-explainer">
+            <strong>Inbox first. Push as a nudge.</strong>
+            <p>
+              New orders alert the provider. Accepted, declined and ready
+              updates alert the consumer. Completion updates both. Updates
+              refresh while this console is open; background push for orders is
+              not enabled yet.
+            </p>
+          </div>
+          <div id="console-notifications"></div>
+        </section>
+        <section id="profile-panel" class="console-panel" hidden>
+          <p class="eyebrow">PUT A LITTLE YOU IN YOUR SHOP</p>
+          <h1>Your shop’s hello.</h1>
+          <p class="panel-intro">
+            The details neighbours see. Preview changes here without updating
+            your real provider profile.
+          </p>
+          <form id="demo-profile" class="profile-form">
+            <label
+              >Shop name<input
+                id="profile-shop"
+                maxlength="100"
+                required /></label
+            ><label
+              >Your name<input
+                id="profile-name"
+                maxlength="100"
+                required /></label
+            ><label
+              >Flat / pickup point<input
+                id="profile-flat"
+                maxlength="40"
+                required /></label
+            ><label
+              >Short introduction<textarea
+                id="profile-bio"
+                rows="3"
+                maxlength="500"
+              ></textarea>
+            </label>
+            <div class="profile-times">
+              <label
+                >Serving from · IST<input
+                  id="profile-start"
+                  type="time"
+                  required /></label
+              ><label
+                >Serving until · IST<input
+                  id="profile-end"
+                  type="time"
+                  required
+              /></label>
+            </div>
+            <label class="profile-check"
+              ><input id="profile-delivery" type="checkbox" />Delivery offered
+              within the community</label
+            ><button class="order-btn primary">Save shop profile ↗</button>
+            <p id="profile-state" role="status"></p>
+          </form>
+        </section>
+        <footer class="preview-footer">
+          Made for your hood. Built around you.
+          <span>Orders and updates are saved privately · times in IST</span>
+        </footer>
+      </main>
+    </div>
+    <dialog id="mobile-detail" class="detail-dialog">
+      <div class="dialog-top">
+        <strong>Order details</strong
+        ><button
+          class="icon-button"
+          data-close="mobile-detail"
+          aria-label="Close order details"
+        >
+          ×
+        </button>
+      </div>
+      <div id="mobile-body"></div>
+    </dialog>
+    <dialog id="manual-dialog" class="manual-dialog">
+      <div class="dialog-top">
+        <div>
+          <p class="eyebrow">WHATEVER THE CHANNEL. ONE ORDER BOOK.</p>
+          <h2>Add an order</h2>
+        </div>
+        <button
+          class="icon-button"
+          data-close="manual-dialog"
+          aria-label="Close add order"
+        >
+          ×
+        </button>
+      </div>
+      <p class="manual-intro">
+        A WhatsApp message, a call, a paper note—bring the confirmed order here.
+        Orders are saved to your private provider workspace.
+      </p>
+      <form id="manual-order-form">
+        <div class="manual-fields">
+          <label
+            >Customer name<input
+              id="manual-name"
+              required
+              maxlength="100"
+              autocomplete="off" /></label
+          ><label
+            >Customer flat<input
+              id="manual-flat"
+              required
+              maxlength="40"
+              placeholder="T2-308"
+              autocomplete="off" /></label
+          ><label
+            >Where did it come from?<select
+              id="manual-source"
+              aria-label="Manual order source"
+            >
+              <option value="whatsapp">WhatsApp</option>
+              <option value="phone">Phone call</option>
+              <option value="paper">Paper record</option>
+              <option value="excel">Excel record</option>
+              <option value="walkin">In person</option>
+            </select></label
+          ><label
+            >Fulfilment<select
+              id="manual-fulfil"
+              aria-label="Manual fulfilment"
+            >
+              <option value="Pickup">Pickup</option>
+              <option id="manual-delivery-option" value="Delivery">
+                Delivery
+              </option>
+            </select></label
+          ><label
+            >Fulfilment date · IST<input
+              id="manual-date"
+              type="date"
+              required /></label
+          ><label
+            >Preferred time · IST<input id="manual-time" type="time" required
+          /></label>
+        </div>
+        <div class="manual-lines-heading">
+          <h3>The order</h3>
+          <button id="manual-add-line" class="order-btn" type="button">
+            + Another item
+          </button>
+        </div>
+        <p class="manual-small">
+          Pick from your published menu, or use Custom item for an agreed
+          special request. Enter the agreed unit price.
+        </p>
+        <div id="manual-lines"></div>
+        <label class="manual-note"
+          >Customer note<textarea
+            id="manual-note"
+            maxlength="500"
+            rows="2"
+            placeholder="Spice preference, pickup details…"
+          ></textarea>
+        </label>
+        <div class="manual-total">
+          <span>Order total</span><strong id="manual-total">₹0</strong>
+        </div>
+        <p class="manual-small">
+          Payment is arranged directly. No payment is collected here.
+        </p>
+        <label class="manual-check"
+          ><input id="manual-confirmed" type="checkbox" required />I’ve
+          confirmed these items, prices and timing with the customer outside
+          HeyHood.</label
+        >
+        <div class="manual-consumer-note">
+          <strong>Customer not linked to HeyHood yet</strong>
+          <p>
+            No in-app alert or handover code will be claimed as delivered. You
+            can track the order here and record the handover yourself, clearly
+            marked as not OTP-verified.
+          </p>
+        </div>
+        <p id="manual-error" class="form-error" role="alert"></p>
+        <button class="order-btn primary manual-submit" type="submit">
+          Create confirmed order ↗
+        </button>
+      </form>
+    </dialog>
+    <dialog id="action-dialog" class="action-dialog">
+      <button
+        class="icon-button dialog-close"
+        data-close="action-dialog"
+        aria-label="Close"
+      >
+        ×
+      </button>
+      <div id="action-content"></div>
+    </dialog>
+    <dialog id="consumer-dialog" class="consumer-dialog">
+      <div class="dialog-top">
+        <div>
+          <span class="eyebrow">CONSUMER VIEW · DEMO</span>
+          <h2>A little update from your shop</h2>
+        </div>
+        <button
+          class="icon-button"
+          data-close="consumer-dialog"
+          aria-label="Close consumer preview"
+        >
+          ×
+        </button>
+      </div>
+      <p>
+        This separate preview shows what the consumer would see. Handover codes
+        never appear in the provider’s real order data.
+      </p>
+      <div id="consumer-feed"></div>
+    </dialog>
+    <div id="order-toast" role="status" aria-live="polite" hidden></div>
+    <script src="orders-demo.js?v=live1"></script>
+  </body>
+</html>

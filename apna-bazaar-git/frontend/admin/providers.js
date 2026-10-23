@@ -48,7 +48,7 @@
       location.href,
     ).href;
     const edit = new URL(
-      `../seller/index.html?community=${encodeURIComponent(slug)}&id=${d.providerId}#key=${encodeURIComponent(d.token)}`,
+      `../seller/console.html?community=${encodeURIComponent(slug)}&id=${d.providerId}#key=${encodeURIComponent(d.token)}`,
       location.href,
     ).href;
     $("public-link").href = $("public-link").textContent = publicUrl;
