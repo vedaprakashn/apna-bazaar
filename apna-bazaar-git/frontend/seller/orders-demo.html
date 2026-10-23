@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#6336f5" />
     <title>Provider console · HeyHood preview</title>
     <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
-    <link rel="stylesheet" href="orders-demo.css?v=3" />
+    <link rel="stylesheet" href="orders-demo.css?v=4" />
   </head>
   <body>
     <header class="orders-header">
@@ -68,8 +68,10 @@
                 New requests and unfinished orders. Nothing slips through.
               </p>
             </div>
-            <div class="open-chip">
-              <i></i> Taking orders <span>· demo</span>
+            <div class="queue-header-actions">
+              <button id="add-manual-order" class="order-btn primary">
+                + Add order
+              </button>
             </div>
           </section>
           <section class="orders-workspace">
@@ -111,6 +113,20 @@
                     </select></label
                   >
                 </div>
+                <label class="source-filter"
+                  >Order source<select
+                    id="order-source"
+                    aria-label="Order source"
+                  >
+                    <option value="all">All sources</option>
+                    <option value="heyhood">HeyHood · automatic</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="phone">Phone call</option>
+                    <option value="paper">Paper record</option>
+                    <option value="excel">Excel record</option>
+                    <option value="walkin">In person</option>
+                  </select></label
+                >
                 <label class="search"
                   ><span aria-hidden="true">⌕</span
                   ><input
@@ -246,6 +262,113 @@
       </div>
       <div id="mobile-body"></div>
     </dialog>
+    <dialog id="manual-dialog" class="manual-dialog">
+      <div class="dialog-top">
+        <div>
+          <p class="eyebrow">WHATEVER THE CHANNEL. ONE ORDER BOOK.</p>
+          <h2>Add an order</h2>
+        </div>
+        <button
+          class="icon-button"
+          data-close="manual-dialog"
+          aria-label="Close add order"
+        >
+          ×
+        </button>
+      </div>
+      <p class="manual-intro">
+        A WhatsApp message, a call, a paper note—bring the confirmed order here.
+        Sample details only: this preview resets on refresh.
+      </p>
+      <form id="manual-order-form">
+        <div class="manual-fields">
+          <label
+            >Customer name<input
+              id="manual-name"
+              required
+              maxlength="100"
+              autocomplete="off" /></label
+          ><label
+            >Customer flat<input
+              id="manual-flat"
+              required
+              maxlength="40"
+              placeholder="T2-308"
+              autocomplete="off" /></label
+          ><label
+            >Where did it come from?<select
+              id="manual-source"
+              aria-label="Manual order source"
+            >
+              <option value="whatsapp">WhatsApp</option>
+              <option value="phone">Phone call</option>
+              <option value="paper">Paper record</option>
+              <option value="excel">Excel record</option>
+              <option value="walkin">In person</option>
+            </select></label
+          ><label
+            >Fulfilment<select
+              id="manual-fulfil"
+              aria-label="Manual fulfilment"
+            >
+              <option value="Pickup">Pickup</option>
+              <option id="manual-delivery-option" value="Delivery">
+                Delivery
+              </option>
+            </select></label
+          ><label
+            >Fulfilment date · IST<input
+              id="manual-date"
+              type="date"
+              required /></label
+          ><label
+            >Preferred time · IST<input id="manual-time" type="time" required
+          /></label>
+        </div>
+        <div class="manual-lines-heading">
+          <h3>The order</h3>
+          <button id="manual-add-line" class="order-btn" type="button">
+            + Another item
+          </button>
+        </div>
+        <p class="manual-small">
+          Pick from your published menu, or use Custom item for an agreed
+          special request. Enter the agreed unit price.
+        </p>
+        <div id="manual-lines"></div>
+        <label class="manual-note"
+          >Customer note<textarea
+            id="manual-note"
+            maxlength="500"
+            rows="2"
+            placeholder="Spice preference, pickup details…"
+          ></textarea>
+        </label>
+        <div class="manual-total">
+          <span>Order total</span><strong id="manual-total">₹0</strong>
+        </div>
+        <p class="manual-small">
+          Payment is arranged directly. No payment is collected here.
+        </p>
+        <label class="manual-check"
+          ><input id="manual-confirmed" type="checkbox" required />I’ve
+          confirmed these items, prices and timing with the customer outside
+          HeyHood.</label
+        >
+        <div class="manual-consumer-note">
+          <strong>Customer not linked to HeyHood yet</strong>
+          <p>
+            No in-app alert or handover code will be claimed as delivered. You
+            can track the order here and record the handover yourself, clearly
+            marked as not OTP-verified.
+          </p>
+        </div>
+        <p id="manual-error" class="form-error" role="alert"></p>
+        <button class="order-btn primary manual-submit" type="submit">
+          Create confirmed order ↗
+        </button>
+      </form>
+    </dialog>
     <dialog id="action-dialog" class="action-dialog">
       <button
         class="icon-button dialog-close"
@@ -277,6 +400,6 @@
       <div id="consumer-feed"></div>
     </dialog>
     <div id="order-toast" role="status" aria-live="polite" hidden></div>
-    <script src="orders-demo.js?v=3"></script>
+    <script src="orders-demo.js?v=4"></script>
   </body>
 </html>

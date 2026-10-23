@@ -314,7 +314,24 @@
     b.onclick = fn;
     return b;
   }
+  const sources = {
+    heyhood: "HeyHood",
+    whatsapp: "WhatsApp",
+    phone: "Phone call",
+    paper: "Paper record",
+    excel: "Excel record",
+    walkin: "In person",
+  };
+  const sourceOf = (o) => o.source || "heyhood";
+  function sourceBadge(o) {
+    return n(
+      "span",
+      `${sources[sourceOf(o)]} · ${o.recordedBy === "provider" ? "By you" : "Auto"}`,
+      "source-badge",
+    );
+  }
   function consumerEvent(o, title, body) {
+    if (o.consumerLinked === false) return;
     events.unshift({ id: o.id, name: o.name, title, body, status: o.status });
   }
   function move(o, status) {
@@ -325,6 +342,12 @@
       ready: ["completed"],
     };
     if (!allowed[o.status]?.includes(status)) return;
+    if (
+      status === "completed" &&
+      o.completionMethod !==
+        (o.consumerLinked === false ? "provider_recorded" : "otp")
+    )
+      return;
     o.status = status;
     tab = bucket(o);
     appView = tab === "history" ? "history" : "orders";
@@ -353,21 +376,35 @@
           ? "Swing by T1-416 when you’re ready. Share your code only once you have your order."
           : "The shop has marked your order ready for delivery. This does not mean it has been delivered.",
       );
-      toast("Ready to go. Consumer update added. · demo");
+      toast(
+        o.consumerLinked === false
+          ? "Ready to go. Coordinate with this customer outside HeyHood. · demo"
+          : "Ready to go. Consumer update added. · demo",
+      );
     }
     if (status === "completed") {
-      consumerEvent(
-        o,
-        "Handed over. Happy snacking 💛",
-        "Your handover code was verified. The order is complete. Payment is arranged directly with your provider.",
-      );
-      providerAlert(
-        o,
-        "Handover verified",
-        `${o.name}'s order is complete.`,
-        false,
-      );
-      toast("Code checked. Order complete. Happy hood 💛");
+      if (o.consumerLinked === false) {
+        providerAlert(
+          o,
+          "Handover recorded by you",
+          `${o.name}'s order is complete. Provider-recorded, not OTP-verified.`,
+          false,
+        );
+        toast("Handover recorded. Clearly marked as not OTP-verified. · demo");
+      } else {
+        consumerEvent(
+          o,
+          "Handed over. Happy snacking 💛",
+          "Your handover code was verified. The order is complete. Payment is arranged directly with your provider.",
+        );
+        providerAlert(
+          o,
+          "Handover verified",
+          `${o.name}'s order is complete.`,
+          false,
+        );
+        toast("Code checked. Order complete. Happy hood 💛");
+      }
     }
     render();
   }
@@ -414,6 +451,7 @@
     $("action-dialog").showModal();
   }
   function verify(o) {
+    if (o.consumerLinked === false) return;
     const box = $("action-content");
     box.replaceChildren(
       n("p", "THE FINAL LITTLE CHECK", "eyebrow"),
@@ -459,6 +497,7 @@
         input.setAttribute("aria-invalid", "true");
         return;
       }
+      o.completionMethod = "otp";
       move(o, "completed");
       $("action-dialog").close();
       $("mobile-detail").close();
@@ -503,7 +542,7 @@
       n("small", `Flat ${o.flat} · MyHome Tridasa`),
     );
     person.append(n("span", o.initials, "person-avatar"), identity);
-    heading.append(person);
+    heading.append(person, sourceBadge(o));
     container.append(heading);
     const body = n("div", null, "detail-body"),
       fulfil = n("div", null, "fulfilment-grid");
@@ -511,7 +550,7 @@
       [
         "FULFILMENT",
         o.fulfil === "Pickup"
-          ? "↗ Pickup at T1-416"
+          ? `↗ Pickup at ${o.pickupFlat || "T1-416"}`
           : `⌂ Delivery to ${o.flat}`,
       ],
       ["PREFERRED WINDOW", o.time],
@@ -520,7 +559,18 @@
       cell.append(n("small", label), n("strong", value));
       fulfil.append(cell);
     }
-    body.append(fulfil, n("p", "THE GOOD STUFF", "section-label"));
+    body.append(fulfil);
+    if (o.consumerLinked === false)
+      body.append(
+        n(
+          "div",
+          "Recorded by you from " +
+            sources[sourceOf(o)] +
+            ". Customer not linked to HeyHood: no in-app alert or handover code has been sent.",
+          "manual-consumer-note",
+        ),
+      );
+    body.append(n("p", "THE GOOD STUFF", "section-label"));
     for (const [name, qty, price] of o.items) {
       const item = n("div", null, "line-item");
       item.append(
@@ -548,7 +598,9 @@
       for (const [i, s] of stages.entries()) {
         const step = n(
           "div",
-          ["Requested", "Accepted", "Making", "Ready", "Done"][i],
+          (o.recordedBy === "provider"
+            ? ["Recorded", "Confirmed", "Making", "Ready", "Done"]
+            : ["Requested", "Accepted", "Making", "Ready", "Done"])[i],
           `timeline-step ${stages.indexOf(o.status) >= i ? "done" : ""}`,
         );
         timeline.append(step);
@@ -571,7 +623,9 @@
       actions.append(
         n(
           "p",
-          "Consumer updated. Their handover code stays private until delivery.",
+          o.consumerLinked === false
+            ? "Confirmed with the customer outside HeyHood. You’re tracking it here."
+            : "Consumer updated. Their handover code stays private until delivery.",
           "action-hint",
         ),
       );
@@ -595,17 +649,27 @@
       actions.append(
         n(
           "p",
-          "Consumer notified. Verify their code only after handover.",
+          o.consumerLinked === false
+            ? "Customer is not linked to HeyHood. Record handover only once they have received the order."
+            : "Consumer notified. Verify their code only after handover.",
           "action-hint",
         ),
       );
-      row.append(button("Verify handover code ↗", "primary", () => verify(o)));
+      row.append(
+        o.consumerLinked === false
+          ? button("Record handover ↗", "primary", () =>
+              recordManualHandover(o),
+            )
+          : button("Verify handover code ↗", "primary", () => verify(o)),
+      );
     }
     if (o.status === "completed")
       actions.append(
         n(
           "p",
-          "✓ Handover verified. This order’s all wrapped up.",
+          o.completionMethod === "provider_recorded"
+            ? "✓ Handover recorded by you · not OTP-verified."
+            : "✓ Handover verified. This order’s all wrapped up.",
           "action-hint",
         ),
       );
@@ -631,6 +695,8 @@
           (appView === "history"
             ? bucket(o) === "history" && historyMatches(o)
             : bucket(o) === tab && bucket(o) !== "history") &&
+          ($("order-source").value === "all" ||
+            sourceOf(o) === $("order-source").value) &&
           `${o.name} ${o.flat} ${o.id}`.toLowerCase().includes(search),
       );
     list.sort(
@@ -677,6 +743,7 @@
       tile.append(
         top,
         person,
+        sourceBadge(o),
         n(
           "p",
           o.items.map((i) => `${i[1]}× ${i[0]}`).join(" · "),
@@ -702,6 +769,7 @@
     const relevant = orders.filter(
       (o) =>
         o.id === selected &&
+        o.consumerLinked !== false &&
         ["accepted", "preparing", "ready"].includes(o.status),
     );
     const updates = events.filter((e) => e.id === selected);
@@ -709,7 +777,9 @@
       $("consumer-feed").append(
         n(
           "p",
-          "This previews only the selected order’s consumer. Accept it to create their update and handover code.",
+          orders.find((o) => o.id === selected)?.consumerLinked === false
+            ? "This customer is not linked to HeyHood. No consumer notification or OTP was sent. Coordinate outside the app; their order stays in your provider console."
+            : "This previews only the selected order’s consumer. Accept it to create their update and handover code.",
         ),
       );
     for (const event of updates.slice(0, 4)) {
@@ -769,6 +839,7 @@
     events = [];
     attempts = {};
     $("search").value = "";
+    $("order-source").value = "all";
     render();
     toast("Fresh start. All demo orders reset.");
   };
@@ -847,6 +918,7 @@
     appView = bucket(o) === "history" ? "history" : "orders";
     tab = bucket(o);
     selected = o.id;
+    $("order-source").value = "all";
     $("search").value = "";
     if (appView === "history") {
       $("history-range").value = "all";
@@ -1065,6 +1137,231 @@
       "Demo profile saved. Your real shop profile hasn’t changed.";
     toast("A fresh hello for your shop ✨ · demo");
   };
+  function recordManualHandover(o) {
+    if (o.consumerLinked !== false || o.status !== "ready") return;
+    const box = $("action-content");
+    box.replaceChildren(
+      n("p", "A CLEAR RECORD, NO FAKE OTP", "eyebrow"),
+      n("h2", "Order handed over?"),
+      n(
+        "p",
+        "This customer isn’t linked to HeyHood. Record only the actual handover; this will be marked as provider-recorded, not OTP-verified.",
+      ),
+    );
+    const form = n("form"),
+      label = n("label", null, "manual-check"),
+      check = n("input");
+    check.type = "checkbox";
+    check.required = true;
+    check.id = "manual-handover-confirmed";
+    label.append(
+      check,
+      n("span", "I confirm the customer has received this order."),
+    );
+    const submit = button("Confirm handover", "primary");
+    submit.type = "submit";
+    form.append(label, submit);
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      if (!check.checked) return;
+      o.completionMethod = "provider_recorded";
+      move(o, "completed");
+      $("action-dialog").close();
+      $("mobile-detail").close();
+    };
+    box.append(form);
+    $("action-dialog").showModal();
+  }
+  let manualLines = [];
+  function manualTotal() {
+    const amount =
+      manualLines.reduce(
+        (sum, i) =>
+          sum + Math.round((Number(i.price) || 0) * 100) * (Number(i.qty) || 0),
+        0,
+      ) / 100;
+    $("manual-total").textContent = money(amount);
+    return amount;
+  }
+  function manualLine(item) {
+    return {
+      key: crypto.randomUUID(),
+      menuId: item ? String(item.id) : "custom",
+      name: item?.name || "",
+      price: item?.price ?? 0,
+      qty: 1,
+    };
+  }
+  function renderManualLines() {
+    const list = $("manual-lines");
+    list.replaceChildren();
+    manualLines.forEach((line, index) => {
+      const card = n("div", null, "manual-line"),
+        selectLabel = n("label", "Item"),
+        select = n("select");
+      select.setAttribute("aria-label", `Item ${index + 1}`);
+      for (const item of publishedMenu.filter((i) => i.on)) {
+        const option = n("option", item.name);
+        option.value = String(item.id);
+        select.append(option);
+      }
+      const custom = n("option", "Custom item / agreed special");
+      custom.value = "custom";
+      select.append(custom);
+      select.value = line.menuId;
+      select.onchange = () => {
+        const item = publishedMenu.find((i) => String(i.id) === select.value);
+        line.menuId = select.value;
+        line.name = item?.name || "";
+        line.price = item?.price ?? 0;
+        renderManualLines();
+      };
+      selectLabel.append(select);
+      const nameLabel = n("label", "Agreed item name"),
+        name = n("input");
+      name.value = line.name;
+      name.maxLength = 100;
+      name.required = true;
+      name.setAttribute("aria-label", `Item name ${index + 1}`);
+      name.oninput = () => (line.name = name.value);
+      nameLabel.append(name);
+      const qtyLabel = n("label", "Quantity"),
+        qty = n("input");
+      qty.type = "number";
+      qty.min = 1;
+      qty.max = 100;
+      qty.step = 1;
+      qty.required = true;
+      qty.value = line.qty;
+      qty.setAttribute("aria-label", `Quantity ${index + 1}`);
+      qty.oninput = () => {
+        line.qty = Number(qty.value);
+        manualTotal();
+      };
+      qtyLabel.append(qty);
+      const priceLabel = n("label", "Agreed unit price · ₹"),
+        price = n("input");
+      price.type = "number";
+      price.min = 0;
+      price.max = 999999;
+      price.step = "0.01";
+      price.required = true;
+      price.value = line.price;
+      price.setAttribute("aria-label", `Unit price ${index + 1}`);
+      price.oninput = () => {
+        line.price = price.value === "" ? null : Number(price.value);
+        manualTotal();
+      };
+      priceLabel.append(price);
+      card.append(selectLabel, nameLabel, qtyLabel, priceLabel);
+      const remove = button("Remove item", "", () => {
+        manualLines.splice(index, 1);
+        renderManualLines();
+      });
+      remove.disabled = manualLines.length === 1;
+      card.append(remove);
+      list.append(card);
+    });
+    manualTotal();
+  }
+  $("add-manual-order").onclick = () => {
+    $("manual-order-form").reset();
+    $("manual-error").textContent = "";
+    $("manual-date").value = today();
+    $("manual-date").min = dateAt(-90);
+    $("manual-date").max = dateAt(90);
+    $("manual-time").value = "18:00";
+    $("manual-delivery-option").disabled = !profile.delivery;
+    manualLines = [manualLine(publishedMenu.find((i) => i.on))];
+    renderManualLines();
+    $("manual-dialog").showModal();
+  };
+  $("manual-add-line").onclick = () => {
+    if (manualLines.length >= 20) {
+      $("manual-error").textContent = "Use up to 20 item lines in this demo.";
+      return;
+    }
+    manualLines.push(manualLine(publishedMenu.find((i) => i.on)));
+    renderManualLines();
+  };
+  $("manual-order-form").onsubmit = (e) => {
+    e.preventDefault();
+    const name = $("manual-name").value.trim(),
+      flat = $("manual-flat").value.trim(),
+      date = $("manual-date").value,
+      time = $("manual-time").value,
+      source = $("manual-source").value;
+    if (
+      !name ||
+      !flat ||
+      !date ||
+      !time ||
+      !manualLines.length ||
+      manualLines.some(
+        (i) =>
+          !i.name.trim() ||
+          !Number.isInteger(i.qty) ||
+          i.qty < 1 ||
+          i.qty > 100 ||
+          i.price === null ||
+          !Number.isFinite(i.price) ||
+          i.price < 0 ||
+          i.price > 999999,
+      )
+    ) {
+      $("manual-error").textContent =
+        "Check customer details, item names, quantities and agreed prices.";
+      return;
+    }
+    if (
+      date < dateAt(-90) ||
+      date > dateAt(90) ||
+      !sources[source] ||
+      source === "heyhood" ||
+      !$("manual-confirmed").checked ||
+      ($("manual-fulfil").value === "Delivery" && !profile.delivery)
+    ) {
+      $("manual-error").textContent =
+        "Check the fulfilment date, delivery option and confirmation.";
+      return;
+    }
+    const o = {
+      id: "HH-" + demoSerial++,
+      name,
+      flat,
+      initials: name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase(),
+      status: "accepted",
+      ago: "Recorded just now",
+      date,
+      fulfil: $("manual-fulfil").value,
+      time: `${dateLabel(date)} · ${time} IST`,
+      items: manualLines.map((i) => [i.name.trim(), i.qty, i.price]),
+      note: $("manual-note").value.trim(),
+      source,
+      recordedBy: "provider",
+      consumerLinked: false,
+      pickupFlat: profile.flat,
+    };
+    orders.unshift(o);
+    appView = "orders";
+    tab = "active";
+    selected = o.id;
+    $("search").value = "";
+    $("order-source").value = "all";
+    $("manual-dialog").close();
+    render();
+    toast(
+      `Order ${o.id} recorded from ${sources[source]}. No consumer alert or OTP sent. · demo`,
+    );
+    if (matchMedia("(max-width:1100px)").matches)
+      $("mobile-detail").showModal();
+  };
+  $("order-source").onchange = render;
   $("history-date").value = today();
   seedAlerts();
   fillProfile();
