@@ -118,50 +118,6 @@ body {
   color: #8e8499;
   font-weight: 400;
 }
-.pulse {
-  display: grid;
-  grid-template-columns: 1.15fr 1fr 1fr 1.7fr;
-  align-items: center;
-  background: #ffdf77;
-  border: 1px solid #edc85e;
-  box-shadow: 0 4px 0 #edca6825;
-  border-radius: 20px;
-  padding: 20px 26px;
-  margin-bottom: 28px;
-}
-.pulse > div {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.pulse > div:not(:first-child) {
-  padding-left: 26px;
-  border-left: 1px solid #d7b95b;
-}
-.pulse strong {
-  font-size: 29px;
-  letter-spacing: -0.05em;
-  display: block;
-  line-height: 1.15;
-}
-.pulse span {
-  font-size: 11px;
-}
-.pulse div:not(.pulse-lead) {
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
-}
-.pulse .pulse-icon {
-  font-size: 36px;
-  color: #7550c8;
-}
-.pulse p {
-  text-align: right;
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.7;
-}
 .orders-workspace {
   display: grid;
   grid-template-columns: 380px minmax(0, 1fr);
@@ -727,12 +683,6 @@ select:focus-visible {
   .orders-workspace {
     grid-template-columns: 320px minmax(0, 1fr);
   }
-  .pulse p {
-    font-size: 11px;
-  }
-  .pulse {
-    padding: 18px;
-  }
   .detail-heading,
   .detail-body,
   .action-area {
@@ -805,30 +755,6 @@ select:focus-visible {
   }
   .open-chip span {
     display: none;
-  }
-  .pulse {
-    grid-template-columns: 1.2fr 1fr 1fr;
-    padding: 17px 14px;
-    margin-bottom: 22px;
-    border-radius: 17px;
-  }
-  .pulse p {
-    display: none;
-  }
-  .pulse .pulse-icon {
-    font-size: 24px;
-  }
-  .pulse > div {
-    gap: 8px;
-  }
-  .pulse > div:not(:first-child) {
-    padding-left: 13px;
-  }
-  .pulse strong {
-    font-size: 24px;
-  }
-  .pulse span {
-    font-size: 9px;
   }
   .orders-workspace {
     display: block;
@@ -907,8 +833,5 @@ select:focus-visible {
   }
   .room-heading .eyebrow {
     font-size: 9px;
-  }
-  .pulse {
-    margin-bottom: 18px;
   }
 }

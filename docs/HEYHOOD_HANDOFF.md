@@ -584,3 +584,7 @@ These requirements are separate from the enquiry/eye-animation compatibility dep
 - Browser checks passed at 320/390/760/1440px for accept → prepare → ready → consumer preview → incorrect/correct handover code → complete, reject/reason, reset and search; no horizontal overflow or page errors. Desktop/mobile screenshots visually reviewed; mobile heading tightened for order-list space. Package build passed. PRs #45 and #46 merged; Railway deployment 7272983570 of ee58b509b63fc2720200764450bd8fba17ed9ea9 succeeded. Live preview returned HTTP 200 and the complete sample flow passed at 390/1440px. This deploys the UX prototype, not the planned order backend.
 
 - Preview refinement: Consumer preview follows only the selected order, rather than showing several sample consumers together, so the persona demonstration preserves the intended privacy boundary. This remains a frontend simulation.
+
+### Simplify order preview counts — 23 October 2026
+
+- User approved removing the redundant yellow count strip. Removed it and its DOM updates/styles; the order filters are now New, Active and History, each retaining a live count. History includes completed and declined orders, while individual cards retain their outcome. Bumped preview CSS/JS versions to avoid stale code querying removed counters. This remains the in-memory UX prototype. Package build passed; browser checks at 320/390/760/1440px passed removal of the strip, updated filter counts, accept/prepare/ready/handover/reject/reset/search and no overflow or page errors. Source release and live checks follow.

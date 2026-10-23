@@ -468,11 +468,6 @@
   function render() {
     const counts = { incoming: 0, active: 0, history: 0 };
     orders.forEach((o) => counts[bucket(o)]++);
-    $("incoming-count").textContent = counts.incoming;
-    $("active-count").textContent = counts.active;
-    $("completed-count").textContent = orders.filter(
-      (o) => o.status === "completed",
-    ).length;
     document.querySelectorAll("[data-tab]").forEach((b) => {
       b.setAttribute("aria-selected", b.dataset.tab === tab);
       b.querySelector("span").textContent = counts[b.dataset.tab];
