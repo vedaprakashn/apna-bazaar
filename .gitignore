@@ -7,3 +7,5 @@ android-shell/app/google-services.json
 **/*.keystore
 **/*.jks
 **/*.apk
+provider-android-shell/build/
+provider-android-shell/local.properties
