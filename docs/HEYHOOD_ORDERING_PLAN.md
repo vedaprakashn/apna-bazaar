@@ -1,7 +1,7 @@
 # HeyHood native ordering: consumer and provider modes
 
 Decision date: 23 October 2026 (India time).
-Status: core persistence implementation is built and under release validation as of 23 October 2026. The real storefront cart, order APIs, private provider console, consumer order tracking and handover codes now exist; see HEYHOOD_HANDOFF.md for exact release evidence. The design below also includes future work: account-bound provider ownership, reliable background order push, pagination and coordinated key rotation. Pilot provider access currently uses the existing operator-issued private capability, not full two-persona phone login. Consumer checkout requires a verified resident profile and ORDER_OTP_SECRET.
+Status: core persistence implementation deployed in PR #54 / Railway deployment 7275493893 on 23 October 2026. The real storefront cart, order APIs, private provider console, consumer order tracking and handover codes now exist; see HEYHOOD_HANDOFF.md for exact release evidence. The design below also includes future work: account-bound provider ownership, reliable background order push, pagination and coordinated key rotation. Pilot provider access currently uses the existing operator-issued private capability, not full two-persona phone login. Consumer checkout requires a verified resident profile and ORDER_OTP_SECRET.
 
 ## Interactive provider UX preview
 
