@@ -17,129 +17,269 @@
     "HH-1043": "824617",
     "HH-1042": "347928",
   };
-  const seed = () => [
+  const today = () =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+  const dateAt = (offset = 0) => {
+    const d = new Date(today() + "T12:00:00Z");
+    d.setUTCDate(d.getUTCDate() + offset);
+    return d.toISOString().slice(0, 10);
+  };
+  const dateLabel = (value) =>
+    value === today()
+      ? "Today"
+      : value === dateAt(-1)
+        ? "Yesterday"
+        : new Intl.DateTimeFormat("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+            timeZone: "Asia/Kolkata",
+          }).format(new Date(value + "T12:00:00Z"));
+  const seed = () =>
+    [
+      {
+        id: "HH-1048",
+        name: "Ananya Rao",
+        flat: "T2-308",
+        initials: "AR",
+        status: "requested",
+        ago: "2 min ago",
+        fulfil: "Pickup",
+        time: "Today · 5:30–6:00 pm",
+        items: [
+          ["Mirchi bajji", 2, 50],
+          ["Onion pakora", 1, 60],
+        ],
+        note: "A little less spicy, please. Picking up after my evening walk.",
+      },
+      {
+        id: "HH-1047",
+        name: "Rahul Mehta",
+        flat: "T1-602",
+        initials: "RM",
+        status: "requested",
+        ago: "6 min ago",
+        fulfil: "Delivery",
+        time: "Today · 6:00–6:30 pm",
+        items: [
+          ["Aloo samosa", 3, 40],
+          ["Punugulu", 2, 50],
+        ],
+        note: "Please ring the bell. The intercom is acting up.",
+      },
+      {
+        id: "HH-1046",
+        name: "Divya Nair",
+        flat: "T3-214",
+        initials: "DN",
+        status: "requested",
+        ago: "9 min ago",
+        fulfil: "Pickup",
+        time: "Today · 6:30–7:00 pm",
+        items: [["Onion pakora", 2, 60]],
+        note: "An extra little pot of chutney would be lovely.",
+      },
+      {
+        id: "HH-1045",
+        name: "Karthik Reddy",
+        flat: "T1-405",
+        initials: "KR",
+        status: "preparing",
+        ago: "18 min ago",
+        fulfil: "Pickup",
+        time: "Today · 5:15–5:45 pm",
+        items: [
+          ["Mirchi bajji", 3, 50],
+          ["Punugulu", 1, 50],
+        ],
+        note: "No special requests. Bring on the crunch!",
+      },
+      {
+        id: "HH-1044",
+        name: "Sneha Iyer",
+        flat: "T2-110",
+        initials: "SI",
+        status: "ready",
+        ago: "25 min ago",
+        fulfil: "Pickup",
+        time: "Today · 5:00–5:30 pm",
+        items: [["Aloo samosa", 2, 40]],
+        note: "I’ll pick it up from your flat.",
+      },
+      {
+        id: "HH-1043",
+        name: "Arjun Shah",
+        flat: "T3-507",
+        initials: "AS",
+        status: "accepted",
+        ago: "14 min ago",
+        fulfil: "Delivery",
+        time: "Today · 6:00–6:30 pm",
+        items: [
+          ["Mirchi bajji", 1, 50],
+          ["Onion pakora", 1, 60],
+        ],
+        note: "",
+      },
+      {
+        id: "HH-1042",
+        name: "Meera Menon",
+        flat: "T1-707",
+        initials: "MM",
+        status: "preparing",
+        ago: "21 min ago",
+        fulfil: "Pickup",
+        time: "Today · 5:30–6:00 pm",
+        items: [["Punugulu", 2, 50]],
+        note: "",
+      },
+      {
+        id: "HH-1041",
+        name: "Priya Das",
+        flat: "T2-410",
+        initials: "PD",
+        status: "completed",
+        ago: "Earlier today",
+        fulfil: "Pickup",
+        time: "Today · 4:00–4:30 pm",
+        items: [["Mirchi bajji", 2, 50]],
+        note: "",
+      },
+      {
+        id: "HH-1040",
+        name: "Aditya Jain",
+        flat: "T3-120",
+        initials: "AJ",
+        status: "rejected",
+        ago: "Earlier today",
+        fulfil: "Pickup",
+        time: "Today · 4:00–4:30 pm",
+        items: [["Aloo samosa", 1, 40]],
+        note: "",
+        reason: "Item sold out for this slot",
+      },
+    ]
+      .map((o) => ({ ...o, date: today() }))
+      .concat([
+        {
+          id: "HH-1038",
+          name: "Nisha Kapoor",
+          flat: "T2-506",
+          initials: "NK",
+          status: "completed",
+          ago: "Yesterday",
+          date: dateAt(-1),
+          fulfil: "Pickup",
+          time: "Yesterday · 5:00–5:30 pm",
+          items: [["Mirchi bajji", 2, 50]],
+          note: "",
+        },
+        {
+          id: "HH-1037",
+          name: "Vikram Bose",
+          flat: "T1-220",
+          initials: "VB",
+          status: "rejected",
+          ago: "Yesterday",
+          date: dateAt(-1),
+          fulfil: "Pickup",
+          time: "Yesterday · 6:00–6:30 pm",
+          items: [["Aloo samosa", 2, 40]],
+          note: "",
+          reason: "Shop was taking a break",
+        },
+        {
+          id: "HH-1032",
+          name: "Asha Nair",
+          flat: "T3-305",
+          initials: "AN",
+          status: "completed",
+          ago: dateLabel(dateAt(-3)),
+          date: dateAt(-3),
+          fulfil: "Delivery",
+          time: dateLabel(dateAt(-3)) + " · 6:00–6:30 pm",
+          items: [["Punugulu", 3, 50]],
+          note: "",
+        },
+        {
+          id: "HH-1019",
+          name: "Rohan Sen",
+          flat: "T1-701",
+          initials: "RS",
+          status: "completed",
+          ago: dateLabel(dateAt(-10)),
+          date: dateAt(-10),
+          fulfil: "Pickup",
+          time: dateLabel(dateAt(-10)) + " · 5:30–6:00 pm",
+          items: [["Onion pakora", 2, 60]],
+          note: "",
+        },
+      ])
+      .map((o) =>
+        o.id === "HH-1042"
+          ? {
+              ...o,
+              date: dateAt(-1),
+              ago: "Yesterday · still open",
+              time: "Yesterday · 5:30–6:00 pm",
+            }
+          : o,
+      );
+  let appView = "orders",
+    alerts = [],
+    menuDirty = false,
+    demoSerial = 1050;
+  const defaultMenu = () => [
     {
-      id: "HH-1048",
-      name: "Ananya Rao",
-      flat: "T2-308",
-      initials: "AR",
-      status: "requested",
-      ago: "2 min ago",
-      fulfil: "Pickup",
-      time: "Today · 5:30–6:00 pm",
-      items: [
-        ["Mirchi bajji", 2, 50],
-        ["Onion pakora", 1, 60],
-      ],
-      note: "A little less spicy, please. Picking up after my evening walk.",
+      id: 1,
+      name: "Mirchi bajji",
+      category: "Snacks",
+      price: 50,
+      unit: "plate of 4",
+      on: true,
     },
     {
-      id: "HH-1047",
-      name: "Rahul Mehta",
-      flat: "T1-602",
-      initials: "RM",
-      status: "requested",
-      ago: "6 min ago",
-      fulfil: "Delivery",
-      time: "Today · 6:00–6:30 pm",
-      items: [
-        ["Aloo samosa", 3, 40],
-        ["Punugulu", 2, 50],
-      ],
-      note: "Please ring the bell. The intercom is acting up.",
+      id: 2,
+      name: "Onion pakora",
+      category: "Snacks",
+      price: 60,
+      unit: "plate",
+      on: true,
     },
     {
-      id: "HH-1046",
-      name: "Divya Nair",
-      flat: "T3-214",
-      initials: "DN",
-      status: "requested",
-      ago: "9 min ago",
-      fulfil: "Pickup",
-      time: "Today · 6:30–7:00 pm",
-      items: [["Onion pakora", 2, 60]],
-      note: "An extra little pot of chutney would be lovely.",
+      id: 3,
+      name: "Aloo samosa",
+      category: "Snacks",
+      price: 40,
+      unit: "pair",
+      on: true,
     },
     {
-      id: "HH-1045",
-      name: "Karthik Reddy",
-      flat: "T1-405",
-      initials: "KR",
-      status: "preparing",
-      ago: "18 min ago",
-      fulfil: "Pickup",
-      time: "Today · 5:15–5:45 pm",
-      items: [
-        ["Mirchi bajji", 3, 50],
-        ["Punugulu", 1, 50],
-      ],
-      note: "No special requests. Bring on the crunch!",
-    },
-    {
-      id: "HH-1044",
-      name: "Sneha Iyer",
-      flat: "T2-110",
-      initials: "SI",
-      status: "ready",
-      ago: "25 min ago",
-      fulfil: "Pickup",
-      time: "Today · 5:00–5:30 pm",
-      items: [["Aloo samosa", 2, 40]],
-      note: "I’ll pick it up from your flat.",
-    },
-    {
-      id: "HH-1043",
-      name: "Arjun Shah",
-      flat: "T3-507",
-      initials: "AS",
-      status: "accepted",
-      ago: "14 min ago",
-      fulfil: "Delivery",
-      time: "Today · 6:00–6:30 pm",
-      items: [
-        ["Mirchi bajji", 1, 50],
-        ["Onion pakora", 1, 60],
-      ],
-      note: "",
-    },
-    {
-      id: "HH-1042",
-      name: "Meera Menon",
-      flat: "T1-707",
-      initials: "MM",
-      status: "preparing",
-      ago: "21 min ago",
-      fulfil: "Pickup",
-      time: "Today · 5:30–6:00 pm",
-      items: [["Punugulu", 2, 50]],
-      note: "",
-    },
-    {
-      id: "HH-1041",
-      name: "Priya Das",
-      flat: "T2-410",
-      initials: "PD",
-      status: "completed",
-      ago: "Earlier today",
-      fulfil: "Pickup",
-      time: "Today · 4:00–4:30 pm",
-      items: [["Mirchi bajji", 2, 50]],
-      note: "",
-    },
-    {
-      id: "HH-1040",
-      name: "Aditya Jain",
-      flat: "T3-120",
-      initials: "AJ",
-      status: "rejected",
-      ago: "Earlier today",
-      fulfil: "Pickup",
-      time: "Today · 4:00–4:30 pm",
-      items: [["Aloo samosa", 1, 40]],
-      note: "",
-      reason: "Item sold out for this slot",
+      id: 4,
+      name: "Punugulu",
+      category: "Snacks",
+      price: 50,
+      unit: "plate",
+      on: true,
     },
   ];
+  const defaultProfile = () => ({
+    shop: "Crispy Corner",
+    name: "Sravani Reddy",
+    flat: "T1-416",
+    bio: "A little crunch, a little comfort. Evening snacks made in your hood.",
+    starts: "16:00",
+    ends: "20:30",
+    delivery: true,
+  });
+  let menu = defaultMenu(),
+    publishedMenu = defaultMenu(),
+    profile = defaultProfile();
   let orders = seed(),
     tab = "incoming",
     selected = "HH-1048",
@@ -187,6 +327,12 @@
     if (!allowed[o.status]?.includes(status)) return;
     o.status = status;
     tab = bucket(o);
+    appView = tab === "history" ? "history" : "orders";
+    if (appView === "history") {
+      $("history-range").value = "all";
+      $("history-status").value = "all";
+    }
+    alerts.filter((a) => a.id === o.id).forEach((a) => (a.read = true));
     selected = o.id;
     if (status === "accepted") {
       consumerEvent(
@@ -214,6 +360,12 @@
         o,
         "Handed over. Happy snacking 💛",
         "Your handover code was verified. The order is complete. Payment is arranged directly with your provider.",
+      );
+      providerAlert(
+        o,
+        "Handover verified",
+        `${o.name}'s order is complete.`,
+        false,
       );
       toast("Code checked. Order complete. Happy hood 💛");
     }
@@ -466,6 +618,7 @@
     return container;
   }
   function render() {
+    renderConsole();
     const counts = { incoming: 0, active: 0, history: 0 };
     orders.forEach((o) => counts[bucket(o)]++);
     document.querySelectorAll("[data-tab]").forEach((b) => {
@@ -475,9 +628,14 @@
     const search = $("search").value.toLowerCase().trim(),
       list = orders.filter(
         (o) =>
-          bucket(o) === tab &&
+          (appView === "history"
+            ? bucket(o) === "history" && historyMatches(o)
+            : bucket(o) === tab && bucket(o) !== "history") &&
           `${o.name} ${o.flat} ${o.id}`.toLowerCase().includes(search),
       );
+    list.sort(
+      (a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id),
+    );
     if (!list.some((o) => o.id === selected)) selected = list[0]?.id;
     $("order-list").replaceChildren();
     if (!list.length)
@@ -503,7 +661,13 @@
       top.append(n("span", o.id, "reference"), badge(o));
       const person = n("div", null, "tile-person"),
         name = n("div");
-      name.append(n("strong", o.name), n("small", `Flat ${o.flat} · ${o.ago}`));
+      name.append(
+        n("strong", o.name),
+        n(
+          "small",
+          `Flat ${o.flat} · ${appView === "history" ? dateLabel(o.date) : o.ago}`,
+        ),
+      );
       person.append(n("span", o.initials, "person-avatar"), name);
       const bottom = n("div", null, "tile-bottom");
       bottom.append(
@@ -522,8 +686,9 @@
       );
       tile.onclick = () => {
         selected = o.id;
+        alerts.filter((a) => a.id === o.id).forEach((a) => (a.read = true));
         render();
-        if (matchMedia("(max-width:760px)").matches)
+        if (matchMedia("(max-width:1100px)").matches)
           $("mobile-detail").showModal();
       };
       $("order-list").append(tile);
@@ -586,6 +751,19 @@
   $("reset").onclick = () => {
     document.querySelectorAll("dialog[open]").forEach((d) => d.close());
     orders = seed();
+    appView = "orders";
+    menu = defaultMenu();
+    publishedMenu = defaultMenu();
+    profile = defaultProfile();
+    menuDirty = false;
+    demoSerial = 1050;
+    seedAlerts();
+    fillProfile();
+    renderMenu();
+    $("profile-state").textContent = "";
+    $("history-range").value = "today";
+    $("history-status").value = "all";
+    $("history-date").value = today();
     tab = "incoming";
     selected = "HH-1048";
     events = [];
@@ -594,5 +772,302 @@
     render();
     toast("Fresh start. All demo orders reset.");
   };
+  function historyMatches(o) {
+    const range = $("history-range").value,
+      outcome = $("history-status").value;
+    if (outcome !== "all" && o.status !== outcome) return false;
+    return (
+      range === "all" ||
+      (range === "today" && o.date === today()) ||
+      (range === "yesterday" && o.date === dateAt(-1)) ||
+      (range === "week" && o.date >= dateAt(-6) && o.date <= today()) ||
+      (range === "custom" && o.date === $("history-date").value)
+    );
+  }
+  function providerAlert(o, title, body, rerender = true) {
+    alerts.unshift({
+      key: `${o.id}-${title}`,
+      id: o.id,
+      title,
+      body,
+      read: false,
+    });
+    if (rerender) render();
+  }
+  function seedAlerts() {
+    alerts = orders
+      .filter((o) => o.status === "requested")
+      .map((o) => ({
+        key: o.id + "-new",
+        id: o.id,
+        title: "A new craving just landed",
+        body: `${o.name} · ${o.id} · ${money(total(o))}`,
+        read: false,
+      }));
+  }
+  function setView(view) {
+    appView = view;
+    if (view === "orders" && tab === "history") tab = "incoming";
+    $("search").value = "";
+    render();
+  }
+  function renderConsole() {
+    const orderView = appView === "orders" || appView === "history";
+    $("orders-panel").hidden = !orderView;
+    for (const v of ["menu", "notifications", "profile"])
+      $(v + "-panel").hidden = appView !== v;
+    document.querySelectorAll("[data-console]").forEach((b) => {
+      if (b.dataset.console === appView) b.setAttribute("aria-current", "page");
+      else b.removeAttribute("aria-current");
+    });
+    $("page-kicker").textContent =
+      appView === "history"
+        ? "THE ORDERS THAT MADE YOUR DAYS"
+        : "TODAY + ALL OPEN ORDERS";
+    $("page-title").textContent =
+      appView === "history" ? "A little look back." : "Your hood is hungry.";
+    $("page-description").textContent =
+      appView === "history"
+        ? "Completed and declined orders, by fulfilment date."
+        : "New requests and unfinished orders—even if they started yesterday.";
+    document.querySelector(".order-tabs").hidden = appView === "history";
+    $("history-tools").hidden = appView !== "history";
+    $("custom-date-label").hidden = $("history-range").value !== "custom";
+    $("nav-orders-count").textContent =
+      orders.filter((o) => bucket(o) === "incoming").length || "";
+    const unread = alerts.filter((a) => !a.read).length;
+    $("nav-alert-count").textContent = unread || "";
+    $("consumer-preview").disabled = !orderView;
+    renderNotifications();
+  }
+  function openAlert(alert) {
+    alert.read = true;
+    const o = orders.find((o) => o.id === alert.id);
+    if (!o) return;
+    appView = bucket(o) === "history" ? "history" : "orders";
+    tab = bucket(o);
+    selected = o.id;
+    $("search").value = "";
+    if (appView === "history") {
+      $("history-range").value = "all";
+      $("history-status").value = "all";
+    }
+    render();
+    if (matchMedia("(max-width:1100px)").matches)
+      $("mobile-detail").showModal();
+  }
+  function renderNotifications() {
+    const list = $("console-notifications");
+    list.replaceChildren();
+    if (!alerts.length)
+      list.append(n("p", "All quiet in the hood for now.", "empty-state"));
+    for (const alert of alerts) {
+      const b = button("", `console-alert ${alert.read ? "" : "unread"}`, () =>
+        openAlert(alert),
+      );
+      b.append(n("span", alert.read ? "✓" : "●", "alert-dot"));
+      const copy = n("div");
+      copy.append(n("strong", alert.title), n("span", alert.body));
+      b.append(copy, n("small", alert.read ? "Read" : "New"));
+      list.append(b);
+    }
+  }
+  function renderMenu() {
+    const list = $("console-menu");
+    list.replaceChildren();
+    $("menu-summary").textContent =
+      `${menu.filter((i) => i.on).length} of ${menu.length} items on today`;
+    $("menu-state").textContent = menuDirty
+      ? "Draft changes · publish the demo menu when ready"
+      : "Sample menu · no unpublished changes";
+    for (const item of menu) {
+      const card = n("article", null, "console-menu-card");
+      const head = n("div", null, "menu-card-heading");
+      head.append(n("span", "🥨", "menu-item-icon"), n("h2", item.name));
+      card.append(head);
+      const category = n("span", item.category, "status-badge");
+      card.append(category);
+      const nameLabel = n("label", "Item name"),
+        name = n("input");
+      name.value = item.name;
+      name.maxLength = 100;
+      name.setAttribute("aria-label", `Item name for ${item.id}`);
+      name.oninput = () => {
+        item.name = name.value;
+        menuChanged();
+      };
+      nameLabel.append(name);
+      const priceLabel = n("label", "Price · ₹"),
+        price = n("input");
+      price.type = "number";
+      price.min = 0;
+      price.max = 999999;
+      price.step = "0.01";
+      price.value = item.price;
+      price.setAttribute("aria-label", `Price for ${item.name}`);
+      price.oninput = () => {
+        item.price = price.value === "" ? null : Number(price.value);
+        menuChanged();
+      };
+      priceLabel.append(price);
+      const unitLabel = n("label", "Price per"),
+        unit = n("input");
+      unit.value = item.unit;
+      unit.maxLength = 50;
+      unit.setAttribute("aria-label", `Unit for ${item.id}`);
+      unit.oninput = () => {
+        item.unit = unit.value;
+        menuChanged();
+      };
+      unitLabel.append(unit);
+      const toggle = button(
+        item.on ? "On today ✓" : "Off today",
+        "menu-toggle",
+        () => {
+          item.on = !item.on;
+          menuChanged();
+          renderMenu();
+        },
+      );
+      toggle.setAttribute("aria-pressed", item.on);
+      toggle.setAttribute("aria-label", `Availability for ${item.name}`);
+      const grid = n("div", null, "menu-edit-grid");
+      grid.append(nameLabel, priceLabel, unitLabel);
+      card.append(
+        grid,
+        n("p", `Serving ${profile.starts}–${profile.ends} IST · ${item.unit}`),
+        toggle,
+      );
+      list.append(card);
+    }
+  }
+  function menuChanged() {
+    menuDirty = true;
+    $("menu-state").textContent =
+      "Draft changes · publish the demo menu when ready";
+  }
+  function fillProfile() {
+    for (const [id, value] of Object.entries({
+      shop: profile.shop,
+      name: profile.name,
+      flat: profile.flat,
+      bio: profile.bio,
+      start: profile.starts,
+      end: profile.ends,
+    }))
+      $("profile-" + id).value = value;
+    $("profile-delivery").checked = profile.delivery;
+    document.querySelector(".shop-switch strong").textContent = profile.shop;
+    document.querySelector(".shop-switch small").textContent =
+      `MyHome Tridasa · ${profile.flat}`;
+  }
+  document
+    .querySelectorAll("[data-console]")
+    .forEach((b) => (b.onclick = () => setView(b.dataset.console)));
+  for (const id of ["history-range", "history-date", "history-status"])
+    $(id).onchange = render;
+  $("read-alerts").onclick = () => {
+    alerts.forEach((a) => (a.read = true));
+    render();
+    toast("Inbox caught up ✓ · demo");
+  };
+  $("simulate-order").onclick = () => {
+    const available = publishedMenu.find((i) => i.on);
+    if (!available) {
+      toast(
+        "Your published demo menu has no items on today. Switch one on and publish first.",
+      );
+      return;
+    }
+    const serial = demoSerial++,
+      id = "HH-" + serial;
+    const o = {
+      id,
+      name: "Riya Sharma",
+      flat: "T2-512",
+      initials: "RS",
+      status: "requested",
+      ago: "Just now",
+      date: today(),
+      fulfil: "Pickup",
+      time: "Today · 6:00–6:30 pm",
+      items: [[available.name, 2, available.price]],
+      note: "Simulated incoming order for this UX preview.",
+    };
+    orders.unshift(o);
+    codes[id] = "629714";
+    providerAlert(
+      o,
+      "A new craving just landed",
+      `Riya Sharma · ${id} · ${money(total(o))}`,
+    );
+    toast(`New order ${id}. Your provider inbox has the details. · demo`);
+  };
+  $("add-demo-item").onclick = () => {
+    menu.push({
+      id: Date.now(),
+      name: "New snack",
+      category: "Snacks",
+      price: 50,
+      unit: "plate",
+      on: true,
+    });
+    menuChanged();
+    renderMenu();
+  };
+  $("publish-demo-menu").onclick = () => {
+    if (
+      menu.some(
+        (i) =>
+          !i.name.trim() ||
+          !i.unit.trim() ||
+          i.price === null ||
+          !Number.isFinite(i.price) ||
+          i.price < 0 ||
+          i.price > 999999,
+      )
+    ) {
+      toast("Check item names, price units and prices first.");
+      return;
+    }
+    publishedMenu = menu.map((i) => ({ ...i }));
+    menuDirty = false;
+    renderMenu();
+    $("menu-state").textContent =
+      "Demo menu published in this preview only. Real shop unchanged.";
+    toast("Demo menu updated ✨ Existing order snapshots stay the same.");
+  };
+  $("demo-profile").onsubmit = (e) => {
+    e.preventDefault();
+    if ($("profile-end").value <= $("profile-start").value) {
+      $("profile-state").textContent =
+        "Choose an end time after the start time.";
+      return;
+    }
+    const draftProfile = {
+      shop: $("profile-shop").value.trim(),
+      name: $("profile-name").value.trim(),
+      flat: $("profile-flat").value.trim(),
+      bio: $("profile-bio").value.trim(),
+      starts: $("profile-start").value,
+      ends: $("profile-end").value,
+      delivery: $("profile-delivery").checked,
+    };
+    if (!draftProfile.shop || !draftProfile.name || !draftProfile.flat) {
+      $("profile-state").textContent =
+        "Add your shop name, name and pickup flat.";
+      return;
+    }
+    profile = draftProfile;
+    fillProfile();
+    renderMenu();
+    $("profile-state").textContent =
+      "Demo profile saved. Your real shop profile hasn’t changed.";
+    toast("A fresh hello for your shop ✨ · demo");
+  };
+  $("history-date").value = today();
+  seedAlerts();
+  fillProfile();
+  renderMenu();
   render();
 })();

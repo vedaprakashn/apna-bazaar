@@ -7,9 +7,9 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <meta name="theme-color" content="#6336f5" />
-    <title>Order room · HeyHood preview</title>
+    <title>Provider console · HeyHood preview</title>
     <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
-    <link rel="stylesheet" href="orders-demo.css?v=2" />
+    <link rel="stylesheet" href="orders-demo.css?v=3" />
   </head>
   <body>
     <header class="orders-header">
@@ -31,54 +31,208 @@
         ><button id="reset">Reset demo ↻</button>
       </div>
     </div>
-    <main class="order-room">
-      <section class="room-heading">
-        <div>
-          <p class="eyebrow">YOUR SHOP. ALL THE ACTION.</p>
-          <h1>Good food. Happy hood.</h1>
-          <p class="subhead">
-            A little less juggling. Every order, right here.
-          </p>
+    <div class="console-shell">
+      <aside class="console-sidebar">
+        <p class="eyebrow">YOUR SHOP SPACE</p>
+        <nav aria-label="Provider console">
+          <button data-console="orders" aria-current="page">
+            <span aria-hidden="true">▤</span> Orders
+            <b id="nav-orders-count"></b>
+          </button>
+          <button data-console="menu">
+            <span aria-hidden="true">◈</span> Menu
+          </button>
+          <button data-console="history">
+            <span aria-hidden="true">◷</span> History
+          </button>
+          <button data-console="notifications">
+            <span aria-hidden="true">♧</span> Notifications
+            <b id="nav-alert-count"></b>
+          </button>
+          <button data-console="profile">
+            <span aria-hidden="true">☺</span> Shop profile
+          </button>
+        </nav>
+        <div class="sidebar-note">
+          A little shop.<br /><strong>A whole lot of heart. 💛</strong>
+          <p>One console. Less juggling.</p>
         </div>
-        <div class="open-chip"><i></i> Taking orders <span>· demo</span></div>
-      </section>
-      <section class="orders-workspace">
-        <div class="list-pane">
-          <div class="list-tools">
-            <div class="order-tabs" role="tablist" aria-label="Order status">
-              <button role="tab" aria-selected="true" data-tab="incoming">
-                New <span></span></button
-              ><button role="tab" aria-selected="false" data-tab="active">
-                Active <span></span></button
-              ><button role="tab" aria-selected="false" data-tab="history">
-                History <span></span>
+      </aside>
+      <main class="order-room">
+        <section id="orders-panel">
+          <section class="room-heading">
+            <div>
+              <p class="eyebrow" id="page-kicker">TODAY + ALL OPEN ORDERS</p>
+              <h1 id="page-title">Your hood is hungry.</h1>
+              <p class="subhead" id="page-description">
+                New requests and unfinished orders. Nothing slips through.
+              </p>
+            </div>
+            <div class="open-chip">
+              <i></i> Taking orders <span>· demo</span>
+            </div>
+          </section>
+          <section class="orders-workspace">
+            <div class="list-pane">
+              <div class="list-tools">
+                <div
+                  class="order-tabs"
+                  role="tablist"
+                  aria-label="Order status"
+                >
+                  <button role="tab" aria-selected="true" data-tab="incoming">
+                    New <span></span></button
+                  ><button role="tab" aria-selected="false" data-tab="active">
+                    Active <span></span>
+                  </button>
+                </div>
+                <div id="history-tools" class="history-tools" hidden>
+                  <label
+                    >Fulfilment date<select
+                      id="history-range"
+                      aria-label="Fulfilment date"
+                    >
+                      <option value="today">Today</option>
+                      <option value="yesterday">Yesterday</option>
+                      <option value="week">Last 7 days</option>
+                      <option value="all">All dates</option>
+                      <option value="custom">Pick a date</option>
+                    </select></label
+                  ><label id="custom-date-label" hidden
+                    >Date<input
+                      id="history-date"
+                      aria-label="History date"
+                      type="date" /></label
+                  ><label
+                    >Outcome<select id="history-status" aria-label="Outcome">
+                      <option value="all">All outcomes</option>
+                      <option value="completed">Completed</option>
+                      <option value="rejected">Declined</option>
+                    </select></label
+                  >
+                </div>
+                <label class="search"
+                  ><span aria-hidden="true">⌕</span
+                  ><input
+                    id="search"
+                    type="search"
+                    aria-label="Search orders by name, flat or reference"
+                    placeholder="Name, flat or order ID"
+                /></label>
+              </div>
+              <div id="order-list" class="order-list"></div>
+              <p class="list-footnote">
+                Payment is arranged directly. These totals aren’t payment
+                receipts.
+              </p>
+            </div>
+            <aside
+              id="desktop-detail"
+              class="detail-pane"
+              aria-label="Selected order"
+            ></aside>
+          </section>
+        </section>
+        <section id="menu-panel" class="console-panel" hidden>
+          <p class="eyebrow">YOUR EVERYDAY GOOD STUFF</p>
+          <h1>What’s on the menu?</h1>
+          <p class="panel-intro">
+            Edit a price or switch an item off for today. These are demo
+            drafts—nothing changes in your real shop.
+          </p>
+          <div class="panel-toolbar">
+            <span id="menu-summary"></span>
+            <div>
+              <button id="add-demo-item" class="order-btn">+ Add item</button>
+              <button id="publish-demo-menu" class="order-btn primary">
+                Publish demo menu ↗
               </button>
             </div>
-            <label class="search"
-              ><span aria-hidden="true">⌕</span
-              ><input
-                id="search"
-                type="search"
-                aria-label="Search orders by name, flat or reference"
-                placeholder="Name, flat or order ID"
-            /></label>
           </div>
-          <div id="order-list" class="order-list"></div>
-          <p class="list-footnote">
-            Payment is arranged directly. These totals aren’t payment receipts.
+          <p id="menu-state" role="status">
+            Sample menu · no unpublished changes
           </p>
-        </div>
-        <aside
-          id="desktop-detail"
-          class="detail-pane"
-          aria-label="Selected order"
-        ></aside>
-      </section>
-      <footer class="preview-footer">
-        Made for your hood. Built around you.
-        <span>Sample experience · no real orders or notifications</span>
-      </footer>
-    </main>
+          <div id="console-menu" class="console-menu"></div>
+        </section>
+        <section id="notifications-panel" class="console-panel" hidden>
+          <p class="eyebrow">THE LITTLE HEADS-UP HUB</p>
+          <h1>Your shop, in the loop.</h1>
+          <p class="panel-intro">
+            Order updates live here, even if a phone alert gets missed. Tap an
+            update to open its order.
+          </p>
+          <div class="panel-toolbar">
+            <button id="simulate-order" class="order-btn primary">
+              Try a new order alert ✦</button
+            ><button id="read-alerts" class="order-btn">Mark all read</button>
+          </div>
+          <div class="notification-explainer">
+            <strong>Inbox first. Push as a nudge.</strong>
+            <p>
+              New orders alert the provider. Accepted, declined and ready
+              updates alert the consumer. Completion updates both. This demo
+              simulates the inbox only; real background push needs notification
+              setup.
+            </p>
+          </div>
+          <div id="console-notifications"></div>
+        </section>
+        <section id="profile-panel" class="console-panel" hidden>
+          <p class="eyebrow">PUT A LITTLE YOU IN YOUR SHOP</p>
+          <h1>Your shop’s hello.</h1>
+          <p class="panel-intro">
+            The details neighbours see. Preview changes here without updating
+            your real provider profile.
+          </p>
+          <form id="demo-profile" class="profile-form">
+            <label
+              >Shop name<input
+                id="profile-shop"
+                maxlength="100"
+                required /></label
+            ><label
+              >Your name<input
+                id="profile-name"
+                maxlength="100"
+                required /></label
+            ><label
+              >Flat / pickup point<input
+                id="profile-flat"
+                maxlength="40"
+                required /></label
+            ><label
+              >Short introduction<textarea
+                id="profile-bio"
+                rows="3"
+                maxlength="500"
+              ></textarea>
+            </label>
+            <div class="profile-times">
+              <label
+                >Serving from · IST<input
+                  id="profile-start"
+                  type="time"
+                  required /></label
+              ><label
+                >Serving until · IST<input
+                  id="profile-end"
+                  type="time"
+                  required
+              /></label>
+            </div>
+            <label class="profile-check"
+              ><input id="profile-delivery" type="checkbox" />Delivery offered
+              within the community</label
+            ><button class="order-btn primary">Save demo profile ↗</button>
+            <p id="profile-state" role="status"></p>
+          </form>
+        </section>
+        <footer class="preview-footer">
+          Made for your hood. Built around you.
+          <span>Sample experience · no real orders or notifications</span>
+        </footer>
+      </main>
+    </div>
     <dialog id="mobile-detail" class="detail-dialog">
       <div class="dialog-top">
         <strong>Order details</strong
@@ -123,6 +277,6 @@
       <div id="consumer-feed"></div>
     </dialog>
     <div id="order-toast" role="status" aria-live="polite" hidden></div>
-    <script src="orders-demo.js?v=2"></script>
+    <script src="orders-demo.js?v=3"></script>
   </body>
 </html>
