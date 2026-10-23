@@ -9,7 +9,7 @@ Status: implementation plan, not a deployed order-management feature. The app cu
 
 ## Product boundary
 
-HeyHood owns discovery, order collection, provider decisions and fulfilment tracking. WhatsApp is removed from the new commerce flow: it is neither checkout, the order record, the provider alert nor the delivery-confirmation channel. No WhatsApp group or Business account integration is needed for this design. Payments remain directly between the consumer and provider permanently; HeyHood does not collect, settle or refund money. Displayed totals describe the order, not proof of payment. Do not mark orders paid or claim a payment happened.
+HeyHood owns discovery, order collection, provider decisions and fulfilment tracking. Native HeyHood checkout does not depend on WhatsApp: it is neither the native order record, provider alert nor verified delivery-confirmation channel. During transition, providers can record orders agreed on WhatsApp, phone, paper, Excel or in person in the same order book; they continue coordinating externally until the consumer is linked to HeyHood. This does not require automatic WhatsApp group or Business account integration. Payments remain directly between the consumer and provider permanently; HeyHood does not collect, settle or refund money. Displayed totals describe the order, not proof of payment. Do not mark orders paid or claim a payment happened.
 
 One app and backend have two role-based views:
 
@@ -113,6 +113,18 @@ Candidate endpoints:
 - `GET /api/{community}/provider-workspace/{provider}/orders` — provider inbox with safe, paginated fields.
 - `POST .../orders/{id}/accept|reject|prepare|ready|cancel|verify-handover` — explicit, revision-checked state transitions; no arbitrary status setter.
 - `GET /api/{community}/provider-memberships/mine` — server-approved mode choices.
+
+## Transitional provider-recorded orders
+
+Adoption is gradual: consumers ordering through HeyHood create requests automatically; providers can also record an order agreed outside the app. Both use the same provider queue and history rather than maintaining a second paper/Excel ledger. The UX preview adds Add order, external source selection, customer name/flat, menu or custom lines, agreed unit prices/quantities, fulfilment date/time, pickup/delivery, notes, a live total and explicit confirmation that terms were agreed outside HeyHood. These records enter Accepted/confirmed, not a fresh consumer request requiring the provider to accept it again. Custom agreed prices are snapshots and do not change the catalog. Excel/paper are manual source tags, not an implemented spreadsheet upload/import or WhatsApp message ingestion integration.
+
+Every production order should preserve source (HeyHood, WhatsApp, phone, paper, Excel, in person), entry method (consumer checkout vs provider record), creator account, timestamps and optional external reference. Only the consumer checkout service can assert automatic HeyHood origin; providers choose external origins. Provider creation must enforce shop ownership, validation, idempotency and auditability. Date/source/outcome filters and attribution distinguish native demand from manually captured business; do not count provider entry as a consumer conversion or invent completed revenue. Detect possible duplicates for review, not automatic merging.
+
+An external customer name, flat or phone is not a verified resident account. Keep `consumer_id` unlinked unless the consumer explicitly claims/accepts the order through a verified, authorised account-linking flow. No alerts or handover OTP are said to have reached an unlinked customer. Providers coordinate externally and track fulfilment internally during this period.
+
+For unlinked orders, an explicit “customer received the order” provider acknowledgement may complete the record with `completion_method=provider_recorded`, visibly not OTP-verified. Preserve the actor/time. This cannot bypass OTP for a linked consumer's order: those orders still require Ready + valid consumer-only code. The prototype demonstrates both paths, with no consumer code generated or shown for the unlinked manual case. Production recovery, claims and any later verification must preserve rather than rewrite the original audit trail.
+
+Progression: external order → provider records and manages it → consumer voluntarily joins/claims an order → future orders happen directly through HeyHood. Never create a consumer account, send messages or infer consent merely because a provider entered someone's details. Order collection/tracking remains payment-free for HeyHood throughout.
 
 ## Delivery plan and acceptance checks
 
