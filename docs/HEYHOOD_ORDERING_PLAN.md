@@ -3,6 +3,10 @@
 Decision date: 23 October 2026 (India time).
 Status: implementation plan, not a deployed order-management feature. The app currently has public storefronts, private provider editing, resident identity scaffolding and an in-app notification inbox. It does not yet implement the cart, native orders or handover codes described below.
 
+## Interactive provider UX preview
+
+`/seller/orders-demo.html` is a standalone, responsive frontend demonstration, not a live order portal. It includes Incoming/In motion/Past orders, order details, accept/reject, preparation/readiness and a simulated handover-code dialog. A separate Consumer preview shows sample alerts and consumer-only codes for trying both roles. Data is fictional and kept only in browser memory; refresh/reset restores it. No order, account, payment, notification or code-verification API is called. Production security and persistence still require the implementation below.
+
 ## Product boundary
 
 HeyHood owns discovery, order collection, provider decisions and fulfilment tracking. WhatsApp is removed from the new commerce flow: it is neither checkout, the order record, the provider alert nor the delivery-confirmation channel. No WhatsApp group or Business account integration is needed for this design. Payments remain directly between the consumer and provider permanently; HeyHood does not collect, settle or refund money. Displayed totals describe the order, not proof of payment. Do not mark orders paid or claim a payment happened.
