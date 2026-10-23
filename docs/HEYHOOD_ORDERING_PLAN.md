@@ -80,6 +80,22 @@ Provider alerts must go to the approved provider owner account(s), not a public 
 
 Background alerts use opt-in Firebase push when identity/device binding, permissions and sending credentials are configured and tested. Existing promotional push delivery is not automatically an order notification subscription. Keep transactional order alerts separate from marketing campaigns and their quotas. Use an outbox with retries and deduplication; the order inbox remains authoritative if push fails. No SMS or WhatsApp delivery is assumed.
 
+## Unified provider console and alert routing
+
+The UX preview now includes desktop left navigation (scrolling compact tabs on mobile): Orders, Menu, History, Notifications and Shop profile. Orders includes new and all unfinished orders, including older carry-over work. History shows completed/declined records with fulfilment-date filters (IST): today, yesterday, last seven days, all dates or a chosen date, plus outcome/name/reference filters. Existing price snapshots are not rewritten by menu edits. The preview's menu and profile changes remain in browser memory and do not update the real provider editor or database.
+
+| Event | Provider inbox | Consumer inbox |
+| --- | --- | --- |
+| Order request submitted | New-order alert, unread count, deep link to request | Request acknowledgement / timeline |
+| Provider accepts or declines | State visible in order queue | Decision alert with order link; accepted code is retrieved privately inside the order |
+| Provider marks ready | Ready state | Pickup-ready or delivery-ready alert, never a delivered claim |
+| Handover code verified | Completion confirmation | Completion confirmation |
+| Expiry or confirmed cancellation | Terminal-state alert | Terminal-state alert |
+
+For production, persist each state change, event and recipient-specific notification/outbox row atomically. Send only after commit, retry failures, deduplicate by order/event/recipient, and link into the authenticated order. Store unread/read state per account and enforce provider ownership and buyer identity. Refresh/reconnect always recovers the current server state; a missed push never loses an order. The prototype simulates this with local unread badges, a provider inbox, a new-order trigger and the separate selected-consumer preview; it does not implement durable delivery.
+
+Use opt-in Firebase transactional push to registered, account-bound devices for background alerts when configured and tested. Keep marketing consent/quotas separate from order alerts, and never put OTPs or full fulfilment details in push payloads. The handover code stays in the authenticated consumer's order, not provider alerts, push or SMS. Browser polling/focus refresh is a foreground fallback; no claim of reliable background delivery without permissions and the platform integration.
+
 ## Server/data outline
 
 - Provider membership: approved provider-to-resident-account association, role and revocation timestamp. Migrate pilot edit links to account-based ownership without trusting a client-selected provider ID. Capability links can remain a temporary operator provisioning mechanism; they do not establish phone identity.
