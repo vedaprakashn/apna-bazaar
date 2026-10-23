@@ -539,17 +539,20 @@
   }
   function consumerPreview() {
     $("consumer-feed").replaceChildren();
-    const relevant = orders.filter((o) =>
-      ["accepted", "preparing", "ready", "completed"].includes(o.status),
+    const relevant = orders.filter(
+      (o) =>
+        o.id === selected &&
+        ["accepted", "preparing", "ready"].includes(o.status),
     );
-    if (!events.length)
+    const updates = events.filter((e) => e.id === selected);
+    if (!updates.length)
       $("consumer-feed").append(
         n(
           "p",
-          "Accept an incoming order to see a fresh consumer update here. Ready orders below show a sample of the handover experience.",
+          "This previews only the selected order’s consumer. Accept it to create their update and handover code.",
         ),
       );
-    for (const event of events.slice(0, 4)) {
+    for (const event of updates.slice(0, 4)) {
       const card = n("div", null, "consumer-event");
       card.append(
         n("strong", `${event.id} · ${event.title}`),
