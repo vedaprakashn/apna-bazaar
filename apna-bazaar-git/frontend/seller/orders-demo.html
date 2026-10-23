@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#6336f5" />
     <title>Order room · HeyHood preview</title>
     <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
-    <link rel="stylesheet" href="orders-demo.css?v=1" />
+    <link rel="stylesheet" href="orders-demo.css?v=2" />
   </head>
   <body>
     <header class="orders-header">
@@ -42,32 +42,16 @@
         </div>
         <div class="open-chip"><i></i> Taking orders <span>· demo</span></div>
       </section>
-      <section class="pulse" aria-label="Sample order overview">
-        <div class="pulse-lead">
-          <span class="pulse-icon">✳</span>
-          <div>
-            <strong id="incoming-count">3</strong
-            ><span>waiting for your nod</span>
-          </div>
-        </div>
-        <div>
-          <strong id="active-count">4</strong><span>in the making</span>
-        </div>
-        <div>
-          <strong id="completed-count">1</strong><span>handed over</span>
-        </div>
-        <p>From your kitchen<br /><b>to someone’s happy place.</b> 💛</p>
-      </section>
       <section class="orders-workspace">
         <div class="list-pane">
           <div class="list-tools">
             <div class="order-tabs" role="tablist" aria-label="Order status">
               <button role="tab" aria-selected="true" data-tab="incoming">
-                Incoming <span></span></button
+                New <span></span></button
               ><button role="tab" aria-selected="false" data-tab="active">
-                In motion <span></span></button
+                Active <span></span></button
               ><button role="tab" aria-selected="false" data-tab="history">
-                Past orders <span></span>
+                History <span></span>
               </button>
             </div>
             <label class="search"
@@ -139,6 +123,6 @@
       <div id="consumer-feed"></div>
     </dialog>
     <div id="order-toast" role="status" aria-live="polite" hidden></div>
-    <script src="orders-demo.js?v=1"></script>
+    <script src="orders-demo.js?v=2"></script>
   </body>
 </html>
