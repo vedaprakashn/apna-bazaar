@@ -1,0 +1,70 @@
+name: Publish provider pilot APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      apk_base64:
+        description: Base64 of the signed provider pilot APK (no credentials embedded)
+        required: true
+        type: string
+      apk_sha256:
+        description: Expected SHA-256 of the signed APK
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-pilot-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Decode and verify the signed pilot artifact
+        env:
+          APK_BASE64: ${{ inputs.apk_base64 }}
+          APK_SHA256: ${{ inputs.apk_sha256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$APK_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          mkdir -p "$RUNNER_TEMP/provider-release"
+          cd "$RUNNER_TEMP/provider-release"
+          printf '%s' "$APK_BASE64" | base64 --decode > HeyHood-Provider.apk
+          printf '%s  HeyHood-Provider.apk\n' "$APK_SHA256" > HeyHood-Provider-SHA256.txt
+          sha256sum --check HeyHood-Provider-SHA256.txt
+          sdkmanager 'build-tools;35.0.0' >/dev/null
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose HeyHood-Provider.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt2" dump badging HeyHood-Provider.apk > manifest.txt
+          grep -q "package: name='com.heyhood.provider'" manifest.txt
+          grep -q "minSdkVersion:'26'" manifest.txt
+          cp "$GITHUB_WORKSPACE/provider-android-shell/README.md" README.md
+          zip -q HeyHood-Provider-Android.zip HeyHood-Provider.apk README.md HeyHood-Provider-SHA256.txt
+          unzip -t HeyHood-Provider-Android.zip
+      - name: Publish release attachments outside Git source history
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/provider-release"
+          cat > notes.md <<'EOF'
+          Separate HeyHood Provider Android pilot, installable alongside the consumer app. Android 8.0+.
+
+          On first launch, paste the full private provider link from HeyHood operator onboarding, including #key=. Public shop links cannot manage orders; no operator key or provider credentials are included in the APK. The link is remembered encrypted on the device. Use the top-right options to reload or switch shops.
+
+          Opens the existing Orders, Menu, History, Notifications and Shop profile console. Background order push is not included. This is a signed sideloadable pilot, not a Play Store release. Physical-device installation and WebView behaviour still need testing.
+
+          Verified APK signature, package and checksum. Binaries are release attachments and are not committed to Git source history.
+          EOF
+          if gh release view provider-android-v1.0.0 >/dev/null 2>&1; then
+            gh release upload provider-android-v1.0.0 HeyHood-Provider.apk HeyHood-Provider-Android.zip HeyHood-Provider-SHA256.txt --clobber
+            gh release edit provider-android-v1.0.0 --draft=false --prerelease --notes-file notes.md
+          else
+            gh release create provider-android-v1.0.0 HeyHood-Provider.apk HeyHood-Provider-Android.zip HeyHood-Provider-SHA256.txt --target "$GITHUB_SHA" --title 'HeyHood Provider Android pilot 1.0' --notes-file notes.md --prerelease
+          fi
