@@ -24,6 +24,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Install checksum-pinned Android verification tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 --max-time 180 https://dl.google.com/android/repository/build-tools_r35_linux.zip --output "$RUNNER_TEMP/provider-build-tools.zip"
+          printf 'bd3a4966912eb8b30ed0d00b0cda6b6543b949d5ffe00bea54c04c81e1561d88  %s\n' "$RUNNER_TEMP/provider-build-tools.zip" | sha256sum --check
+          unzip -q "$RUNNER_TEMP/provider-build-tools.zip" -d "$RUNNER_TEMP/provider-android"
+          chmod +x "$RUNNER_TEMP/provider-android/android-15/apksigner" "$RUNNER_TEMP/provider-android/android-15/aapt2"
       - name: Decode and verify the signed pilot artifact
         env:
           APK_BASE64: ${{ inputs.apk_base64 }}
@@ -37,9 +45,8 @@ jobs:
           printf '%s' "$APK_BASE64" | base64 --decode > HeyHood-Provider.apk
           printf '%s  HeyHood-Provider.apk\n' "$APK_SHA256" > HeyHood-Provider-SHA256.txt
           sha256sum --check HeyHood-Provider-SHA256.txt
-          sdkmanager 'build-tools;35.0.0' >/dev/null
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose HeyHood-Provider.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt2" dump badging HeyHood-Provider.apk > manifest.txt
+          "$RUNNER_TEMP/provider-android/android-15/apksigner" verify --verbose HeyHood-Provider.apk
+          "$RUNNER_TEMP/provider-android/android-15/aapt2" dump badging HeyHood-Provider.apk > manifest.txt
           grep -q "package: name='com.heyhood.provider'" manifest.txt
           grep -q "minSdkVersion:'26'" manifest.txt
           cp "$GITHUB_WORKSPACE/provider-android-shell/README.md" README.md
