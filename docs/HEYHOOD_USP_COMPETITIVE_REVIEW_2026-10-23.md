@@ -14,7 +14,7 @@ This is an execution advantage to establish, not an unoccupied category or a def
 
 | Competitor | Observed public capabilities | Implication for HeyHood |
 | --- | --- | --- |
-| **MyGate** | Buy & Sell within a community, verified-resident interactions; separately, advertising combining app and offline community touchpoints and lead/conversion objectives. [1–3] | Community access, trusted local listings and commercial distribution are already offered. “We monetise community audiences” is not enough. |
+| **MyGate** | Buy & Sell and verified-resident interactions; its broader offerings page explicitly advertises stores for resident small businesses, product/service catalogs with pricing and stock updates, order management, automatically generated invoices, buyer order/delivery updates and online payments. Separately advertises community lead/conversion objectives. [1–3,20] | A direct community-commerce competitor. Both resident-seller storefronts and order management overlap with HeyHood, not merely listings and ads. These are documented vendor claims; exact availability and full workflows need a product demo. |
 | **ADDA** | Community app explicitly lists Buy & Sell / Neighborhood Offers, resident directory with privacy controls, direct connections and emergency contacts. Markets an ad-free, privacy-oriented proposition. [4] | Neighbour discovery, directories and a multi-module community experience are not new. Frequent paid nudges could make our product less appealing unless relevance and resident control are clear. |
 | **ApnaComplex / ANACITY** | Bazaar presents provider offers, cities/categories, service listing and provider recommendations. Community collaboration includes Buy / Rent / Sell. The reviewed Bazaar page even displays an Apollo provider listing. [5–6] | Home-service offers and external providers in a community platform already exist. Health partners as a broad category would not distinguish us; the exact service workflow and outcomes would matter. A public listing does not establish an active booking integration or partner contract. |
 | **NoBrokerHood + NoBroker Home Services** | Community communication/vendor management and an advertising entry point; NoBroker Home Services separately presents priced services, scheduling, bookings and partner fulfilment. [7–8] | An incumbent group already combines community reach with services. We cannot assume external-supply activation is uncontested, or imply every service is directly integrated into the Hood app. |
@@ -118,3 +118,37 @@ If results show no meaningful advantage beyond a searchable directory, pitch it 
 19. WhatsApp Business app: https://whatsappbusiness.com/products/business-app/
 
 All above pages were accessible during this review. Initial alternate URLs for MyGate advertising, ADDA India and Sulekha business owners returned 404; the canonical pages above were used instead. A NoBrokerHood group service capability is not assumed to be a single in-app integration. No competitor customer counts, pricing-based India forecasts, funding claims or unverified “first/only” assertions support the recommendation.
+
+
+## Follow-up: seller pages and small-business order management
+
+A deeper check prompted by the founder's question found an important correction to the initial, narrower comparison: **MyGate explicitly advertises resident-business storefronts and order management**, not only a classifieds marketplace. Source [20], under “Marketplace & eCommerce infra,” describes an “E-commerce software store,” catalog management, stock updates, invoices and buyer order/delivery-status updates. It also describes a payment gateway. Deployment in every community, pricing, exact provider acceptance/preparation/handover states and working product depth were not tested. Do not repeat the narrower claim that MyGate only provides listings or that HeyHood's seller console is unique against it.
+
+| Platform | Business/seller presence documented | Order or operating workflow documented | Fit for small businesses |
+| --- | --- | --- | --- |
+| MyGate | In-app stores for resident-run businesses and services | Catalog, stock, orders, invoices, status/delivery updates and payment gateway advertised | Explicitly targets resident small businesses |
+| ADDA | Buy & Sell / Neighborhood Offers for items/services | Dedicated seller catalog/cart/order-console lifecycle not established from reviewed pages | Community offers are supported; full merchant operations need confirmation |
+| ApnaComplex / ANACITY | Bazaar provider listings/offers | Independent merchant catalog and fulfilment console not established from reviewed pages | Provider marketing is documented; home-seller workflow needs confirmation |
+| NoBrokerHood / NoBroker Home Services | Community discovery and separate branded home-service pages | Service booking and partner fulfilment; independent home-seller storefront/retail console not established | Selected service businesses/professionals, rather than verified open enrolment for every home seller |
+| Sulekha | Business profiles, service offerings, enquiries and reviews | Matched leads, calls/chat; retail cart, stock and fulfilment stages not established | Explicitly markets to small businesses |
+| Justdial / JD Omni | Business listings and separately configurable business websites with e-commerce | JD Omni advertises e-commerce, online booking/scheduling and payments; exact order-state console not inspected | Broad business tooling, including small sellers; current onboarding/pricing fit needs confirmation |
+| Nextdoor | Free Business Pages, recommendations, offers/contact | Leads/messages and paid opportunity alerts; native retail cart and seller fulfilment queue not established | Explicitly targets local/small businesses; eligibility/verification conditions apply |
+| Urban Company | Service pages and partner programme | Service bookings exist; this is not evidence of an unrestricted home-seller store builder | Selected service professionals; category/onboarding criteria apply |
+| HomeTriangle | Dedicated professional profiles | Partner-app lead tracking, quoting and customer booking/project communication; exact retail fulfilment console not established | Explicit small-service-business positioning |
+| Dukaan / DotPe (additional commerce-software comparators) | Seller websites/stores | Dukaan documents order tracking, invoices/reports and inventory. DotPe documents online stores, QR ordering, POS and inventory/marketplace tools | Commerce tooling for businesses; suitability/cost for an individual home seller still needs validation |
+
+A business page, an enquiry inbox, a service-job workflow and a product-order console are different capabilities. Even a documented “order management” label does not prove identical acceptance, preparation, day-specific availability, handover verification or manual-order support. The meaningful comparison requires a seller demo on a real home-kitchen example.
+
+**Revised conclusion:** combining community discovery with seller operations is useful, but cannot be positioned as absent from MyGate. The more promising hypothesis remains qualified, geographically/time-concentrated demand and a repeatable gap-to-service activation process, supported by demonstrably easier home-business operations. Micro-seller usability and measurable provider economics need comparative validation; do not claim a unique combination merely because HeyHood implements several pieces together.
+
+Additional sources accessed 23 October 2026:
+
+20. MyGate full offerings (Marketplace & eCommerce infra): https://mygate.com/offerings/
+21. JD Omni: https://www.jdomni.com/
+22. Dukaan: https://mydukaan.io/
+23. DotPe: https://dotpe.in/
+24. Nextdoor Business Pages: https://business.nextdoor.com/en-us/getting-started/business-page
+25. HomeTriangle professionals: https://hometriangle.com/pro
+26. Urban Company partner registration: https://partner.urbancompany.com/
+
+These additional pages were accessible. An attempted Urban Company Play Store URL returned 404 and was not used as evidence. JD Omni marketing/testimonials are not independent confirmation of a specific merchant's results. Marketplace maintenance payments, amenity bookings and society purchase-order management must not be mistaken for resident-seller order management; MyGate's separate e-commerce section is the relevant evidence here.
