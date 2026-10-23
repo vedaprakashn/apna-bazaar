@@ -7,6 +7,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice(
     assignableTypes = {
+      OrderBookController.class,
+      ProviderProfileController.class,
+      ProviderWorkspaceController.class,
       RideAgreementController.class,
       ResidentTrustController.class,
       HoodPlanController.class,

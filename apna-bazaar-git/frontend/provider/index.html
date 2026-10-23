@@ -6,6 +6,7 @@
     <title>Provider storefront · HeyHood</title>
     <link rel="stylesheet" href="../app.css?v=20261008-matching1" />
     <script src="../resident.js?v=1"></script>
+    <link rel="stylesheet" href="../orders/orders.css?v=1" />
     <script src="../reputation.js?v=1"></script>
     <link rel="stylesheet" href="../reputation.css?v=1" />
   </head>
@@ -43,8 +44,8 @@
         </section>
         <div class="demo-notice" id="demo" hidden>
           🧪 This is a fictional demo provider. The name, flat, catalog and
-          prices are examples. Pilot WhatsApp messages reach one shared test
-          contact.
+          prices are examples. Orders here are test requests, not guaranteed
+          real fulfilment.
         </div>
         <section class="store-layout">
           <div>
@@ -71,15 +72,13 @@
               <h3 id="contactName"></h3>
               <p id="contactFlat"></p>
               <p id="contactCommunity"></p>
-              <button id="contact" class="store-whatsapp">
-                Whatsapp Message
-              </button>
+              <button id="contact" class="store-whatsapp">View cart ↗</button>
               <p class="contact-note" id="contactNote"></p>
               <hr />
               <p class="contact-note">
                 Prices and availability are set by the provider. Confirm your
-                order or booking directly on WhatsApp. HeyHood helps you
-                discover; payments and fulfilment happen with the provider.
+                request here. The provider confirms it in HeyHood; payments and
+                fulfilment happen directly with the provider.
               </p>
             </div>
           </aside>
@@ -94,7 +93,7 @@
       </footer>
     </main>
     <div id="toast" class="toast" role="status" hidden></div>
-    <script src="../contact.js?v=20261007-direct1"></script>
+    <script src="../orders/cart.js?v=1"></script>
     <script>
       const API_BASE =
         location.protocol === "file:" || location.port === "8000"
@@ -208,6 +207,16 @@
                 ),
               );
           }
+          const add = el(
+            "button",
+            "cart-launch",
+            item.price == null
+              ? "Price needed before ordering"
+              : "Add to cart +",
+          );
+          add.disabled = item.price == null;
+          add.onclick = () => heyhoodCartAdd(item);
+          body.append(add);
           card.append(body);
           grid.append(card);
         }
@@ -236,6 +245,10 @@
           document.title = `${p.shop || p.name} · HeyHood`;
           document.getElementById("shop").textContent = p.shop || p.name;
           document.getElementById("owner").textContent = "By " + p.name;
+          if (p.public_bio)
+            document
+              .getElementById("owner")
+              .after(el("p", "contact-note", p.public_bio));
           document.getElementById("location").textContent =
             `Flat ${p.flat || "not provided"} · ${p.community}`;
           document.getElementById("avatar").textContent =
@@ -300,44 +313,12 @@
                   "No daily menu posted today. Explore the regular catalog above for products, classes and services.",
                 ),
               );
-          const button = document.getElementById("contact"),
-            contact = heyhoodWhatsAppContact(
-              p.whatsapp,
-              null,
-              heyhoodEnquiry(
-                p.shop || p.name,
-                p.community,
-                p.flat,
-                data.searchIntent,
-              ),
-            ),
-            real = Boolean(contact);
-          button.disabled = !real;
-          button.textContent = contact?.label || "WhatsApp ↗";
+          heyhoodInitCart(data);
+          const button = document.getElementById("contact");
+          button.disabled = false;
+          button.onclick = heyhoodCartOpen;
           document.getElementById("contactNote").textContent =
-            contact?.type === "group"
-              ? "Opens the shared pilot WhatsApp group."
-              : real
-                ? p.whatsapp === "919740893534"
-                  ? "Pilot · Messages reach the shared test contact."
-                  : "Message the provider to confirm availability or book."
-                : "No WhatsApp contact has been added for this listing.";
-          button.onclick = () => {
-            if (!real) return;
-            if (eventId)
-              fetch(`${API_BASE}/api/${slug}/search/click`, {
-                method: "POST",
-                keepalive: true,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  searchEventId: eventId,
-                  providerId: id,
-                  clickType: "whatsapp_tap",
-                }),
-              }).catch(() => {});
-            heyhoodRecordContact(id, p.shop || p.name);
-            location.href = contact.url;
-          };
+            "Build a cart and send a request to this provider. Your profile is required to place it.";
           document.getElementById("store").hidden = false;
           heyhoodLoadReputation(id);
         } catch (e) {

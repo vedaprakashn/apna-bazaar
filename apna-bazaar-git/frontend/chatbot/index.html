@@ -48,8 +48,7 @@
       </section>
       <div class="demo-notice">
         🧪 Pilot catalog: fictional demo providers across all categories. Prices
-        and schedules are examples. Pilot WhatsApp buttons reach one shared test
-        contact.
+        and schedules are examples. Orders with demo shops are test requests.
       </div>
       <section class="layout">
         <div class="panel">
@@ -470,37 +469,9 @@
         }
       }
       async function recordInterest(eventId, p, button) {
-        const contact = heyhoodWhatsAppContact(
-          p.whatsappNumber,
-          null,
-          heyhoodEnquiry(
-            p.shopName || p.name,
-            community.selectedOptions[0].textContent,
-            p.flatNumber,
-            p.searchIntent,
-          ),
-        );
-        if (!contact) return;
-        button.disabled = true;
-        try {
-          fetch(`${API_BASE}/api/${community.value}/search/click`, {
-            method: "POST",
-            keepalive: true,
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              searchEventId: eventId,
-              providerId: p.id,
-              clickType: "whatsapp_tap",
-            }),
-          }).catch(() => {});
-          heyhoodRecordContact(p.id, p.shopName || p.name);
-          location.href = contact.url;
-        } catch (e) {
-          toast("Could not open WhatsApp. Please try again.");
-        } finally {
-          button.disabled = false;
-        }
+        location.href = `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(p.id)}${eventId ? "&searchEventId=" + encodeURIComponent(eventId) : ""}`;
       }
+
       function urgentHelpCard() {
         const card = el("aside", "urgent-chat-help");
         card.append(
@@ -839,30 +810,12 @@
               : "Ask provider for pricing",
           ),
         );
-        const contact = heyhoodWhatsAppContact(p.whatsappNumber, null);
-        const real = Boolean(contact);
-        const b = el("button", "", contact?.label || "WhatsApp ↗");
-        b.disabled = !real;
-        if (!real) b.title = "Demo listing — no WhatsApp number configured";
-        b.onclick = () => recordInterest(eventId, p, b);
+        const b = el("button", "", "View shop & order ↗");
+        b.onclick = () => {
+          location.href = `../provider/index.html?community=${encodeURIComponent(community.value)}&id=${encodeURIComponent(p.id)}${eventId ? "&searchEventId=" + encodeURIComponent(eventId) : ""}`;
+        };
         footer.append(b);
         card.append(footer);
-        if (!real)
-          card.append(
-            el("p", "contact-note", "Demo · Contact not connected yet."),
-          );
-        if (contact?.type === "group")
-          card.append(
-            el("p", "contact-note", "Opens the shared pilot WhatsApp group."),
-          );
-        else if (p.whatsappNumber === "919740893534")
-          card.append(
-            el(
-              "p",
-              "contact-note",
-              "Pilot · Messages reach the shared test contact.",
-            ),
-          );
         card.append(
           heyhoodSaveButton("provider", p.id),
           heyhoodSaveButton("provider", p.id, true),

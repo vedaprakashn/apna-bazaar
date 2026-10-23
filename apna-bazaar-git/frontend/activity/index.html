@@ -25,12 +25,27 @@
     <nav class="hood-modules" aria-label="HeyHood modules"></nav>
     <script src="../modules.js?v=20261008-matching1" defer></script>
     <script src="../resident.js?v=1"></script>
+    <script>
+      addEventListener("DOMContentLoaded", () => {
+        document.getElementById("my-orders-link").href =
+          "../orders/index.html?community=" +
+          encodeURIComponent(
+            new URLSearchParams(location.search).get("community") ||
+              sessionStorage.getItem("heyhood-community") ||
+              "tridasa",
+          );
+      });
+    </script>
     <script src="../reputation.js?v=1"></script>
     <link rel="stylesheet" href="../reputation.css?v=1" />
     <main class="activity-main">
       <div class="activity-intro">
         <span class="tag">YOUR HOOD. YOUR NEXT MOVE.</span>
         <h1>Your corner of the hood.</h1>
+        <a class="chip" href="../orders/index.html" id="my-orders-link"
+          >My orders ↗</a
+        >
+        <a class="chip" href="../seller/console.html">Provider console ↗</a>
         <p>Saved finds, requests, ride posts and plans—all together.</p>
       </div>
       <div class="activity-tabs" aria-label="Activity views">

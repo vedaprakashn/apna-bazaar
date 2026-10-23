@@ -22,7 +22,7 @@ public class ResidentMatchingService {
             "SELECT verification='verified' FROM resident_profile WHERE id=?", Boolean.class, id)))
       throw new ResponseStatusException(
           HttpStatus.FORBIDDEN,
-          "Verify your flat in My profile to arrange rides or join live plans");
+          "Verify your flat in My profile to continue");
     return id;
   }
 

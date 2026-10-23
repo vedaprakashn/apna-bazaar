@@ -13,7 +13,7 @@ public class ResidentPrivacyFilter extends OncePerRequestFilter {
       HttpServletRequest req, HttpServletResponse res, FilterChain chain)
       throws ServletException, IOException {
     String path = req.getRequestURI();
-    if (path.contains("/resident/")
+    if (path.contains("/orders") || path.contains("/provider-workspace/") || path.contains("/resident/")
         || path.contains("/admin/")
         || path.contains("/agreements")
         || req.getHeader("Authorization") != null) {

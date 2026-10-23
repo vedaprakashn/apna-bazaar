@@ -1,4 +1,21 @@
 (() => {
+  const LIVE = document.body.dataset.mode === "live";
+  const liveParams = new URLSearchParams(location.search),
+    liveSlug = liveParams.get("community") || "tridasa",
+    liveProvider = liveParams.get("id");
+  const liveKey = `heyhood-seller-${liveSlug}-${liveProvider}`;
+  let liveToken = LIVE
+    ? new URLSearchParams(location.hash.slice(1)).get("key")
+    : null;
+  if (liveToken) {
+    sessionStorage.setItem(liveKey, liveToken);
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+  liveToken ||= LIVE ? sessionStorage.getItem(liveKey) : null;
+  let liveBusy = false,
+    liveManualKey = null,
+    liveRefreshBusy = false;
+
   const $ = (id) => document.getElementById(id),
     names = {
       requested: "New order",
@@ -7,6 +24,8 @@
       ready: "Ready to go",
       completed: "Handed over",
       rejected: "Declined",
+      cancelled: "Cancelled",
+      expired: "Expired",
     };
   const codes = {
     "HH-1048": "482913",
@@ -280,7 +299,7 @@
   let menu = defaultMenu(),
     publishedMenu = defaultMenu(),
     profile = defaultProfile();
-  let orders = seed(),
+  let orders = LIVE ? [] : seed(),
     tab = "incoming",
     selected = "HH-1048",
     events = [],
@@ -296,7 +315,7 @@
   const bucket = (o) =>
     o.status === "requested"
       ? "incoming"
-      : ["completed", "rejected"].includes(o.status)
+      : ["completed", "rejected", "cancelled", "expired"].includes(o.status)
         ? "history"
         : "active";
   function badge(o) {
@@ -331,10 +350,15 @@
     );
   }
   function consumerEvent(o, title, body) {
+    if (LIVE) return;
     if (o.consumerLinked === false) return;
     events.unshift({ id: o.id, name: o.name, title, body, status: o.status });
   }
   function move(o, status) {
+    if (LIVE) {
+      liveTransition(o, status);
+      return;
+    }
     const allowed = {
       requested: ["accepted", "rejected"],
       accepted: ["preparing", "ready"],
@@ -434,7 +458,14 @@
     const row = n("div", null, "action-row");
     row.append(
       button("Keep order", "", () => $("action-dialog").close()),
-      button("Decline order", "primary", () => {
+      button("Decline order", "primary", async () => {
+        if (LIVE) {
+          if (await liveTransition(o, "rejected", { reason: select.value })) {
+            $("action-dialog").close();
+            $("mobile-detail").close();
+          }
+          return;
+        }
         o.reason = select.value;
         move(o, "rejected");
         consumerEvent(
@@ -480,9 +511,30 @@
     const submit = button("Verify & complete ↗", "primary");
     submit.type = "submit";
     form.append(label, input, error, submit);
-    form.onsubmit = (e) => {
+    form.onsubmit = async (e) => {
       e.preventDefault();
       if (o.status !== "ready") return;
+      if (LIVE) {
+        try {
+          const data = await liveApi("/orders/" + o.orderId, "POST", {
+            revision: o.revision,
+            action: "verify",
+            code: input.value,
+          });
+          appView = "history";
+          tab = "history";
+          $("history-range").value = "all";
+          await loadLive();
+          selected = data.reference;
+          render();
+          $("action-dialog").close();
+          $("mobile-detail").close();
+          toast("Handover verified. Order complete.");
+        } catch (e) {
+          error.textContent = e.message;
+        }
+        return;
+      }
       if ((attempts[o.id] || 0) >= 5) {
         error.textContent =
           "Demo locked after five attempts. Reset the demo to try again.";
@@ -506,7 +558,9 @@
       form,
       n(
         "p",
-        "Try both personas with “Consumer preview” at the top of this demo. Real provider APIs would never expose the code.",
+        LIVE
+          ? "Ask the consumer for their code only after handing over the order."
+          : "Try both personas with “Consumer preview” at the top of this demo. Real provider APIs would never expose the code.",
       ),
     );
     $("action-dialog").showModal();
@@ -586,12 +640,15 @@
       sum,
       n(
         "p",
-        "No delivery fee in this sample. Payment arranged directly.",
+        LIVE
+          ? "Pay the provider directly. This total is not a payment receipt."
+          : "No delivery fee in this sample. Payment arranged directly.",
         "payment-note",
       ),
     );
     if (o.note) body.append(n("div", `“${o.note}”`, "buyer-note"));
-    if (o.reason) body.append(n("div", `Declined · ${o.reason}`, "buyer-note"));
+    if (o.reason)
+      body.append(n("div", `${names[o.status]} · ${o.reason}`, "buyer-note"));
     if (o.status !== "rejected") {
       const timeline = n("div", null, "timeline"),
         stages = ["requested", "accepted", "preparing", "ready", "completed"];
@@ -677,6 +734,13 @@
       actions.append(
         n("p", "Consumer updated. This request is closed.", "action-hint"),
       );
+    if (
+      LIVE &&
+      ["requested", "accepted", "preparing", "ready"].includes(o.status)
+    )
+      row.append(button("Cancel order", "reject", () => liveCancel(o)));
+    if (["cancelled", "expired"].includes(o.status))
+      actions.append(n("p", o.reason || names[o.status], "action-hint"));
     actions.append(row);
     container.append(actions);
     return container;
@@ -763,6 +827,7 @@
     $("mobile-body").replaceChildren(detail(order));
   }
   function consumerPreview() {
+    if (LIVE) return;
     $("consumer-feed").replaceChildren();
     const relevant = orders.filter(
       (o) =>
@@ -817,6 +882,7 @@
     .forEach((b) => (b.onclick = () => $(b.dataset.close).close()));
   $("consumer-preview").onclick = consumerPreview;
   $("reset").onclick = () => {
+    if (LIVE) return;
     document.querySelectorAll("dialog[open]").forEach((d) => d.close());
     orders = seed();
     appView = "orders";
@@ -878,6 +944,7 @@
     if (view === "orders" && tab === "history") tab = "incoming";
     $("search").value = "";
     render();
+    if (LIVE) loadLive().catch((e) => toast(e.message));
   }
   function renderConsole() {
     const orderView = appView === "orders" || appView === "history";
@@ -905,10 +972,24 @@
       orders.filter((o) => bucket(o) === "incoming").length || "";
     const unread = alerts.filter((a) => !a.read).length;
     $("nav-alert-count").textContent = unread || "";
-    $("consumer-preview").disabled = !orderView;
+    $("consumer-preview").disabled = LIVE || !orderView;
     renderNotifications();
   }
-  function openAlert(alert) {
+  async function openAlert(alert) {
+    if (LIVE) {
+      try {
+        await liveApi(
+          "/notifications/" + alert.notificationId + "/read",
+          "POST",
+        );
+        if (!orders.some((o) => o.id === alert.id)) {
+          orders.push(toLiveOrder(await liveApi("/orders/" + alert.orderId)));
+        }
+      } catch (e) {
+        toast(e.message);
+        return;
+      }
+    }
     alert.read = true;
     const o = orders.find((o) => o.id === alert.id);
     if (!o) return;
@@ -941,6 +1022,7 @@
     }
   }
   function renderMenu() {
+    if (LIVE) return;
     const list = $("console-menu");
     list.replaceChildren();
     $("menu-summary").textContent =
@@ -1026,20 +1108,35 @@
       $("profile-" + id).value = value;
     $("profile-delivery").checked = profile.delivery;
     document.querySelector(".shop-switch strong").textContent = profile.shop;
-    document.querySelector(".shop-switch small").textContent =
-      `MyHome Tridasa · ${profile.flat}`;
+    document.querySelector(".shop-switch small").textContent = LIVE
+      ? `Pickup · ${profile.flat}`
+      : `MyHome Tridasa · ${profile.flat}`;
   }
   document
     .querySelectorAll("[data-console]")
     .forEach((b) => (b.onclick = () => setView(b.dataset.console)));
   for (const id of ["history-range", "history-date", "history-status"])
-    $(id).onchange = render;
-  $("read-alerts").onclick = () => {
+    $(id).onchange = () => {
+      render();
+      if (LIVE) loadLive().catch((e) => toast(e.message));
+    };
+  $("read-alerts").onclick = async () => {
+    if (LIVE) {
+      try {
+        await liveApi("/notifications/read", "POST");
+        await loadLive();
+        toast("Inbox caught up ✓");
+      } catch (e) {
+        toast(e.message);
+      }
+      return;
+    }
     alerts.forEach((a) => (a.read = true));
     render();
     toast("Inbox caught up ✓ · demo");
   };
   $("simulate-order").onclick = () => {
+    if (LIVE) return;
     const available = publishedMenu.find((i) => i.on);
     if (!available) {
       toast(
@@ -1072,6 +1169,7 @@
     toast(`New order ${id}. Your provider inbox has the details. · demo`);
   };
   $("add-demo-item").onclick = () => {
+    if (LIVE) return;
     menu.push({
       id: Date.now(),
       name: "New snack",
@@ -1084,6 +1182,7 @@
     renderMenu();
   };
   $("publish-demo-menu").onclick = () => {
+    if (LIVE) return;
     if (
       menu.some(
         (i) =>
@@ -1105,7 +1204,7 @@
       "Demo menu published in this preview only. Real shop unchanged.";
     toast("Demo menu updated ✨ Existing order snapshots stay the same.");
   };
-  $("demo-profile").onsubmit = (e) => {
+  $("demo-profile").onsubmit = async (e) => {
     e.preventDefault();
     if ($("profile-end").value <= $("profile-start").value) {
       $("profile-state").textContent =
@@ -1124,6 +1223,16 @@
     if (!draftProfile.shop || !draftProfile.name || !draftProfile.flat) {
       $("profile-state").textContent =
         "Add your shop name, name and pickup flat.";
+      return;
+    }
+    if (LIVE) {
+      try {
+        profile = await liveApi("/profile", "PUT", draftProfile);
+        fillProfile();
+        $("profile-state").textContent = "Shop profile saved.";
+      } catch (e) {
+        $("profile-state").textContent = e.message;
+      }
       return;
     }
     profile = draftProfile;
@@ -1157,9 +1266,16 @@
     const submit = button("Confirm handover", "primary");
     submit.type = "submit";
     form.append(label, submit);
-    form.onsubmit = (e) => {
+    form.onsubmit = async (e) => {
       e.preventDefault();
       if (!check.checked) return;
+      if (LIVE) {
+        if (await liveTransition(o, "manual_complete")) {
+          $("action-dialog").close();
+          $("mobile-detail").close();
+        }
+        return;
+      }
       o.completionMethod = "provider_recorded";
       move(o, "completed");
       $("action-dialog").close();
@@ -1261,6 +1377,7 @@
     manualTotal();
   }
   $("add-manual-order").onclick = () => {
+    liveManualKey = crypto.randomUUID();
     $("manual-order-form").reset();
     $("manual-error").textContent = "";
     $("manual-date").value = today();
@@ -1274,13 +1391,13 @@
   };
   $("manual-add-line").onclick = () => {
     if (manualLines.length >= 20) {
-      $("manual-error").textContent = "Use up to 20 item lines in this demo.";
+      $("manual-error").textContent = "Use up to 20 item lines per order.";
       return;
     }
     manualLines.push(manualLine(publishedMenu.find((i) => i.on)));
     renderManualLines();
   };
-  $("manual-order-form").onsubmit = (e) => {
+  $("manual-order-form").onsubmit = async (e) => {
     e.preventDefault();
     const name = $("manual-name").value.trim(),
       flat = $("manual-flat").value.trim(),
@@ -1343,6 +1460,43 @@
       consumerLinked: false,
       pickupFlat: profile.flat,
     };
+    if (LIVE) {
+      if (liveBusy) return;
+      liveBusy = true;
+      try {
+        const saved = await liveApi("/orders", "POST", {
+          key: liveManualKey,
+          providerId: liveProvider,
+          name,
+          flat,
+          source,
+          fulfilment: o.fulfil,
+          date,
+          time,
+          note: o.note,
+          confirmed: true,
+          lines: manualLines.map((i) => ({
+            name: i.name.trim(),
+            quantity: i.qty,
+            price: i.price,
+          })),
+        });
+        appView = "orders";
+        tab = "active";
+        selected = saved.reference;
+        $("search").value = "";
+        $("manual-dialog").close();
+        await loadLive();
+        toast("Order saved to your queue. No consumer account was inferred.");
+        if (matchMedia("(max-width:1100px)").matches)
+          $("mobile-detail").showModal();
+      } catch (e) {
+        $("manual-error").textContent = e.message;
+      } finally {
+        liveBusy = false;
+      }
+      return;
+    }
     orders.unshift(o);
     appView = "orders";
     tab = "active";
@@ -1356,6 +1510,218 @@
     if (matchMedia("(max-width:1100px)").matches)
       $("mobile-detail").showModal();
   };
+  async function liveApi(path, method = "GET", body) {
+    const response = await fetch(
+      `/api/${encodeURIComponent(liveSlug)}/provider-workspace/${encodeURIComponent(liveProvider)}${path}`,
+      {
+        method,
+        headers: {
+          Authorization: `Bearer ${liveToken}`,
+          "Content-Type": "application/json",
+        },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      },
+    );
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok)
+      throw Error(
+        data.error ||
+          data.message ||
+          (response.status === 401
+            ? "Open a valid private provider link to continue."
+            : "Could not update the order. Refresh and try again."),
+      );
+    return data;
+  }
+  function toLiveOrder(r) {
+    const date = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date(r.fulfilment_at));
+    const time = new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date(r.fulfilment_at));
+    return {
+      id: r.reference,
+      orderId: r.id,
+      revision: r.revision,
+      name: r.customer_name,
+      flat: r.customer_flat,
+      pickupFlat: r.pickup_flat,
+      initials: r.customer_name
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase(),
+      status: r.status,
+      date,
+      time: `${dateLabel(date)} · ${time} IST`,
+      ago: new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "numeric",
+        month: "short",
+        hour: "numeric",
+        minute: "2-digit",
+      }).format(new Date(r.created_at)),
+      items: r.items,
+      note: r.note,
+      reason: r.reason,
+      source: r.source,
+      consumerLinked: r.consumerLinked,
+      recordedBy: r.source === "heyhood" ? "consumer" : "provider",
+      completionMethod: r.completion_method,
+    };
+  }
+  async function loadLive() {
+    if (liveRefreshBusy) {
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      return loadLive();
+    }
+    liveRefreshBusy = true;
+    try {
+      const range = $("history-range").value;
+      const [open, closed, notifications] = await Promise.all([
+        liveApi("/orders?range=open"),
+        liveApi(
+          "/orders?range=" +
+            encodeURIComponent(range) +
+            "&date=" +
+            encodeURIComponent($("history-date").value),
+        ),
+        liveApi("/notifications"),
+      ]);
+      $("live-status").textContent = open.codesConfigured
+        ? ""
+        : "Consumer checkout needs ORDER_OTP_SECRET configured on Railway. Manual orders are available.";
+      orders = [...open.orders, ...closed.orders].map(toLiveOrder);
+      alerts = notifications.map((r) => ({
+        id: r.reference,
+        orderId: r.order_id,
+        notificationId: r.id,
+        title: r.title,
+        body: r.body,
+        read: !!r.read_at,
+      }));
+      if (appView === "menu") {
+        publishedMenu = await livePublishedMenu();
+      }
+      render();
+    } finally {
+      liveRefreshBusy = false;
+    }
+  }
+  async function liveTransition(o, status, extra = {}) {
+    if (liveBusy) return false;
+    liveBusy = true;
+    try {
+      const saved = await liveApi("/orders/" + o.orderId, "POST", {
+        revision: o.revision,
+        action: status,
+        ...extra,
+      });
+      appView = ["completed", "rejected", "cancelled", "expired"].includes(
+        saved.status,
+      )
+        ? "history"
+        : "orders";
+      tab = bucket({ status: saved.status });
+      if (appView === "history") $("history-range").value = "all";
+      selected = saved.reference;
+      await loadLive();
+      toast("Order updated. In-app notifications saved.");
+      return true;
+    } catch (e) {
+      toast(e.message);
+      return false;
+    } finally {
+      liveBusy = false;
+    }
+  }
+  function liveCancel(o) {
+    const box = $("action-content");
+    box.replaceChildren(n("h2", "Cancel this order?"));
+    const form = n("form"),
+      label = n("label", "Reason"),
+      input = n("input");
+    input.required = true;
+    input.maxLength = 300;
+    label.append(input);
+    const submit = button("Confirm cancellation", "primary");
+    submit.type = "submit";
+    form.append(label, submit);
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      if (await liveTransition(o, "cancelled", { reason: input.value })) {
+        $("action-dialog").close();
+        $("mobile-detail").close();
+      }
+    };
+    box.append(form);
+    $("action-dialog").showModal();
+  }
+  async function livePublishedMenu() {
+    const response = await fetch(
+      `/api/${encodeURIComponent(liveSlug)}/providers/${encodeURIComponent(liveProvider)}/storefront`,
+    );
+    if (!response.ok) throw Error("Could not load the published menu.");
+    const data = await response.json();
+    return data.offerings
+      .filter((i) => i.price != null)
+      .map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.price,
+        unit: i.unit,
+        on: i.available,
+      }));
+  }
+  async function bootLive() {
+    $("history-date").value = today();
+    if (!liveProvider || !liveToken)
+      throw Error(
+        "Open your private provider link from HeyHood onboarding. Public shop links cannot manage orders.",
+      );
+    profile = await liveApi("/profile");
+    fillProfile();
+    publishedMenu = await livePublishedMenu();
+    const frame = $("live-menu-editor");
+    frame.src = `index.html?community=${encodeURIComponent(liveSlug)}&id=${encodeURIComponent(liveProvider)}&embedded=1`;
+    frame.onload = () => {
+      try {
+        frame.contentDocument.querySelector(".topbar")?.remove();
+        const resize = () => {
+          frame.style.height =
+            Math.max(800, frame.contentDocument.body.scrollHeight + 30) + "px";
+        };
+        new ResizeObserver(resize).observe(frame.contentDocument.body);
+        resize();
+      } catch {}
+    };
+    await loadLive();
+    document.querySelector(".console-shell").hidden = false;
+    setInterval(() => {
+      if (!document.hidden && !document.querySelector("dialog[open]"))
+        loadLive().catch((e) => {
+          $("live-status").textContent = e.message;
+        });
+    }, 15000);
+    addEventListener("focus", () =>
+      loadLive().catch((e) => {
+        $("live-status").textContent = e.message;
+      }),
+    );
+  }
+  if (LIVE) {
+    bootLive().catch((e) => {
+      $("live-status").textContent = e.message;
+    });
+    return;
+  }
   $("history-date").value = today();
   seedAlerts();
   fillProfile();
